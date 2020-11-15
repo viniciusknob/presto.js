@@ -11,22 +11,3 @@
 // @require      https://raw.githubusercontent.com/viniciusknob/presto.js/master/dist/presto.min.js
 // @grant        none
 // ==/UserScript==
-
-let prestoArgs = {
-    insuredArr: [
-        /*
-         * COLE AQUI
-         */
-    ]
-};
-
-(function(window, prestoArgs) {
-    let interval = setInterval(() => {
-        console.log("Try init Presto...");
-        if (window.Presto) {
-            clearInterval(interval);
-            window.Presto.initArgs = prestoArgs;
-            console.log(window.Presto.bless());
-        }
-    }, 1000);
-})(window, prestoArgs);

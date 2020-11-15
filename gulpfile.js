@@ -6,7 +6,8 @@ const DIST_PATH = 'dist';
 
 function concat() {
 	return src([
-		'src/js/presto.js'
+		'src/js/presto.js',
+		'src/js/sulamerica.js'
 	])
 	.pipe(jsConcat('presto.js'))
 	.pipe(dest(DIST_PATH));
