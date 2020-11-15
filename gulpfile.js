@@ -1,5 +1,6 @@
-const { src, dest } = require('gulp');
+const { src, dest, series } = require('gulp');
 const jsConcat = require('gulp-concat');
+const jsMinify = require('gulp-minify');
 
 const DIST_PATH = 'dist';
 
@@ -11,4 +12,16 @@ function concat() {
 	.pipe(dest(DIST_PATH));
 };
 
-exports.default = concat;
+function minify() {
+	return src([
+		'dist/presto.js'
+	])
+	.pipe(jsMinify({
+		ext: {
+			min:'.min.js'
+		}
+	 }))
+	 .pipe(dest(DIST_PATH));
+};
+
+exports.default = series(concat, minify);

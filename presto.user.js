@@ -8,7 +8,7 @@
 // @match        https://saude.sulamericaseguros.com.br/prestador/segurado/validacao-de-procedimentos-tiss-3/validacao-de-procedimentos/*
 // @match        https://saude.sulamericaseguros.com.br/prestador/servicos-medicos/contas-medicas/faturamento-tiss-3/faturamento/validar-procedimento-autorizado/*
 // @match        https://saude.sulamericaseguros.com.br/prestador/servicos-medicos/contas-medicas/faturamento-tiss-3/faturamento/fechamento-de-lote/*
-// @require      https://raw.githubusercontent.com/viniciusknob/presto.js/master/presto.js
+// @require      https://raw.githubusercontent.com/viniciusknob/presto.js/master/dist/presto.min.js
 // @grant        none
 // ==/UserScript==
 
