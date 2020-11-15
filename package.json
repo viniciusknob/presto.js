@@ -2,7 +2,7 @@
   "name": "presto",
   "version": "1.0.0",
   "description": "Useful things for work with health insurance",
-  "main": "presto.js",
+  "main": "dist/presto.min.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
