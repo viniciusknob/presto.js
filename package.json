@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/viniciusknob/presto.js/issues"
   },
-  "homepage": "https://github.com/viniciusknob/presto.js#readme"
+  "homepage": "https://github.com/viniciusknob/presto.js#readme",
+  "devDependencies": {
+    "gulp": "^4.0.2"
+  }
 }
