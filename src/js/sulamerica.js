@@ -1,4 +1,11 @@
 (function(Presto, location) {
+    'use strict';
+
+    const {
+        Analytics,
+        IndexedDB,
+
+    } = Presto.modules;
     
     const _SulAmerica = function() {
         
@@ -7,6 +14,9 @@
 
         	// Prestador > Segurado > Validação de Elegibilidade
             ELEGIBILIDADE = /validacao-de-elegibilidade/,
+
+            // Prestador > Segurado > Validação de Elegibilidade
+            ELEGIBILIDADE_RESULTADO = /validacao-de-elegibilidade\/elegibilidade-resultado/,
         
             // Prestador > Segurado > Validação de Procedimentos > Solicitação
             PROCEDIMENTO_SOLICITACAO = /validacao-de-procedimentos(\/solicitacao)?/,
@@ -25,9 +35,12 @@
                 return HOST.test(location.host);
             },
             _isLoaded = function() {
-                return document.querySelector("#box-validacao-beneficiario");
+                return document.querySelector("#box-validacao-beneficiario") || document.querySelector(".box-indicador-elegibilidade");
             },
-            _buildComboBox = function() {
+            _buildComboBox = function(insuredList = []) {
+                if (insuredList.length === 0)
+                    return null;
+
                 let select = document.createElement("SELECT");
                 select.style.cssText = "vertical-align: middle;";
                 
@@ -38,6 +51,9 @@
 
                 select.onchange = () => {
                     let option = select.querySelector(":checked");
+
+                    Analytics.sendEvent('log', 'personSelected', option.value, false);
+
                     document.querySelector("#codigo-beneficiario-1").value = option.value.substr(0,3);
                     document.querySelector("#codigo-beneficiario-2").value = option.value.substr(3,5);
                     document.querySelector("#codigo-beneficiario-3").value = option.value.substr(8,4);
@@ -45,54 +61,94 @@
                     document.querySelector("#codigo-beneficiario-5").value = option.value.substr(16,4);
                 };
 
-                Presto.initArgs.insuredArr.forEach((value) => {
+                insuredList.forEach((insured) => {
                     let option = document.createElement("OPTION");
-                    option.value = value.id;
-                    option.textContent = value.name + " (" + value.id + ")";
+                    option.value = insured.uid;
+                    option.textContent = insured.name;
                     select.appendChild(option);
                 });
 
                 return select;
             },
             _fixAnyPage = function() {
-                console.log("Presto._fixAnyPage => Enter");
+                if (ELEGIBILIDADE_RESULTADO.test(location.pathname)) {
+                    let eligibleBox = document.querySelector('.box-indicador-elegibilidade .linha');
+                    let eligible = eligibleBox.querySelector('.atencao').textContent;
+                    
+                    var person = {
+                        uid: '',
+                        name: '',
+                    };
+                    
+                    document.querySelectorAll('.linha').forEach((line) => {
+                        let strongList = line.querySelectorAll('strong');
+                        strongList.forEach((strong) => {
+                            if (strong) {
+                                let strongText = strong.textContent;
+                                if (/Carteira/.test(strongText)) {
+                                    person.uid = strong.parentElement.querySelector('span').textContent.replace(/\s/g,"");
+                                }
+                                if (/Nome/.test(strongText)) {
+                                    person.name = strong.parentElement.querySelector('span').textContent;
+                                }
+                            }
+                        });
+                    });
 
-                // Before
+                    Analytics.sendEvent('log', 'checkPersonEligibility', `${person.uid} => ${eligible}`);
 
+                    if (eligible === "SIM") {
+                        let divStatus = document.createElement('DIV');
+                        divStatus.id = 'js-presto-status';
+                        divStatus.style = "float:right;font-weight:bold;color:limegreen;";
+                        divStatus.textContent = "Salvando...";
+                        eligibleBox.appendChild(divStatus);
 
-                // Core
-
-                let comboBox = _buildComboBox();
-
-
-                // After
-
-                if (ELEGIBILIDADE.test(location.pathname)) {
-                    let node = document.querySelector("#box-validacao-beneficiario div");
-                    node.insertBefore(comboBox, node.childNodes[2]);
-                    document.querySelector(".box-padrao").style.width = "850px";
-                }
-                if (PROCEDIMENTO_SOLICITACAO.test(location.pathname)) {
-                    if (PROCEDIMENTO_CONSULTA.test(location.pathname)) {
-                        let node = document.querySelector("#box-validacao-beneficiario");
-                        node.insertBefore(comboBox, node.childNodes[2]);
-                    } else {
-                        let node = document.querySelector("#box-validacao-beneficiario div");
-                        node.insertBefore(comboBox, node.childNodes[2]);
-                        document.querySelector(".box-padrao").style.width = "850px";
+                        IndexedDB.getOrCreateDB()
+                            .then(db => IndexedDB.addOrUpdateItem(db, person))
+                            .then(() => {
+                                eligibleBox.querySelector('#js-presto-status').textContent = "Salvo!";
+                                Analytics.sendEvent('log', 'personSaved', person.uid);
+                            })
+                            .catch(err => {
+                                Analytics.sendEvent('error', 'savePerson', JSON.stringify(err));
+                            });
                     }
-                }
-                if (FECHAMENTO_DE_LOTE.test(location.pathname)) {
-                    let node = document.querySelector("#box-validacao-beneficiario div");
-                    node.insertBefore(comboBox, node.childNodes[2]);
-                }
-                if (PROCEDIMENTO_AUTORIZADO.test(location.pathname)) {
-                    let node = document.querySelector("#box-validacao-beneficiario");
-                    node.insertBefore(comboBox, node.childNodes[0]);
-                    document.querySelector(".box-padrao").style.width = "780px";
+                } else {
+                    IndexedDB.getOrCreateDB()
+                        .then(IndexedDB.getAll)
+                        .then(_buildComboBox)
+                        .then(comboBox => {
+                            if (!comboBox)
+                                return;
+
+                            if (ELEGIBILIDADE.test(location.pathname)) {
+                                let node = document.querySelector("#box-validacao-beneficiario div");
+                                node.insertBefore(comboBox, node.childNodes[2]);
+                                document.querySelector(".box-padrao").style.width = "850px";
+                            }
+                            if (PROCEDIMENTO_SOLICITACAO.test(location.pathname)) {
+                                if (PROCEDIMENTO_CONSULTA.test(location.pathname)) {
+                                    let node = document.querySelector("#box-validacao-beneficiario");
+                                    node.insertBefore(comboBox, node.childNodes[2]);
+                                } else {
+                                    let node = document.querySelector("#box-validacao-beneficiario div");
+                                    node.insertBefore(comboBox, node.childNodes[2]);
+                                    document.querySelector(".box-padrao").style.width = "850px";
+                                }
+                            }
+                            if (FECHAMENTO_DE_LOTE.test(location.pathname)) {
+                                let node = document.querySelector("#box-validacao-beneficiario div");
+                                node.insertBefore(comboBox, node.childNodes[2]);
+                            }
+                            if (PROCEDIMENTO_AUTORIZADO.test(location.pathname)) {
+                                let node = document.querySelector("#box-validacao-beneficiario");
+                                node.insertBefore(comboBox, node.childNodes[0]);
+                                document.querySelector(".box-padrao").style.width = "780px";
+                            }
+                        });
                 }
 
-                console.log("Presto._fixAnyPage => End");
             };
 
 
@@ -108,4 +164,4 @@
 
     Presto.modules.SulAmerica = _SulAmerica;
 	
-})(window.Presto, location);
+})(Presto, location);

@@ -1,18 +1,19 @@
 (function(Presto, setInterval, clearInterval) {
 
     const {
+        Analytics,
         SulAmerica,
     
     } = Presto.modules;
 
     const
         _init = function() {
-            console.log("Presto._init => Enter");
-            if (SulAmerica.is())
+            if (SulAmerica.is()) {
+                Analytics.create('_SulAmerica');
                 SulAmerica.fix();
+            }
             
             // others...
-            console.log("Presto._init => End");
         },
         _isLoaded = function() {
             if (SulAmerica.is())
@@ -26,18 +27,14 @@
                     clearInterval(interval);
                     _init();
                 }
-            }, 1000);
+            }, 250);
         };
 
 
     /* Public Functions */
 
-    Presto.initArgs = {};
-
     Presto.bless = function() {
-        console.log("Presto.bless => Enter");
         _initWithDelay();
-        return this.description;
     };
 
 })(window.Presto, window.setInterval, window.clearInterval);

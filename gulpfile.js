@@ -7,6 +7,8 @@ const DIST_PATH = 'dist';
 function concat() {
 	return src([
 		'src/js/presto.js',
+		'src/js/analytics.js',
+		'src/js/indexeddb.js',
 		'src/js/sulamerica.js',
 		'src/js/main.js',
 		'src/js/init.js'
