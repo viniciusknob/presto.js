@@ -24,14 +24,14 @@
 					}
 				
 					if (!(indexedDB)) {
-						Analytics.sendEvent('error', `${fn}.checkSupport`, 'This browser doesn\'t support IndexedDB');
+						Analytics.sendException(`${fn}.checkSupport: This browser doesn\'t support IndexedDB`, true);
 						return reject();
 					}
 					
 					const idb = indexedDB.open(DB_NAME);
 					
 					idb.onerror = function(event) {
-						Analytics.sendEvent('error', `${fn}.indexedDB.open`, JSON.stringify(event));
+						Analytics.sendException(`${fn}.indexedDB.open: ${JSON.stringify(event)}`, true);
 						reject();
 					};
 					
@@ -39,14 +39,14 @@
 						_db = event.target.result;
 						
 						_db.onerror = function(event) {
-							Analytics.sendEvent('error', `${fn}.db.any`, JSON.stringify(event));
+							Analytics.sendException(`${fn}.db.any: ${JSON.stringify(event)}`, true);
 						};
 						
 						resolve(_db);
 					};
 					
 					idb.onupgradeneeded = function(event) {
-						Analytics.sendEvent('log', `${fn}.onupgradeneeded`, JSON.stringify(event));
+						Analytics.sendEvent(`${fn}.onupgradeneeded`, 'log', JSON.stringify(event));
 						
 						_db = event.target.result;
 						
@@ -68,7 +68,7 @@
 							personList.push(cursor.value);
 							cursor.continue();
 						} else {
-							Analytics.sendEvent('log', `${fn}.personList`, `size ${personList.length}`);
+							Analytics.sendEvent(`${fn}.personList`, 'log', `size ${personList.length}`);
 							
 							personList.sort(function(a,b) {
 								return a.name.localeCompare(b.name);
@@ -91,7 +91,7 @@
 					};
 	
 					transaction.onerror = function(event) {
-						Analytics.sendEvent('error', `${fn}.transaction`, JSON.stringify(event));
+						Analytics.sendException(`${fn}.transaction: ${JSON.stringify(event)}`, true);
 						reject();
 					};
 	
@@ -105,21 +105,21 @@
 
 						let request;
 						if (cursor) {
-							Analytics.sendEvent('log', `${fn}.objectStore.put`, person.uid);
+							Analytics.sendEvent(`${fn}.objectStore.put`, 'log', person.uid);
 							request = objectStore.put(person);
 						} else {
-							Analytics.sendEvent('log', `${fn}.objectStore.add`, person.uid);
+							Analytics.sendEvent(`${fn}.objectStore.add`, 'log', person.uid);
 							request = objectStore.add(person);
 						}
 						
 						request.onerror = function(event) {
-							Analytics.sendEvent('error', `${fn}.objectStore.request`, JSON.stringify(event));
+							Analytics.sendException(`${fn}.objectStore.request: ${JSON.stringify(event)}`, false);
 							reject();
 						};
 					};
 					
 					_cursor.onerror = function(event) {
-						Analytics.sendEvent('error', `${fn}.cursor.open`, JSON.stringify(event));
+						Analytics.sendException(`${fn}.cursor.open: ${JSON.stringify(event)}`, false);
 						reject();
 					};
 				});

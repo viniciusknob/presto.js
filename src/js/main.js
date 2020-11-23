@@ -9,7 +9,7 @@
     const
         _init = function() {
             if (SulAmerica.is()) {
-                Analytics.create('_SulAmerica');
+                Analytics.config('_SulAmerica');
                 SulAmerica.fix();
             }
             

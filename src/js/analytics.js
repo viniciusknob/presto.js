@@ -1,15 +1,19 @@
 (function(Presto, window, document) {
 
-    if (!window.ga) {
-        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-        })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+    if (!window.gtag) {
+        let script = document.createElement('script');
+        script.src = 'https://www.googletagmanager.com/gtag/js';
+        script.async = 1;
+        document.querySelector('body').appendChild(script);
+
+        window.dataLayer = window.dataLayer || [];
+        window.gtag = function() { window.dataLayer.push(arguments); };
+        window.gtag('js', new Date());
     }
 
-    const 
-        trakerName = 'prestoTracker',
-        dataFlux = {
+    var _GA_MEASUREMENT_ID = false;
+    const
+        _dataFlux = {
             "_SulAmerica": "G-MXK1RQ5VT5",
         };
 
@@ -17,32 +21,30 @@
     const _Analytics = function() {
 
         const
-            _create = (id) => {
-                window.ga('create', {
-                    trackingId: dataFlux[id],
-                    cookieDomain: 'auto',
-                    name: trakerName,
-                });
-            
-                window.ga(`${trakerName}.send`, 'pageview');
+            _config = (id) => {
+                _GA_MEASUREMENT_ID = _dataFlux[id];
+                window.gtag('config', _GA_MEASUREMENT_ID);
             },
-            _sendEvent = (category, action, label, nonInteraction = true) => {
-                /**
-                 * https://developers.google.com/analytics/devguides/collection/analyticsjs/command-queue-reference#send
-                 * https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#nonInteraction
-                 */
-                window.ga(`${trakerName}.send`, {
-                    hitType: 'event',
-                    eventCategory: category,
-                    eventAction: action,
-                    eventLabel: label,
-                    nonInteraction: nonInteraction,
+            _sendEvent = (name, category, label, nonInteraction = true) => {
+                window.gtag('event', name, {
+                    'send_to': _GA_MEASUREMENT_ID,
+                    'event_category': category,
+                    'event_label': label,
+                    'non_interaction': nonInteraction,
+                });
+            },
+            _sendException = (description, fatal = false) => {
+                window.gtag('event', 'exception', {
+                    'send_to': _GA_MEASUREMENT_ID,
+                    'description': description,
+                    'fatal': fatal,
                 });
             };
 
         return {
-            create: _create,
+            config: _config,
             sendEvent: _sendEvent,
+            sendException: _sendException,
         };
     }();
 

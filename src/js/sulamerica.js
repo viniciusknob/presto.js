@@ -52,7 +52,7 @@
                 select.onchange = () => {
                     let option = select.querySelector(":checked");
 
-                    Analytics.sendEvent('log', 'personSelected', option.value, false);
+                    Analytics.sendEvent('person_selected', 'log', option.value, false);
 
                     document.querySelector("#codigo-beneficiario-1").value = option.value.substr(0,3);
                     document.querySelector("#codigo-beneficiario-2").value = option.value.substr(3,5);
@@ -95,7 +95,7 @@
                         });
                     });
 
-                    Analytics.sendEvent('log', 'checkPersonEligibility', `${person.uid} => ${eligible}`);
+                    Analytics.sendEvent('checkPersonEligibility', 'log', `${person.uid} => ${eligible}`);
 
                     if (eligible === "SIM") {
                         let divStatus = document.createElement('DIV');
@@ -108,10 +108,10 @@
                             .then(db => IndexedDB.addOrUpdateItem(db, person))
                             .then(() => {
                                 eligibleBox.querySelector('#js-presto-status').textContent = "Salvo!";
-                                Analytics.sendEvent('log', 'personSaved', person.uid);
+                                Analytics.sendEvent('personSaved', 'log', person.uid);
                             })
                             .catch(err => {
-                                Analytics.sendEvent('error', 'savePerson', JSON.stringify(err));
+                                Analytics.sendException(`_fixAnyPage: ${JSON.stringify(err)}`, true);
                             });
                     }
                 } else {
