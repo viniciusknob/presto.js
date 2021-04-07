@@ -7,7 +7,7 @@ Useful things for work with health insurance.
 
 ### Como utilizar
 
-UserScript: [presto.user.js](../../raw/master/presto.user.js)
+UserScript: [presto.user.js](../../raw/main/presto.user.js)
 
 ### Recursos
 + Possibilidade de escolher um paciente por meio de um combobox (SulAmerica);

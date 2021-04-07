@@ -6,6 +6,6 @@
 // @source       https://github.com/viniciusknob/presto.js
 // @match        https://saude.sulamericaseguros.com.br/prestador/*
 // @match        https://portalamstiss.petrobras.com.br/conectividade/prestador/*
-// @require      https://raw.githubusercontent.com/viniciusknob/presto.js/master/dist/presto.min.js
+// @require      https://raw.githubusercontent.com/viniciusknob/presto.js/main/dist/presto.min.js
 // @grant        none
 // ==/UserScript==
