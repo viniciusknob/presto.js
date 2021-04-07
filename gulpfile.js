@@ -10,6 +10,7 @@ function concat() {
 		'src/js/analytics.js',
 		'src/js/indexeddb.js',
 		'src/js/sulamerica.js',
+		'src/js/saudepetrobras.js',
 		'src/js/main.js',
 		'src/js/init.js'
 	])

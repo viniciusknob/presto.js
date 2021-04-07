@@ -3,6 +3,7 @@
     const {
         Analytics,
         SulAmerica,
+        SaudePetrobras,
     
     } = Presto.modules;
 
@@ -12,6 +13,10 @@
                 Analytics.config('_SulAmerica');
                 SulAmerica.fix();
             }
+            if (SaudePetrobras.is()) {
+                Analytics.config('_SaudePetrobras');
+                SaudePetrobras.fix();
+            }
             
             // others...
         },
@@ -19,6 +24,9 @@
             if (SulAmerica.is())
                 return SulAmerica.isLoaded();
 
+            if (SaudePetrobras.is())
+                return SaudePetrobras.isLoaded();
+            
             // others...
         },
         _initWithDelay = function() {

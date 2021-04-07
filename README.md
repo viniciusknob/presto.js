@@ -1,4 +1,4 @@
-# Presto.js 1.0.0
+# Presto.js 1.1.0
 Useful things for work with health insurance.
 
 ### Autor
@@ -10,4 +10,5 @@ Useful things for work with health insurance.
 UserScript: [presto.user.js](../../raw/master/presto.user.js)
 
 ### Recursos
-+ Possibilidade de escolher um paciente por meio de um combobox.
++ Possibilidade de escolher um paciente por meio de um combobox (SulAmerica);
++ Possibilidade de copiar os dados das páginas de detalhes de extrato e recurso de glosa (SaudePetrobras);
