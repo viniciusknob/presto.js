@@ -18,7 +18,10 @@
             EXTRATO_DETALHE_PGTO = /extrato\/detalhePagamento/,
 
             // Inicio > Extrato > Visualizar > Detalhe do Pagamento > Detalhe Lote
-            EXTRATO_DETALHE_PGTO_LOTE = /extrato\/buscarLote/;
+            EXTRATO_DETALHE_PGTO_LOTE = /extrato\/buscarLote/,
+            
+            // Inicio > Faturamento > Digitação > Digitar > Serviço Profissional/Serviço Auxiliar de Diagnóstico e Terapia - SP/SADT
+            FATURAMENTO_DIGITAR = /faturamento\/digitar\/spsadt/;
         
         const
             __createCopyButton_recursoGlosaDetalhe = function() {
@@ -349,6 +352,9 @@
                 else if (EXTRATO_DETALHE_PGTO_LOTE.test(location.pathname)) {
                     __createDeepCopyButton_extratoDetalhePgtoLote();
                     __createCopyButton_extratoDetalhePgtoLote();
+                }
+                else if (FATURAMENTO_DIGITAR.test(location.pathname)) {
+                    document.querySelector('#txtNumeroGuiaPrestador').value = new Date().getTime();
                 }
             };
         

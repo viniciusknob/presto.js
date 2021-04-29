@@ -10,5 +10,6 @@ Useful things for work with health insurance.
 UserScript: [presto.user.js](../../raw/main/presto.user.js)
 
 ### Recursos
-+ Possibilidade de escolher um paciente por meio de um combobox (SulAmerica);
-+ Possibilidade de copiar os dados das páginas de detalhes de extrato e recurso de glosa (SaudePetrobras);
++ Escolher um paciente por meio de um combobox (SulAmerica);
++ Copiar os dados das páginas de detalhes de extrato e recurso de glosa (SaudePetrobras);
++ Gerar automaticamente um novo "Nº Guia no Prestador" para evitar glosas de Guia Duplicada (SaudePetrobras);
