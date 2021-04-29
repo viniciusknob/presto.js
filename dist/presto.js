@@ -429,7 +429,9 @@
                         if (/Motivo.+Glosa/.test(labelText)) {
                             let reasons = Array.from(label.parentElement.querySelectorAll('ul li'));
                             reasons = reasons.map(reason => reason.textContent.trim());
-                            value = reasons.join(';\n');
+                            console.log(reasons);
+                            value = reasons.join(';');
+                            console.log(value);
                             stopLoop = true;
                             
                         } else {

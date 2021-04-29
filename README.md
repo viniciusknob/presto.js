@@ -1,4 +1,4 @@
-# Presto.js 1.1.0
+# Presto.js 1.2.1
 Useful things for work with health insurance.
 
 ### Autor
