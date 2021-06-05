@@ -42,6 +42,7 @@ function _jsConcat() {
 		'src/js/indexeddb.js',
 		'src/js/style.js',
 		'src/js/snackbar.js',
+		'src/js/fab.js',
 		'src/js/sulamerica.js',
 		'src/js/saudepetrobras.js',
 		'src/js/main.js',
