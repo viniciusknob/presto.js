@@ -4,6 +4,7 @@
     const {
         Analytics,
         IndexedDB,
+        Snackbar,
 
     } = Presto.modules;
     

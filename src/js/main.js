@@ -2,6 +2,7 @@
 
     const {
         Analytics,
+        Style,
         SulAmerica,
         SaudePetrobras,
     
@@ -9,6 +10,8 @@
 
     const
         _init = function() {
+            Style.inject();
+
             if (SulAmerica.is()) {
                 Analytics.config('_SulAmerica');
                 SulAmerica.fix();
