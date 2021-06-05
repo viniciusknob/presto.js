@@ -3,6 +3,7 @@
 
     const {
         Analytics,
+        Snackbar,
 
     } = Presto.modules;
 
@@ -90,8 +91,7 @@
 
                     navigator.clipboard.writeText(bazArrJoined)
                         .then(() => {
-                            this.textContent = 'Pronto!';
-                            setTimeout(() => this.textContent = 'Copiar!', 2000);
+                            Snackbar.fire('Copiado!');
                         });
                 
                 };
@@ -131,8 +131,7 @@
             
                     navigator.clipboard.writeText(bazArrJoined)
                         .then(() => {
-                            this.textContent = 'Pronto!';
-                            setTimeout(() => this.textContent = 'Copiar!', 2000);
+                            Snackbar.fire('Copiado!');
                         });
             
                 };
@@ -221,8 +220,7 @@
                     
                     navigator.clipboard.writeText(bazArr.join('\n'))
                         .then(() => {
-                            this.textContent = 'Pronto!';
-                            setTimeout(() => this.textContent = 'Copiar!', 2000);
+                            Snackbar.fire('Copiado!');
                         });
                 };
             },
@@ -324,8 +322,7 @@
                                 } else {
                                     navigator.clipboard.writeText(bazArr.join('\n'))
                                         .then(() => {
-                                            this.textContent = 'Pronto!';
-                                            setTimeout(() => this.textContent = 'Copiar! (Deep)', 2000);
+                                            Snackbar.fire('Copiado!');
                                         });
                                 }
                             }, 250);

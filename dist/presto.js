@@ -67,6 +67,7 @@
     Presto.modules.Analytics = _Analytics;
 
 })(Presto, window, document);
+
 (function(Presto, indexedDB) {
 	'use strict';
 	
@@ -204,12 +205,87 @@
 	Presto.modules.IndexedDB = _IndexedDB;
 
 })(Presto, indexedDB);
+(function(Presto) {
+
+    'use strict';
+
+    const _Style = function() {
+
+        const CSS = '#snackbar{visibility:hidden;opacity:0;min-width:250px;margin-left:-125px;background-image:linear-gradient(to bottom right,#a631aa,#05b370);color:#fff;text-align:center;border-radius:2px;padding:16px;position:fixed;z-index:9999999;left:50%;bottom:20%;font-size:17px}#snackbar.show{visibility:visible;opacity:1;-webkit-animation:fadein .5s,fadeout .5s 2.5s;animation:fadein .5s,fadeout .5s 2.5s}@-webkit-keyframes fadein{from{bottom:0;opacity:0}to{bottom:20%;opacity:1}}@keyframes fadein{from{bottom:0;opacity:0}to{bottom:20%;opacity:1}}@-webkit-keyframes fadeout{from{bottom:20%;opacity:1}to{bottom:0;opacity:0}}@keyframes fadeout{from{bottom:20%;opacity:1}to{bottom:0;opacity:0}}';
+
+        const
+            _addMaterialIconsToPage = () => {
+                let link = document.createElement('link');
+                link.rel = 'stylesheet';
+                /**
+                 * https://icons8.com/line-awesome
+                 * https://github.com/icons8/line-awesome
+                 */
+                link.href = 'https://maxst.icons8.com/vue-static/landings/line-awesome/line-awesome/1.3.0/css/line-awesome.min.css';
+                document.head.appendChild(link);
+            },
+            _addCustomCSSToPage = () => {
+                let style = document.createElement('style');
+                style.innerHTML = CSS;
+                document.head.appendChild(style);
+            },
+            _inject = () => {
+                _addMaterialIconsToPage();
+                _addCustomCSSToPage();
+            };
+
+        return {
+            inject: _inject,
+        };
+    }();
+
+    /* Module Definition */
+
+    Presto.modules.Style = _Style;
+
+})(window.Presto);
+
+(function(Presto) {
+
+    'use strict';
+
+    const _Snackbar = function() {
+
+        const
+            SHOW_CLASS = 'show',
+            $ = document.querySelector.bind(document),
+            _fire = message => {
+                let x = $('#snackbar');
+
+                if (!!!x) {
+                    x = document.createElement('div');
+                    x.id = 'snackbar';
+                    $('body').appendChild(x);
+                }
+
+                x.textContent = message;
+
+                x.classList.add(SHOW_CLASS);
+                setTimeout(() => { x.classList.remove(SHOW_CLASS) }, 2850);
+            };
+
+        return {
+            fire: _fire,
+        };
+    }();
+
+    /* Module Definition */
+
+    Presto.modules.Snackbar = _Snackbar;
+
+})(window.Presto);
 (function(Presto, location) {
     'use strict';
 
     const {
         Analytics,
         IndexedDB,
+        Snackbar,
 
     } = Presto.modules;
     
@@ -377,6 +453,7 @@
 
     const {
         Analytics,
+        Snackbar,
 
     } = Presto.modules;
 
@@ -429,9 +506,7 @@
                         if (/Motivo.+Glosa/.test(labelText)) {
                             let reasons = Array.from(label.parentElement.querySelectorAll('ul li'));
                             reasons = reasons.map(reason => reason.textContent.trim());
-                            console.log(reasons);
                             value = reasons.join(';');
-                            console.log(value);
                             stopLoop = true;
                             
                         } else {
@@ -466,8 +541,7 @@
 
                     navigator.clipboard.writeText(bazArrJoined)
                         .then(() => {
-                            this.textContent = 'Pronto!';
-                            setTimeout(() => this.textContent = 'Copiar!', 2000);
+                            Snackbar.fire('Copiado!');
                         });
                 
                 };
@@ -507,8 +581,7 @@
             
                     navigator.clipboard.writeText(bazArrJoined)
                         .then(() => {
-                            this.textContent = 'Pronto!';
-                            setTimeout(() => this.textContent = 'Copiar!', 2000);
+                            Snackbar.fire('Copiado!');
                         });
             
                 };
@@ -597,8 +670,7 @@
                     
                     navigator.clipboard.writeText(bazArr.join('\n'))
                         .then(() => {
-                            this.textContent = 'Pronto!';
-                            setTimeout(() => this.textContent = 'Copiar!', 2000);
+                            Snackbar.fire('Copiado!');
                         });
                 };
             },
@@ -700,8 +772,7 @@
                                 } else {
                                     navigator.clipboard.writeText(bazArr.join('\n'))
                                         .then(() => {
-                                            this.textContent = 'Pronto!';
-                                            setTimeout(() => this.textContent = 'Copiar! (Deep)', 2000);
+                                            Snackbar.fire('Copiado!');
                                         });
                                 }
                             }, 250);
@@ -753,6 +824,7 @@
 
     const {
         Analytics,
+        Style,
         SulAmerica,
         SaudePetrobras,
     
@@ -760,6 +832,8 @@
 
     const
         _init = function() {
+            Style.inject();
+
             if (SulAmerica.is()) {
                 Analytics.config('_SulAmerica');
                 SulAmerica.fix();
