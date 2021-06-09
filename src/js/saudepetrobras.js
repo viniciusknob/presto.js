@@ -215,6 +215,30 @@
 
                 execTask();
             },
+            _validateDueDate = () => {
+                return new Promise((resolve, reject) => {
+                    let interval = setInterval(() => {
+                        const eDueDatePwd = document.querySelector('#txtDataValidadeSenha');
+                        if (!!!eDueDatePwd.value)
+                            return;
+
+                        clearInterval(interval);
+
+                        // password validate: duo date 
+                        let snacks = eDueDatePwd.value.split('/').map(num => parseInt(num));
+                        snacks[ 1 ] += -1;
+                        let duoDatePwd = new Date(...snacks.reverse());
+                        if (duoDatePwd < new Date()) {
+                            eDueDatePwd.style.border = 'red 2px solid';
+                            eDueDatePwd.style.color = 'red';
+                            eDueDatePwd.parentElement.querySelector('label').style.color = 'red';
+                            reject('Senha vencida!');
+                        }
+                        else resolve();
+
+                    }, 500);
+                });
+            },
             _is = function () {
                 return HOST.test(location.host);
             },
@@ -251,7 +275,16 @@
                     ]);
                 }
                 else if (FATURAMENTO_DIGITAR.test(location.pathname)) {
-                    document.querySelector('#txtNumeroGuiaPrestador').value = new Date().getTime();
+                    let btnImport = document.querySelector('#senha').parentElement.querySelector('a.bt-procurar');
+                    let btnImport_onclick = btnImport.onclick;
+                    btnImport.onclick = () => {
+                        btnImport_onclick();
+                        _validateDueDate()
+                            .then(() => {
+                                document.querySelector('#txtNumeroGuiaPrestador').value = new Date().getTime();
+                            })
+                            .catch(Snackbar.fire);
+                    };
                 }
             };
 
