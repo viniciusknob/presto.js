@@ -44,6 +44,7 @@ function _jsConcat() {
 		'src/js/snackbar.js',
 		'src/js/fab.js',
 		'src/js/sulamerica.js',
+		'src/js/pages/saudepetrobras/*.js',
 		'src/js/saudepetrobras.js',
 		'src/js/main.js',
 		'src/js/init.js'

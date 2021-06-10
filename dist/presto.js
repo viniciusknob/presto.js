@@ -6,6 +6,7 @@
 
 		return {
 			modules: {},
+			pages: {},
 		};
 	}();
 
@@ -211,7 +212,7 @@
 
     const _Style = function() {
 
-        const CSS = '.fab-container{position:fixed;bottom:50px;right:50px;z-index:99;cursor:pointer}.fab-icon-holder{width:50px;height:50px;border-radius:100%;background-image:linear-gradient(to bottom right,#ba39be,#05b370);box-shadow:0 6px 25px rgba(0,0,0,.35)}.fab-image-holder{background-image:url(https://i.imgur.com/6xZyXGT.png);background-size:58px;background-repeat:no-repeat;background-position:right}.fab-icon-holder:hover{opacity:.8}.fab-icon-holder i{display:flex;align-items:center;justify-content:center;height:100%;font-size:25px;color:#fff}.fab-main{width:60px;height:60px}.fab-main::before{content:"";position:absolute;width:100%;height:100%;bottom:10px}.fab-options{list-style-type:none;margin:0;position:absolute;bottom:70px;right:0;opacity:0;transition:all .3s ease;transform:scale(0);transform-origin:85% bottom}.fab-main:hover+.fab-options,.fab-options:hover{opacity:1;transform:scale(1)}.fab-options li{display:flex;justify-content:flex-end;padding:5px}.fab-label{padding:2px 5px;align-self:center;user-select:none;white-space:nowrap;border-radius:3px;font-size:16px;background:#666;color:#fff;box-shadow:0 6px 20px rgba(0,0,0,.2);margin-right:10px}#snackbar{visibility:hidden;opacity:0;min-width:250px;margin-left:-125px;background-image:linear-gradient(to bottom right,#ba39be,#05b370);color:#fff;text-align:center;border-radius:2px;padding:16px;position:fixed;z-index:9999999;left:50%;bottom:20%;font-size:17px}#snackbar.show{visibility:visible;opacity:1;-webkit-animation:fadein .5s,fadeout .5s 2.5s;animation:fadein .5s,fadeout .5s 2.5s}@-webkit-keyframes fadein{from{bottom:0;opacity:0}to{bottom:20%;opacity:1}}@keyframes fadein{from{bottom:0;opacity:0}to{bottom:20%;opacity:1}}@-webkit-keyframes fadeout{from{bottom:20%;opacity:1}to{bottom:0;opacity:0}}@keyframes fadeout{from{bottom:20%;opacity:1}to{bottom:0;opacity:0}}';
+        const CSS = '.fab-container{position:fixed;bottom:50px;right:50px;z-index:99;cursor:pointer}.fab-icon-holder{width:50px;height:50px;border-radius:100%;background-image:linear-gradient(to bottom right,#ba39be,#05b370);box-shadow:0 6px 25px rgba(0,0,0,.35)}.fab-image-holder{background-image:url(https://i.imgur.com/6xZyXGT.png);background-size:58px;background-repeat:no-repeat;background-position:right}.fab-icon-holder:hover{opacity:.8}.fab-icon-holder i{display:flex;align-items:center;justify-content:center;height:100%;font-size:25px;color:#fff}.fab-main{width:60px;height:60px}.fab-main::before{content:"";position:absolute;width:100%;height:100%;bottom:10px}.fab-options{list-style-type:none;margin:0;position:absolute;bottom:70px;right:0;opacity:0;transition:all .3s ease;transform:scale(0);transform-origin:85% bottom}.fab-main:hover+.fab-options,.fab-options:hover{opacity:1;transform:scale(1)}.fab-options li{display:flex;justify-content:flex-end;padding:5px}.fab-label{padding:2px 5px;align-self:center;user-select:none;white-space:nowrap;border-radius:3px;font-size:16px;background:#666;color:#fff;box-shadow:0 6px 20px rgba(0,0,0,.2);margin-right:10px}#snackbar{visibility:hidden;opacity:0;min-width:250px;margin-left:-125px;background-image:linear-gradient(to bottom right,#ba39be,#05b370);color:#fff;text-align:center;border-radius:2px;padding:16px;position:fixed;z-index:9999999;left:50%;bottom:15%;font-size:17px}#snackbar.show{visibility:visible;opacity:1;-webkit-animation:fadein .5s,fadeout .5s 2.5s;animation:fadein .5s,fadeout .5s 2.5s}@-webkit-keyframes fadein{from{bottom:0;opacity:0}to{bottom:15%;opacity:1}}@keyframes fadein{from{bottom:0;opacity:0}to{bottom:15%;opacity:1}}@-webkit-keyframes fadeout{from{bottom:15%;opacity:1}to{bottom:0;opacity:0}}@keyframes fadeout{from{bottom:15%;opacity:1}to{bottom:0;opacity:0}}';
 
         const
             _addMaterialIconsToPage = () => {
@@ -511,149 +512,24 @@
 	
 })(Presto, location);
 
-(function (Presto, location) {
-    'use strict';
+(function(Presto, location) {
+
+	'use strict';
 
     const {
         Analytics,
-        IndexedDB,
         Snackbar,
         FAB,
 
     } = Presto.modules;
 
-    const _SaudePetrobras = function () {
+	const _Page = function() {
 
         const
-            HOST = /portalamstiss.petrobras.com.br/,
-
-            // Inicio > Acompanhar recurso de glosa > Detalhe
-            RECURSO_GLOSA_DETALHE = /recursoglosa\/buscaDetalheRecursoGlosa/,
-
-            // Inicio > Extrato > Visualizar > Detalhe do Pagamento
-            EXTRATO_DETALHE_PGTO = /extrato\/detalhePagamento/,
-
             // Inicio > Extrato > Visualizar > Detalhe do Pagamento > Detalhe Lote
-            EXTRATO_DETALHE_PGTO_LOTE = /extrato\/buscarLote/,
-
-            // Inicio > Faturamento > Digitação > Digitar > Serviço Profissional/Serviço Auxiliar de Diagnóstico e Terapia - SP/SADT
-            FATURAMENTO_DIGITAR = /faturamento\/digitar\/spsadt/;
+            PATHNAME_REGEX = /extrato\/buscarLote/;
 
         const
-            __createCopyButton_recursoGlosaDetalhe_onclick = function () {
-                Analytics.sendEvent('clickButton', 'log', 'btnCopy');
-
-                let labelList = document.querySelectorAll('#body label');
-                let barArr = [], bazArr = [];
-
-                let stopLoop = false;
-
-                labelList.forEach((label) => {
-                    if (stopLoop)
-                        return;
-
-                    let labelText = label.textContent;
-                    labelText = labelText ? labelText.replace(':', '').trim() : '';
-
-                    let value = '';
-
-                    if (/Motivo.+Glosa/.test(labelText)) {
-                        let reasons = Array.from(label.parentElement.querySelectorAll('ul li'));
-                        reasons = reasons.map(reason => reason.textContent.trim());
-                        value = reasons.join(';');
-                        stopLoop = true;
-
-                    } else {
-                        let spanElement = label.parentElement.querySelector('span');
-                        value = spanElement ? spanElement.textContent : '';
-                        value = value ? value.replace('R$', '').trim() : '';
-                    }
-
-                    barArr.push(value);
-                });
-
-                var boxMessageList = document.querySelectorAll('.box-resposta-mensagem');
-                boxMessageList.forEach((box) => {
-                    let message = box.querySelector('.span-13.jump-1.size-12.padrao').textContent;
-                    message = message.replace(/\n*/g, '');
-                    barArr.push(message);
-                });
-
-                let barArrJoined = barArr.join('\t');
-                bazArr.push(barArrJoined);
-
-                let bazArrJoined = bazArr.join('\n');
-
-                navigator.clipboard
-                    .writeText(bazArrJoined)
-                    .then(() => Snackbar.fire('Copiado!'));
-
-            },
-            __createCopyButton_extratoDetalhePgto_onclick = function () {
-                Analytics.sendEvent('clickButton', 'log', 'btnCopy');
-
-                let labelList = document.querySelectorAll('#dados-solicitacao label');
-                let barArr = [], bazArr = [];
-
-                labelList.forEach((label) => {
-                    let value = label.parentElement.querySelector('span').textContent.replace('R$', '').trim();
-                    barArr.push(value);
-                });
-
-                let barArrJoined = barArr.join('\t');
-                bazArr.push(barArrJoined);
-
-                let bazArrJoined = bazArr.join('\n');
-
-                navigator.clipboard
-                    .writeText(bazArrJoined)
-                    .then(() => Snackbar.fire('Copiado!'));
-
-            },
-            __createCopyButton_extratoDetalhePgtoLote_onclick = function () {
-                Analytics.sendEvent('clickButton', 'log', 'btnCopy');
-
-                let formList = document.querySelectorAll('form[id*="formularioTratarGlosas"]');
-                let bazArr = [], todoTasks = [];
-
-                formList.forEach((form) => {
-
-                    var table = form.querySelector('table');
-                    var tbodyTrList = table.querySelectorAll('tbody tr');
-                    tbodyTrList.forEach((tr) => {
-
-                        var barArr = [];
-
-                        // bloco cinza...
-
-                        var labelList = form.querySelectorAll('label');
-                        labelList.forEach((label) => {
-                            let value = label.parentElement.querySelector('span').textContent.trim();
-                            barArr.push(value);
-                        });
-
-                        tr.querySelectorAll('td').forEach((td) => {
-                            let child = td.firstElementChild;
-                            if (child && child.nodeName === "A") {
-                                todoTasks.push(child);
-                            }
-
-                            let tdText = td.textContent.replace('R$', '').trim();
-                            if (tdText) {
-                                barArr.push(tdText);
-                            }
-                        });
-
-                        barArr.push(document.querySelector('.tab-administracao tbody tr td').textContent.trim());
-                        bazArr.push(barArr.join('\t'));
-                    });
-                });
-
-                navigator.clipboard
-                    .writeText(bazArr.join('\n'))
-                    .then(() => Snackbar.fire('Copiado!'));
-
-            },
             __createDeepCopyButton_extratoDetalhePgtoLote_onclick = function () {
                 Analytics.sendEvent('clickButton', 'log', 'btnDeepCopy');
 
@@ -729,30 +605,156 @@
 
                 execTask();
             },
-            _validateDueDate = () => {
-                return new Promise((resolve, reject) => {
-                    let interval = setInterval(() => {
-                        const eDueDatePwd = document.querySelector('#txtDataValidadeSenha');
-                        if (!!!eDueDatePwd.value)
-                            return;
+            __createCopyButton_extratoDetalhePgtoLote_onclick = function () {
+                Analytics.sendEvent('clickButton', 'log', 'btnCopy');
 
-                        clearInterval(interval);
+                let formList = document.querySelectorAll('form[id*="formularioTratarGlosas"]');
+                let bazArr = [], todoTasks = [];
 
-                        // password validate: duo date 
-                        let snacks = eDueDatePwd.value.split('/').map(num => parseInt(num));
-                        snacks[ 1 ] += -1;
-                        let duoDatePwd = new Date(...snacks.reverse());
-                        if (duoDatePwd < new Date()) {
-                            eDueDatePwd.style.border = 'red 2px solid';
-                            eDueDatePwd.style.color = 'red';
-                            eDueDatePwd.parentElement.querySelector('label').style.color = 'red';
-                            reject('Senha vencida!');
-                        }
-                        else resolve();
+                formList.forEach((form) => {
 
-                    }, 500);
+                    var table = form.querySelector('table');
+                    var tbodyTrList = table.querySelectorAll('tbody tr');
+                    tbodyTrList.forEach((tr) => {
+
+                        var barArr = [];
+
+                        // bloco cinza...
+
+                        var labelList = form.querySelectorAll('label');
+                        labelList.forEach((label) => {
+                            let value = label.parentElement.querySelector('span').textContent.trim();
+                            barArr.push(value);
+                        });
+
+                        tr.querySelectorAll('td').forEach((td) => {
+                            let child = td.firstElementChild;
+                            if (child && child.nodeName === "A") {
+                                todoTasks.push(child);
+                            }
+
+                            let tdText = td.textContent.replace('R$', '').trim();
+                            if (tdText) {
+                                barArr.push(tdText);
+                            }
+                        });
+
+                        barArr.push(document.querySelector('.tab-administracao tbody tr td').textContent.trim());
+                        bazArr.push(barArr.join('\t'));
+                    });
                 });
+
+                navigator.clipboard
+                    .writeText(bazArr.join('\n'))
+                    .then(() => Snackbar.fire('Copiado!'));
+
             },
+            _upgrade = () => {
+                FAB.build([
+                    {
+                        textLabel: 'Copiar dados (deep)',
+                        iconClass: 'lar la-clipboard',
+                        click: __createDeepCopyButton_extratoDetalhePgtoLote_onclick,
+                    },
+                    {
+                        textLabel: 'Copiar dados',
+                        iconClass: 'lar la-copy',
+                        click: __createCopyButton_extratoDetalhePgtoLote_onclick,
+                    },
+                ]);
+            },
+            _init = () => {
+                if (PATHNAME_REGEX.test(location.pathname))
+                    _upgrade();
+            };
+
+		return {
+            upgrade: _init,
+		};
+	}();
+
+	Presto.pages.ExtratoBuscarLotePage = _Page;
+
+})(Presto, location);
+
+(function(Presto, location) {
+
+	'use strict';
+
+    const {
+        Analytics,
+        Snackbar,
+        FAB,
+
+    } = Presto.modules;
+
+	const _Page = function() {
+
+        const
+            // Inicio > Extrato > Visualizar > Detalhe do Pagamento
+            PATHNAME_REGEX = /extrato\/detalhePagamento/;
+
+        const
+            __createCopyButton_extratoDetalhePgto_onclick = function () {
+                Analytics.sendEvent('clickButton', 'log', 'btnCopy');
+
+                let labelList = document.querySelectorAll('#dados-solicitacao label');
+                let barArr = [], bazArr = [];
+
+                labelList.forEach((label) => {
+                    let value = label.parentElement.querySelector('span').textContent.replace('R$', '').trim();
+                    barArr.push(value);
+                });
+
+                let barArrJoined = barArr.join('\t');
+                bazArr.push(barArrJoined);
+
+                let bazArrJoined = bazArr.join('\n');
+
+                navigator.clipboard
+                    .writeText(bazArrJoined)
+                    .then(() => Snackbar.fire('Copiado!'));
+
+            },
+            _upgrade = () => {
+                FAB.build([ {
+                    textLabel: 'Copiar dados',
+                    iconClass: 'lar la-copy',
+                    click: __createCopyButton_extratoDetalhePgto_onclick,
+                } ]);
+            },
+            _init = () => {
+                if (PATHNAME_REGEX.test(location.pathname))
+                    _upgrade();
+            };
+
+		return {
+            upgrade: _init,
+		};
+	}();
+
+	Presto.pages.ExtratoDetalhePagamentoPage = _Page;
+
+})(Presto, location);
+
+(function(Presto, location) {
+
+	'use strict';
+
+    const {
+        Analytics,
+        IndexedDB,
+        Snackbar,
+
+    } = Presto.modules;
+
+	const _Page = function() {
+
+        const
+            // Inicio > Faturamento > Digitação > Digitar > Serviço Profissional/Serviço Auxiliar de Diagnóstico e Terapia - SP/SADT
+            PATHNAME_REGEX = /faturamento\/digitar\/spsadt/;
+
+        const
             _handleBtnGravarAlteracoes = person => {
                 const btnGravarAlteracoes = document.querySelector('#gravarAlteracoes');
                 const _onclick = btnGravarAlteracoes.onclick;
@@ -812,6 +814,162 @@
 
                 _handleBtnGravarAlteracoes(person);
             },
+            _validateDueDate = () => {
+                return new Promise((resolve, reject) => {
+                    let interval = setInterval(() => {
+                        const eDueDatePwd = document.querySelector('#txtDataValidadeSenha');
+                        if (!!!eDueDatePwd.value)
+                            return;
+
+                        clearInterval(interval);
+
+                        // password validate: duo date 
+                        let snacks = eDueDatePwd.value.split('/').map(num => parseInt(num));
+                        snacks[ 1 ] += -1;
+                        let duoDatePwd = new Date(...snacks.reverse());
+                        if (duoDatePwd < new Date()) {
+                            eDueDatePwd.style.border = 'red 2px solid';
+                            eDueDatePwd.style.color = 'red';
+                            eDueDatePwd.parentElement.querySelector('label').style.color = 'red';
+                            reject('Senha vencida!');
+                        }
+                        else resolve();
+
+                    }, 500);
+                });
+            },
+            _upgrade = () => {
+                let btnImport = document.querySelector('#senha').parentElement.querySelector('a.bt-procurar');
+                let btnImport_onclick = btnImport.onclick;
+                btnImport.onclick = () => {
+                    btnImport_onclick();
+                    _validateDueDate()
+                        .then(() => {
+                            document.querySelector('#txtNumeroGuiaPrestador').value = new Date().getTime();
+                            _watchForm();
+                        })
+                        .catch(Snackbar.fire);
+                };
+            },
+            _init = () => {
+                if (PATHNAME_REGEX.test(location.pathname))
+                    _upgrade();
+            };
+
+		return {
+            upgrade: _init,
+		};
+	}();
+
+	Presto.pages.FormularioDigitarSPSADTPage = _Page;
+
+})(Presto, location);
+
+(function(Presto, location) {
+
+	'use strict';
+
+    const {
+        Analytics,
+        Snackbar,
+        FAB,
+
+    } = Presto.modules;
+
+	const _Page = function() {
+
+        const
+            // Inicio > Acompanhar recurso de glosa > Detalhe
+            PATHNAME_REGEX = /recursoglosa\/buscaDetalheRecursoGlosa/;
+
+        const
+            __createCopyButton_recursoGlosaDetalhe_onclick = function () {
+                Analytics.sendEvent('clickButton', 'log', 'btnCopy');
+
+                let labelList = document.querySelectorAll('#body label');
+                let barArr = [], bazArr = [];
+
+                let stopLoop = false;
+
+                labelList.forEach((label) => {
+                    if (stopLoop)
+                        return;
+
+                    let labelText = label.textContent;
+                    labelText = labelText ? labelText.replace(':', '').trim() : '';
+
+                    let value = '';
+
+                    if (/Motivo.+Glosa/.test(labelText)) {
+                        let reasons = Array.from(label.parentElement.querySelectorAll('ul li'));
+                        reasons = reasons.map(reason => reason.textContent.trim());
+                        value = reasons.join(';');
+                        stopLoop = true;
+
+                    } else {
+                        let spanElement = label.parentElement.querySelector('span');
+                        value = spanElement ? spanElement.textContent : '';
+                        value = value ? value.replace('R$', '').trim() : '';
+                    }
+
+                    barArr.push(value);
+                });
+
+                var boxMessageList = document.querySelectorAll('.box-resposta-mensagem');
+                boxMessageList.forEach((box) => {
+                    let message = box.querySelector('.span-13.jump-1.size-12.padrao').textContent;
+                    message = message.replace(/\n*/g, '');
+                    barArr.push(message);
+                });
+
+                let barArrJoined = barArr.join('\t');
+                bazArr.push(barArrJoined);
+
+                let bazArrJoined = bazArr.join('\n');
+
+                navigator.clipboard
+                    .writeText(bazArrJoined)
+                    .then(() => Snackbar.fire('Copiado!'));
+
+            },
+            _upgrade = () => {
+                FAB.build([ {
+                    textLabel: 'Copiar dados',
+                    iconClass: 'lar la-copy',
+                    click: __createCopyButton_recursoGlosaDetalhe_onclick,
+                } ]);
+            },
+            _init = () => {
+                if (PATHNAME_REGEX.test(location.pathname))
+                    _upgrade();
+            };
+
+		return {
+            upgrade: _init,
+		};
+	}();
+
+	Presto.pages.RecursoGlosaBuscaDetalhePage = _Page;
+
+})(Presto, location);
+
+(function (Presto, location) {
+
+    'use strict';
+
+    const {
+        RecursoGlosaBuscaDetalhePage,
+        ExtratoDetalhePagamentoPage,
+        ExtratoBuscarLotePage,
+        FormularioDigitarSPSADTPage,
+
+    } = Presto.pages;
+
+    const _SaudePetrobras = function () {
+
+        const HOST = /portalamstiss.petrobras.com.br/;
+
+        const
             _is = function () {
                 return HOST.test(location.host);
             },
@@ -819,47 +977,10 @@
                 return document.querySelector(".titulos-formularios");
             },
             _fixAnyPage = function () {
-                if (RECURSO_GLOSA_DETALHE.test(location.pathname)) {
-                    FAB.build([ {
-                        textLabel: 'Copiar dados',
-                        iconClass: 'lar la-copy',
-                        click: __createCopyButton_recursoGlosaDetalhe_onclick,
-                    } ]);
-                }
-                else if (EXTRATO_DETALHE_PGTO.test(location.pathname)) {
-                    FAB.build([ {
-                        textLabel: 'Copiar dados',
-                        iconClass: 'lar la-copy',
-                        click: __createCopyButton_extratoDetalhePgto_onclick,
-                    } ]);
-                }
-                else if (EXTRATO_DETALHE_PGTO_LOTE.test(location.pathname)) {
-                    FAB.build([
-                        {
-                            textLabel: 'Copiar dados (deep)',
-                            iconClass: 'lar la-clipboard',
-                            click: __createDeepCopyButton_extratoDetalhePgtoLote_onclick,
-                        },
-                        {
-                            textLabel: 'Copiar dados',
-                            iconClass: 'lar la-copy',
-                            click: __createCopyButton_extratoDetalhePgtoLote_onclick,
-                        },
-                    ]);
-                }
-                else if (FATURAMENTO_DIGITAR.test(location.pathname)) {
-                    let btnImport = document.querySelector('#senha').parentElement.querySelector('a.bt-procurar');
-                    let btnImport_onclick = btnImport.onclick;
-                    btnImport.onclick = () => {
-                        btnImport_onclick();
-                        _validateDueDate()
-                            .then(() => {
-                                document.querySelector('#txtNumeroGuiaPrestador').value = new Date().getTime();
-                                _watchForm();
-                            })
-                            .catch(Snackbar.fire);
-                    };
-                }
+                RecursoGlosaBuscaDetalhePage.upgrade();
+                ExtratoDetalhePagamentoPage.upgrade();
+                ExtratoBuscarLotePage.upgrade();
+                FormularioDigitarSPSADTPage.upgrade();
             };
 
 
