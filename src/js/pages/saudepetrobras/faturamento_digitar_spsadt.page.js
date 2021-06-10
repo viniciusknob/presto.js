@@ -6,6 +6,7 @@
         Analytics,
         IndexedDB,
         Snackbar,
+        FAB,
 
     } = Presto.modules;
 
@@ -100,6 +101,12 @@
                 });
             },
             _upgrade = () => {
+                FAB.build([ {
+                    textLabel: 'IndexedDB: Criar relatório',
+                    iconClass: 'las la-external-link-alt',
+                    click: IndexedDB.createReport,
+                } ]);
+
                 let btnImport = document.querySelector('#senha').parentElement.querySelector('a.bt-procurar');
                 let btnImport_onclick = btnImport.onclick;
                 btnImport.onclick = () => {
