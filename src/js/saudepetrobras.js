@@ -3,6 +3,7 @@
 
     const {
         Analytics,
+        IndexedDB,
         Snackbar,
         FAB,
 
@@ -239,6 +240,65 @@
                     }, 500);
                 });
             },
+            _handleBtnGravarAlteracoes = person => {
+                const btnGravarAlteracoes = document.querySelector('#gravarAlteracoes');
+                const _onclick = btnGravarAlteracoes.onclick;
+                btnGravarAlteracoes.onclick = () => {
+                    IndexedDB.getOrCreateDB()
+                        .then(db => IndexedDB.addOrUpdateItem(db, person))
+                        .then(() => {
+                            Analytics.sendEvent('_watchForm_personSaved', 'log', person.uid);
+                            if (_onclick) _onclick();
+                        })
+                        .catch(err => {
+                            Analytics.sendException(`_watchForm: ${JSON.stringify(err)}`, true);
+                        });
+                };
+            },
+            _watchForm = function () {
+                let person = {
+                    uid: '', // carteirinha
+                    name: '',
+                    password: '',
+                    props: [],
+                };
+
+                setTimeout(() => {
+                    person.uid = document.querySelector('#txtNumeroCarteirinhaBeneficiario').value;
+                    person.name = document.querySelector('#txtNomeBeneficiario').value;
+                    person.password = document.querySelector('#senha').value;
+                }, 500);
+
+                let idIgnoredArr = [
+                    'dataModalProcedimento',
+                    'ordemItemModalProcedimento',
+                ];
+
+                Array.from(document.querySelectorAll('input[type=text],select,textarea'))
+                    .filter(item => idIgnoredArr.includes(item.id) === false)
+                    .map(item => {
+                        let _onchange = item.onchange;
+                        item.onchange = (event) => {
+                            let change = person.props.find(item => item.id === event.target.id);
+                            if (!!!change) {
+                                person.props.push({
+                                    id: event.target.id,
+                                    value: event.target.value,
+                                });
+                            } else {
+                                if (event.target.value)
+                                    change.value = event.target.value;
+                                else
+                                    person.props = person.props.filter(item => item.id !== event.target.id);
+                            }
+                            // console.table(person.props);
+
+                            if (_onchange) _onchange();
+                        };
+                    });
+
+                _handleBtnGravarAlteracoes(person);
+            },
             _is = function () {
                 return HOST.test(location.host);
             },
@@ -282,6 +342,7 @@
                         _validateDueDate()
                             .then(() => {
                                 document.querySelector('#txtNumeroGuiaPrestador').value = new Date().getTime();
+                                _watchForm();
                             })
                             .catch(Snackbar.fire);
                     };
