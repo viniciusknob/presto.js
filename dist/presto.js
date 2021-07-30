@@ -984,7 +984,7 @@
 
     const _SaudePetrobras = function () {
 
-        const HOST = /portalamstiss.petrobras.com.br/;
+        const HOST = /portaltiss\.saudepetrobras\.com\.br/;
 
         const
             _is = function () {
