@@ -849,7 +849,55 @@
                     }, 500);
                 });
             },
+            __buildComponentForLoadedProfiles = personArr => {
+                let label = document.createElement('label');
+                label.textContent = 'Lista de Pacientes:'
+                label.style.marginRight = '1em';
+
+                let select = document.createElement('select');
+
+                let option = document.createElement('option');
+                option.value = '';
+                option.textContent = 'Selecione...';
+                select.appendChild(option);
+
+                personArr.forEach(item => {
+                    let option = document.createElement('option');
+                    option.value = item.password;
+                    option.textContent = `${item.name} - ${item.uid}`;
+                    select.appendChild(option);
+                });
+
+                select.onchange = (event) => {
+                    document.querySelector('#senha').value = event.target.value;
+                };
+
+                let div = document.createElement('div');
+                div.style.paddingBottom = '3em';
+                div.style.textAlign = 'center';
+                div.appendChild(label);
+                div.appendChild(select);
+
+                const referenceNode = document.querySelector('#formularioDigitacaoSPSADT fieldset div');
+                referenceNode.insertBefore(div, referenceNode.firstChild);
+            },
+            __loadProfiles = () => {
+                IndexedDB.getOrCreateDB()
+                    .then(IndexedDB.getAll)
+                    .then(personArr => {
+                        if (personArr && personArr.length) {
+                            personArr.sort((a, b) => a.name.charCodeAt() - b.name.charCodeAt());
+                            __buildComponentForLoadedProfiles(personArr);
+                        }
+                    })
+                    .catch(err => {
+                        Analytics.sendException(`__loadProfiles :: ${JSON.stringify(err)}`);
+                    });
+
+            },
             _upgrade = () => {
+                __loadProfiles();
+
                 FAB.build([ {
                     textLabel: 'IndexedDB: Criar relatório',
                     iconClass: 'las la-external-link-alt',

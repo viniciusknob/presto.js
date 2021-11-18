@@ -1,4 +1,4 @@
-# Presto.js 1.2.1
+# Presto.js 1.2.2
 Useful things for work with health insurance.
 
 ### Autor
@@ -14,3 +14,4 @@ UserScript: [presto.user.js](../../raw/main/presto.user.js)
 + Copiar os dados das páginas de detalhes de extrato e recurso de glosa (SaudePetrobras);
 + Gerar automaticamente um novo "Nº Guia no Prestador" para evitar glosas de Guia Duplicada (SaudePetrobras);
 + Em Faturamento > Digitar, marcar o campo "Data Validade da Senha" em vermelho se a data estiver vencida (SaudePetrobras);
++ Escolher um paciente por meio de um combobox (SaudePetrobras);
