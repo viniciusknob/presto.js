@@ -14,7 +14,9 @@
 
         const
             // Inicio > Faturamento > Digitação > Digitar > Serviço Profissional/Serviço Auxiliar de Diagnóstico e Terapia - SP/SADT
-            PATHNAME_REGEX = /faturamento\/digitar\/spsadt/;
+            PATHNAME_REGEX = /faturamento\/digitar\/spsadt/,
+
+            FORM_FIELDSET_SELECTOR = "#formularioDigitacaoSPSADT fieldset div";
 
         const
             _handleBtnGravarAlteracoes = person => {
@@ -102,7 +104,7 @@
             },
             __buildComponentForLoadedProfiles = personArr => {
                 let label = document.createElement('label');
-                label.textContent = 'Lista de Pacientes:'
+                label.textContent = 'Presto.js - Lista de Pacientes:'
                 label.style.marginRight = '1em';
 
                 let select = document.createElement('select');
@@ -129,7 +131,7 @@
                 div.appendChild(label);
                 div.appendChild(select);
 
-                const referenceNode = document.querySelector('#formularioDigitacaoSPSADT fieldset div');
+                const referenceNode = document.querySelector(FORM_FIELDSET_SELECTOR);
                 referenceNode.insertBefore(div, referenceNode.firstChild);
             },
             __loadProfiles = () => {
