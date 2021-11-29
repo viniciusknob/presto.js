@@ -1,4 +1,4 @@
-# Presto.js 1.2.4
+# Presto.js 1.2.5
 Useful things for work with health insurance.
 
 ### Autor
@@ -18,3 +18,4 @@ UserScript: [presto.user.js](../../raw/main/presto.user.js)
 + Preencher o dia atual na Guia SP/SADT, campo Data de Solicitação (CanoasPrev);
 + Preencher o campo Tipo de Atendimento como "Terapia" (CanoasPrev);
 + Preencher o campo Procedimento com código para Sessão de Terapia (CanoasPrev);
++ Copiar os resultados em Localizar Procedimentos para fins de relatório mensal (CanoasPrev);

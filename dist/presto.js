@@ -222,7 +222,7 @@
 
     const _Style = function() {
 
-        const CSS = '.fab-container{position:fixed;bottom:50px;right:50px;z-index:99;cursor:pointer}.fab-icon-holder{width:50px;height:50px;border-radius:100%;background-image:linear-gradient(to bottom right,#ba39be,#05b370);box-shadow:0 6px 25px rgba(0,0,0,.35)}.fab-image-holder{background-image:url(https://i.imgur.com/6xZyXGT.png);background-size:58px;background-repeat:no-repeat;background-position:right}.fab-icon-holder:hover{opacity:.8}.fab-icon-holder i{display:flex;align-items:center;justify-content:center;height:100%;font-size:25px;color:#fff}.fab-main{width:60px;height:60px}.fab-main::before{content:"";position:absolute;width:100%;height:100%;bottom:10px}.fab-options{list-style-type:none;margin:0;position:absolute;bottom:70px;right:0;opacity:0;transition:all .3s ease;transform:scale(0);transform-origin:85% bottom}.fab-main:hover+.fab-options,.fab-options:hover{opacity:1;transform:scale(1)}.fab-options li{display:flex;justify-content:flex-end;padding:5px}.fab-label{padding:2px 5px;align-self:center;user-select:none;white-space:nowrap;border-radius:3px;font-size:16px;background:#666;color:#fff;box-shadow:0 6px 20px rgba(0,0,0,.2);margin-right:10px}#snackbar{visibility:hidden;opacity:0;min-width:250px;margin-left:-125px;background-image:linear-gradient(to bottom right,#ba39be,#05b370);color:#fff;text-align:center;border-radius:2px;padding:16px;position:fixed;z-index:9999999;left:50%;bottom:15%;font-size:17px}#snackbar.show{visibility:visible;opacity:1;-webkit-animation:fadein .5s,fadeout .5s 2.5s;animation:fadein .5s,fadeout .5s 2.5s}@-webkit-keyframes fadein{from{bottom:0;opacity:0}to{bottom:15%;opacity:1}}@keyframes fadein{from{bottom:0;opacity:0}to{bottom:15%;opacity:1}}@-webkit-keyframes fadeout{from{bottom:15%;opacity:1}to{bottom:0;opacity:0}}@keyframes fadeout{from{bottom:15%;opacity:1}to{bottom:0;opacity:0}}';
+        const CSS = '.fab-container{position:fixed;bottom:50px;right:50px;z-index:9999;cursor:pointer}.fab-icon-holder{width:50px;height:50px;border-radius:100%;background-image:linear-gradient(to bottom right,#ba39be,#05b370);box-shadow:0 6px 25px rgba(0,0,0,.35)}.fab-image-holder{background-image:url(https://i.imgur.com/6xZyXGT.png);background-size:58px;background-repeat:no-repeat;background-position:right}.fab-icon-holder:hover{opacity:.8}.fab-icon-holder i{display:flex;align-items:center;justify-content:center;height:100%;font-size:25px;color:#fff}.fab-main{width:60px;height:60px}.fab-main::before{content:"";position:absolute;width:100%;height:100%;bottom:10px}.fab-options{list-style-type:none;margin:0;position:absolute;bottom:70px;right:0;opacity:0;transition:all .3s ease;transform:scale(0);transform-origin:85% bottom}.fab-main:hover+.fab-options,.fab-options:hover{opacity:1;transform:scale(1)}.fab-options li{display:flex;justify-content:flex-end;padding:5px}.fab-label{padding:2px 5px;align-self:center;user-select:none;white-space:nowrap;border-radius:3px;font-size:16px;background:#666;color:#fff;box-shadow:0 6px 20px rgba(0,0,0,.2);margin-right:10px}#snackbar{visibility:hidden;opacity:0;min-width:250px;margin-left:-125px;background-image:linear-gradient(to bottom right,#ba39be,#05b370);color:#fff;text-align:center;border-radius:2px;padding:16px;position:fixed;z-index:9999999;left:50%;bottom:15%;font-size:17px}#snackbar.show{visibility:visible;opacity:1;-webkit-animation:fadein .5s,fadeout .5s 2.5s;animation:fadein .5s,fadeout .5s 2.5s}@-webkit-keyframes fadein{from{bottom:0;opacity:0}to{bottom:15%;opacity:1}}@keyframes fadein{from{bottom:0;opacity:0}to{bottom:15%;opacity:1}}@-webkit-keyframes fadeout{from{bottom:15%;opacity:1}to{bottom:0;opacity:0}}@keyframes fadeout{from{bottom:15%;opacity:1}to{bottom:0;opacity:0}}';
 
         const
             _addMaterialIconsToPage = () => {
@@ -256,6 +256,47 @@
 
 })(window.Presto);
 
+(function(Presto, navigator, isSecureContext, document) {
+
+    'use strict';
+
+    const _Module = function() {
+
+        const
+            _write = text => {
+                if (navigator.clipboard && isSecureContext) {
+                    return navigator.clipboard.writeText(text);
+                }
+                else {
+                    let textArea = document.createElement("textarea");
+                    textArea.value = text;
+
+                    // make the textarea out of viewport
+                    textArea.style.position = "fixed";
+                    textArea.style.left = "-999999px";
+                    textArea.style.top = "-999999px";
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+
+                    return new Promise((resolve, reject) => {
+                        // here the magic happens
+                        document.execCommand('copy') ? resolve() : reject();
+                        textArea.remove();
+                    });
+                }
+            };
+
+        return {
+            write: _write,
+        };
+    }();
+
+    /* Module Definition */
+
+    Presto.modules.Clipboard = _Module;
+
+})(window.Presto, window.navigator, window.isSecureContext, window.document);
 (function(Presto) {
 
     'use strict';
@@ -1139,6 +1180,64 @@
 (function (Presto, location, jQuery) {
     "use strict";
 
+    const {
+        Analytics,
+        Clipboard,
+        Snackbar,
+        FAB,
+
+    } = Presto.modules;
+
+    const _Page = (function () {
+
+        const
+            PATHNAME_REGEX = /GuiasTISS\/LocalizarProcedimentos/;
+
+        const 
+            __createCopyButton_relatorioMensal_onclick = () => {
+                Analytics.sendEvent('clickButton', 'log', 'btnCopyToReportMonthly');
+
+                const selectors = [
+                    "DtLiberacao", "Senha", "CodigoBenficiario", "NomeBeneficiario"
+                ];
+
+                let table = [];
+                document.querySelectorAll("[data-bind*=guia-template]").forEach(div => {
+                    let line = [];
+                    selectors.forEach(selector => {
+                        line.push(div.querySelector(`[data-bind*=${selector}]`).textContent);
+                    });
+                    table.push(line.join('\t'));
+                });
+                
+                Clipboard.write(table.join('\n'))
+                    .then(() => Snackbar.fire('Copiado!'));
+            },
+            _upgrade = () => {
+                FAB.build([
+                    {
+                        textLabel: 'Copiar dados (relatório mensal)',
+                        iconClass: 'lar la-clipboard',
+                        click: __createCopyButton_relatorioMensal_onclick,
+                    },
+                ]);
+            },
+            _init = () => {
+                if (PATHNAME_REGEX.test(location.pathname)) _upgrade();
+            };
+
+        return {
+            upgrade: _init,
+        };
+    })();
+
+    Presto.pages.LocalizarProcedimentosPage = _Page;
+
+})(Presto, location, jQuery);
+
+(function (Presto, location, jQuery) {
+    "use strict";
+
     const _Page = (function () {
         const
             // Guias > Guia de SP/SADT
@@ -1188,6 +1287,7 @@
     'use strict';
 
     const {
+        LocalizarProcedimentosPage,
         ViewGuiaSPSADTPage,
 
     } = Presto.pages;
@@ -1201,10 +1301,11 @@
                 return HOST.test(location.host);
             },
             _isLoaded = function () {
-                return document.querySelector("#incluirProcedimento");
+                return document.querySelector("#collapseMenu");
             },
             _fixAnyPage = function () {
                 ViewGuiaSPSADTPage.upgrade();
+                LocalizarProcedimentosPage.upgrade();
             };
 
 

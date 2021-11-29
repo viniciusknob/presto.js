@@ -3,6 +3,7 @@
     'use strict';
 
     const {
+        LocalizarProcedimentosPage,
         ViewGuiaSPSADTPage,
 
     } = Presto.pages;
@@ -16,10 +17,11 @@
                 return HOST.test(location.host);
             },
             _isLoaded = function () {
-                return document.querySelector("#incluirProcedimento");
+                return document.querySelector("#collapseMenu");
             },
             _fixAnyPage = function () {
                 ViewGuiaSPSADTPage.upgrade();
+                LocalizarProcedimentosPage.upgrade();
             };
 
 

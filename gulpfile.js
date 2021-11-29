@@ -41,6 +41,7 @@ function _jsConcat() {
 		'src/js/analytics.js',
 		'src/js/indexeddb.js',
 		'src/js/style.js',
+		'src/js/clipboard.js',
 		'src/js/snackbar.js',
 		'src/js/fab.js',
 		'src/js/sulamerica.js',
