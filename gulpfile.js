@@ -46,6 +46,8 @@ function _jsConcat() {
 		'src/js/sulamerica.js',
 		'src/js/pages/saudepetrobras/*.js',
 		'src/js/saudepetrobras.js',
+		'src/js/pages/canoasprev/*.js',
+		'src/js/canoasprev.js',
 		'src/js/main.js',
 		'src/js/init.js'
 	])

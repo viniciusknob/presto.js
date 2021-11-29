@@ -8,7 +8,8 @@
 
             FORM_FIELDSET_SELECTOR = "#formularioBase fieldset";
 
-        const _upgrade = () => {
+        const 
+            _upgrade = () => {
                 let label = document.createElement("label");
                 label.textContent = "Presto.js - Mês/Ano:";
                 label.style.marginRight = "1em";

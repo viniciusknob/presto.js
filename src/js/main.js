@@ -5,6 +5,7 @@
         Style,
         SulAmerica,
         SaudePetrobras,
+        CanoasPrev,
     
     } = Presto.modules;
 
@@ -20,7 +21,11 @@
                 Analytics.config('_SaudePetrobras');
                 SaudePetrobras.fix();
             }
-            
+            if (CanoasPrev.is()) {
+                Analytics.config('_CanoasPrev');
+                CanoasPrev.fix();
+            }
+
             // others...
         },
         _isLoaded = function() {
@@ -29,7 +34,10 @@
 
             if (SaudePetrobras.is())
                 return SaudePetrobras.isLoaded();
-            
+
+            if (CanoasPrev.is())
+                return CanoasPrev.isLoaded();
+
             // others...
         },
         _initWithDelay = function() {

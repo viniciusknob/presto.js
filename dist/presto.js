@@ -532,7 +532,8 @@
 
             FORM_FIELDSET_SELECTOR = "#formularioBase fieldset";
 
-        const _upgrade = () => {
+        const 
+            _upgrade = () => {
                 let label = document.createElement("label");
                 label.textContent = "Presto.js - Mês/Ano:";
                 label.style.marginRight = "1em";
@@ -1135,6 +1136,92 @@
 
 })(Presto, location);
 
+(function (Presto, location, jQuery) {
+    "use strict";
+
+    const _Page = (function () {
+        const
+            // Guias > Guia de SP/SADT
+            PATHNAME_REGEX = /GuiasTISS\/GuiaSPSADT\/ViewGuiaSPSADT/;
+
+        const _upgrade = () => {
+            // preencher a data de atendimento para o dia atual
+            const eDataSolicitacao = document.querySelector("#dataSolicitacao");
+            let yyyy = new Intl.DateTimeFormat('en', { year: 'numeric' }).format(new Date());
+            let mm = new Intl.DateTimeFormat('en', { month: '2-digit' }).format(new Date());
+            let dd = new Intl.DateTimeFormat('en', { day: '2-digit' }).format(new Date());
+            eDataSolicitacao.value = `${dd}/${mm}/${yyyy}`;
+
+            // preencher tipo atendimento como TERAPIA
+            document.querySelector('#tipoAtendimento').value = '3';
+
+            // preencher o código de psicoterapia
+            const eIncluirProcedimento = document.querySelector("#incluirProcedimento");
+            const eIncluirProcedimento_click = eIncluirProcedimento.onclick;
+            eIncluirProcedimento.onclick = () => {
+                eIncluirProcedimento_click();
+                setTimeout(() => {
+                    const selector = "#registroProcedimentoCodigo input";
+                    document.querySelector(selector).value = "20104219"; // SESSAO DE PSICOTERAPIA INDIVIDUAL [Tabela: 13]
+
+                    // https://api.jqueryui.com/autocomplete/
+                    jQuery(selector).autocomplete("search");
+                    //setTimeout(() => jQuery(selector).data("ui-autocomplete").menu.element.children().first().click(), 1000);
+
+                }, 250);
+            };
+        },
+        _init = () => {
+            if (PATHNAME_REGEX.test(location.pathname)) setTimeout(_upgrade, 2000);
+        };
+
+        return {
+            upgrade: _init,
+        };
+    })();
+
+    Presto.pages.ViewGuiaSPSADTPage = _Page;
+})(Presto, location, jQuery);
+
+(function (Presto, location) {
+
+    'use strict';
+
+    const {
+        ViewGuiaSPSADTPage,
+
+    } = Presto.pages;
+
+    const _CanoasPrev = function () {
+
+        const HOST = /novowebplancanoasprev\.facilinformatica\.com\.br/;
+
+        const
+            _is = function () {
+                return HOST.test(location.host);
+            },
+            _isLoaded = function () {
+                return document.querySelector("#incluirProcedimento");
+            },
+            _fixAnyPage = function () {
+                ViewGuiaSPSADTPage.upgrade();
+            };
+
+
+        /* Public Functions */
+
+        return {
+            is: _is,
+            isLoaded: _isLoaded,
+            fix: _fixAnyPage,
+        };
+
+    }();
+
+    Presto.modules.CanoasPrev = _CanoasPrev;
+
+})(Presto, location);
+
 (function(Presto, setInterval, clearInterval) {
 
     const {
@@ -1142,6 +1229,7 @@
         Style,
         SulAmerica,
         SaudePetrobras,
+        CanoasPrev,
     
     } = Presto.modules;
 
@@ -1157,7 +1245,11 @@
                 Analytics.config('_SaudePetrobras');
                 SaudePetrobras.fix();
             }
-            
+            if (CanoasPrev.is()) {
+                Analytics.config('_CanoasPrev');
+                CanoasPrev.fix();
+            }
+
             // others...
         },
         _isLoaded = function() {
@@ -1166,7 +1258,10 @@
 
             if (SaudePetrobras.is())
                 return SaudePetrobras.isLoaded();
-            
+
+            if (CanoasPrev.is())
+                return CanoasPrev.isLoaded();
+
             // others...
         },
         _initWithDelay = function() {

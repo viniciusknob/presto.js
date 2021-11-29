@@ -1,10 +1,10 @@
 {
   "name": "presto",
-  "version": "1.0.0",
+  "version": "1.2.4",
   "description": "Useful things for work with health insurance",
   "main": "dist/presto.min.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "nodemon": "nodemon --exec gulp --watch src"
   },
   "repository": {
     "type": "git",
@@ -23,6 +23,7 @@
     "gulp-concat-css": "^3.1.0",
     "gulp-minify": "^3.1.0",
     "gulp-rename": "^2.0.0",
-    "gulp-replace": "^1.1.3"
+    "gulp-replace": "^1.1.3",
+    "nodemon": "^2.0.15"
   }
 }
