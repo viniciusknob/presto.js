@@ -8,6 +8,8 @@
         ExtratoBuscarLotePage,
         FormularioDigitarSPSADTPage,
         AutorizacaoUltimasSolicitacoesPage,
+        FaturamentoDigitarConsultarPage,
+        FaturamentoDigitarConsultarDetalhePage,
 
     } = Presto.pages;
 
@@ -28,6 +30,8 @@
                 ExtratoBuscarLotePage.upgrade();
                 FormularioDigitarSPSADTPage.upgrade();
                 AutorizacaoUltimasSolicitacoesPage.upgrade();
+                FaturamentoDigitarConsultarPage.upgrade();
+                FaturamentoDigitarConsultarDetalhePage.upgrade();
             };
 
 

@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Presto.js
-// @version      1.2.5
+// @version      1.2.6
 // @description  Useful things for work with health insurance
 // @author       Vinícius Knob <knob.vinicius@gmail.com>
 // @source       https://github.com/viniciusknob/presto.js
