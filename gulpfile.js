@@ -2,6 +2,7 @@ const { src, dest, series } = require('gulp');
 const fs = require('fs');
 const replace = require('gulp-replace');
 const rename = require('gulp-rename');
+const htmlMinify = require('gulp-htmlmin');
 const cssConcat = require('gulp-concat-css');
 const cssMinify = require('gulp-clean-css');
 const jsConcat = require('gulp-concat');
@@ -9,6 +10,21 @@ const jsMinify = require('gulp-minify');
 
 const DIST_PATH = 'dist';
 const BUILD_PATH = 'build';
+
+function _htmlMinify() {
+    return src([
+            'src/html/*',
+        ])
+        .pipe(htmlMinify({
+            collapseWhitespace: true,
+            removeComments: true,
+        }))
+        .pipe(rename({
+            suffix: '.min'
+        }))
+        .pipe(dest(`${BUILD_PATH}/html`));
+}
+
 
 function _cssConcat() {
     return src([
@@ -31,6 +47,7 @@ function _cssMinify() {
 
 function _minToJS() {
     return src(`${DIST_PATH}/presto.js`)
+		.pipe(replace('__modal__', fs.readFileSync(`${BUILD_PATH}/html/modal.min.html`, 'utf8')))
         .pipe(replace('__css__', fs.readFileSync(`${BUILD_PATH}/css/presto.min.css`, 'utf8')))
         .pipe(dest(DIST_PATH));
 }
@@ -39,11 +56,7 @@ function _jsConcat() {
 	return src([
 		'src/js/presto.js',
 		'src/js/analytics.js',
-		'src/js/indexeddb.js',
-		'src/js/style.js',
-		'src/js/clipboard.js',
-		'src/js/snackbar.js',
-		'src/js/fab.js',
+		'src/js/helpers/*',
 		'src/js/sulamerica.js',
 		'src/js/pages/saudepetrobras/*.js',
 		'src/js/saudepetrobras.js',
@@ -69,6 +82,7 @@ function _jsMinify() {
 };
 
 exports.default = series(
+	_htmlMinify,
     _cssConcat,
     _cssMinify,
     _jsConcat,

@@ -6,7 +6,7 @@
 
 	} = Presto.modules;
 
-	const _IndexedDB = function () {
+	const _Module = function () {
 
 		const DB_NAME = 'PrestoDB';
 		const STORE_NAME = 'person';
@@ -56,6 +56,23 @@
 					};
 				});
 			},
+			_get = function(db, uid) {
+				const fn = '_get';
+
+				return new Promise((resolve, reject) => {
+					const objectStore = db.transaction([ STORE_NAME ], "readonly").objectStore(STORE_NAME);
+					const request = objectStore.get(uid);
+					request.onsuccess = event => {
+						Analytics.sendEvent(`${fn}.objectStore.get`, 'log', uid);
+						if (event.target.result) {
+							resolve(event.target.result);
+						} else {
+							reject(`not found uid ${uid} in ${STORE_NAME} store`);
+						}
+					};
+					request.onerror = reject;
+				});
+			},
 			_getAll = function (db) {
 				const fn = '_getAll';
 
@@ -86,9 +103,7 @@
 
 					const transaction = db.transaction([ STORE_NAME ], "readwrite");
 
-					transaction.oncomplete = function (event) {
-						resolve();
-					};
+					transaction.oncomplete = resolve;
 
 					transaction.onerror = function (event) {
 						Analytics.sendException(`${fn}.transaction: ${JSON.stringify(event)}`, true);
@@ -136,12 +151,13 @@
 
 		return {
 			getOrCreateDB: _getOrCreateDB,
+			get: _get,
 			getAll: _getAll,
 			addOrUpdateItem: _addOrUpdateItem,
 			createReport: _createReport,
 		};
 	}();
 
-	Presto.modules.IndexedDB = _IndexedDB;
+	Presto.modules.IndexedDB = _Module;
 
 })(Presto, indexedDB);

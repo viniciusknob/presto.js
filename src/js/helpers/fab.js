@@ -4,7 +4,7 @@
 
     'use strict';
 
-    const _FAB = function() {
+    const _Module = function() {
 
         const
             _buildIconHolder = iconClass => {
@@ -58,6 +58,6 @@
         };
     }();
 
-    Presto.modules.FAB = _FAB;
+    Presto.modules.FAB = _Module;
 
 })(window.Presto);

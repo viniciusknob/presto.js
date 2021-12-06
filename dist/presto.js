@@ -69,193 +69,6 @@
 
 })(Presto, window, document);
 
-(function (Presto, indexedDB) {
-	'use strict';
-
-	const {
-		Analytics,
-
-	} = Presto.modules;
-
-	const _IndexedDB = function () {
-
-		const DB_NAME = 'PrestoDB';
-		const STORE_NAME = 'person';
-
-		let _db = undefined;
-
-		const
-			_getOrCreateDB = () => {
-				const fn = '_getOrCreateDB';
-
-				return new Promise((resolve, reject) => {
-
-					if (_db) {
-						return resolve(_db);
-					}
-
-					if (!(indexedDB)) {
-						Analytics.sendException(`${fn}.checkSupport: This browser doesn\'t support IndexedDB`, true);
-						return reject();
-					}
-
-					const idb = indexedDB.open(DB_NAME);
-
-					idb.onerror = function (event) {
-						Analytics.sendException(`${fn}.indexedDB.open: ${JSON.stringify(event)}`, true);
-						reject();
-					};
-
-					idb.onsuccess = (event) => {
-						_db = event.target.result;
-
-						_db.onerror = function (event) {
-							Analytics.sendException(`${fn}.db.any: ${JSON.stringify(event)}`, true);
-						};
-
-						resolve(_db);
-					};
-
-					idb.onupgradeneeded = function (event) {
-						Analytics.sendEvent(`${fn}.onupgradeneeded`, 'log', JSON.stringify(event));
-
-						_db = event.target.result;
-
-						if (_db.objectStoreNames.contains(STORE_NAME) === false) {
-							_db.createObjectStore(STORE_NAME, { keyPath: "uid" });
-						}
-					};
-				});
-			},
-			_getAll = function (db) {
-				const fn = '_getAll';
-
-				return new Promise(function (resolve, reject) {
-					const personList = [];
-					const objectStore = db.transaction([ STORE_NAME ], "readonly").objectStore(STORE_NAME);
-					objectStore.openCursor().onsuccess = function (event) {
-						var cursor = event.target.result;
-						if (cursor) {
-							personList.push(cursor.value);
-							cursor.continue();
-						} else {
-							Analytics.sendEvent(`${fn}.personList`, 'log', `size ${personList.length}`);
-
-							personList.sort(function (a, b) {
-								return a.name.localeCompare(b.name);
-							});
-
-							resolve(personList);
-						}
-					};
-				});
-			},
-			_addOrUpdateItem = function (db, person) {
-				const fn = '_addOrUpdateItem';
-
-				return new Promise(function (resolve, reject) {
-
-					const transaction = db.transaction([ STORE_NAME ], "readwrite");
-
-					transaction.oncomplete = function (event) {
-						resolve();
-					};
-
-					transaction.onerror = function (event) {
-						Analytics.sendException(`${fn}.transaction: ${JSON.stringify(event)}`, true);
-						reject();
-					};
-
-					const objectStore = transaction.objectStore(STORE_NAME);
-
-					const singleKeyRange = IDBKeyRange.only(person.uid);
-					const _cursor = objectStore.openCursor(singleKeyRange);
-
-					_cursor.onsuccess = function (event) {
-						var cursor = event.target.result;
-
-						let request;
-						if (cursor) {
-							Analytics.sendEvent(`${fn}.objectStore.put`, 'log', person.uid);
-							request = objectStore.put(person);
-						} else {
-							Analytics.sendEvent(`${fn}.objectStore.add`, 'log', person.uid);
-							request = objectStore.add(person);
-						}
-
-						request.onerror = function (event) {
-							Analytics.sendException(`${fn}.objectStore.request: ${JSON.stringify(event)}`, false);
-							reject();
-						};
-					};
-
-					_cursor.onerror = function (event) {
-						Analytics.sendException(`${fn}.cursor.open: ${JSON.stringify(event)}`, false);
-						reject();
-					};
-				});
-			},
-			_createReport = () => {
-				_getOrCreateDB()
-					.then(_getAll)
-					.then(personArr => {
-						window.open().document.write(`
-							<pre>${JSON.stringify(personArr, undefined, 4)}</pre>
-						`);
-					});
-			};
-
-		return {
-			getOrCreateDB: _getOrCreateDB,
-			getAll: _getAll,
-			addOrUpdateItem: _addOrUpdateItem,
-			createReport: _createReport,
-		};
-	}();
-
-	Presto.modules.IndexedDB = _IndexedDB;
-
-})(Presto, indexedDB);
-(function(Presto) {
-
-    'use strict';
-
-    const _Style = function() {
-
-        const CSS = '.fab-container{position:fixed;bottom:50px;right:50px;z-index:9999;cursor:pointer}.fab-icon-holder{width:50px;height:50px;border-radius:100%;background-image:linear-gradient(to bottom right,#ba39be,#05b370);box-shadow:0 6px 25px rgba(0,0,0,.35)}.fab-image-holder{background-image:url(https://i.imgur.com/6xZyXGT.png);background-size:58px;background-repeat:no-repeat;background-position:right}.fab-icon-holder:hover{opacity:.8}.fab-icon-holder i{display:flex;align-items:center;justify-content:center;height:100%;font-size:25px;color:#fff}.fab-main{width:60px;height:60px}.fab-main::before{content:"";position:absolute;width:100%;height:100%;bottom:10px}.fab-options{list-style-type:none;margin:0;position:absolute;bottom:70px;right:0;opacity:0;transition:all .3s ease;transform:scale(0);transform-origin:85% bottom}.fab-main:hover+.fab-options,.fab-options:hover{opacity:1;transform:scale(1)}.fab-options li{display:flex;justify-content:flex-end;padding:5px}.fab-label{padding:2px 5px;align-self:center;user-select:none;white-space:nowrap;border-radius:3px;font-size:16px;background:#666;color:#fff;box-shadow:0 6px 20px rgba(0,0,0,.2);margin-right:10px}#snackbar{visibility:hidden;opacity:0;min-width:250px;margin-left:-125px;background-image:linear-gradient(to bottom right,#ba39be,#05b370);color:#fff;text-align:center;border-radius:2px;padding:16px;position:fixed;z-index:9999999;left:50%;bottom:15%;font-size:17px}#snackbar.show{visibility:visible;opacity:1;-webkit-animation:fadein .5s,fadeout .5s 2.5s;animation:fadein .5s,fadeout .5s 2.5s}@-webkit-keyframes fadein{from{bottom:0;opacity:0}to{bottom:15%;opacity:1}}@keyframes fadein{from{bottom:0;opacity:0}to{bottom:15%;opacity:1}}@-webkit-keyframes fadeout{from{bottom:15%;opacity:1}to{bottom:0;opacity:0}}@keyframes fadeout{from{bottom:15%;opacity:1}to{bottom:0;opacity:0}}';
-
-        const
-            _addMaterialIconsToPage = () => {
-                let link = document.createElement('link');
-                link.rel = 'stylesheet';
-                /**
-                 * https://icons8.com/line-awesome
-                 * https://github.com/icons8/line-awesome
-                 */
-                link.href = 'https://maxst.icons8.com/vue-static/landings/line-awesome/line-awesome/1.3.0/css/line-awesome.min.css';
-                document.head.appendChild(link);
-            },
-            _addCustomCSSToPage = () => {
-                let style = document.createElement('style');
-                style.innerHTML = CSS;
-                document.head.appendChild(style);
-            },
-            _inject = () => {
-                _addMaterialIconsToPage();
-                _addCustomCSSToPage();
-            };
-
-        return {
-            inject: _inject,
-        };
-    }();
-
-    /* Module Definition */
-
-    Presto.modules.Style = _Style;
-
-})(window.Presto);
-
 (function(Presto, navigator, isSecureContext, document) {
 
     'use strict';
@@ -297,47 +110,14 @@
     Presto.modules.Clipboard = _Module;
 
 })(window.Presto, window.navigator, window.isSecureContext, window.document);
-(function(Presto) {
 
-    'use strict';
-
-    const _Snackbar = function() {
-
-        const
-            SHOW_CLASS = 'show',
-            $ = document.querySelector.bind(document),
-            _fire = message => {
-                let x = $('#snackbar');
-
-                if (!!!x) {
-                    x = document.createElement('div');
-                    x.id = 'snackbar';
-                    $('body').appendChild(x);
-                }
-
-                x.textContent = message;
-
-                x.classList.add(SHOW_CLASS);
-                setTimeout(() => { x.classList.remove(SHOW_CLASS) }, 2850);
-            };
-
-        return {
-            fire: _fire,
-        };
-    }();
-
-    /* Module Definition */
-
-    Presto.modules.Snackbar = _Snackbar;
-
-})(window.Presto);
 // https://stackoverflow.com/questions/29209244/css-floating-action-button
 
 (function(Presto) {
 
     'use strict';
 
-    const _FAB = function() {
+    const _Module = function() {
 
         const
             _buildIconHolder = iconClass => {
@@ -391,7 +171,304 @@
         };
     }();
 
-    Presto.modules.FAB = _FAB;
+    Presto.modules.FAB = _Module;
+
+})(window.Presto);
+
+(function (Presto, indexedDB) {
+	'use strict';
+
+	const {
+		Analytics,
+
+	} = Presto.modules;
+
+	const _Module = function () {
+
+		const DB_NAME = 'PrestoDB';
+		const STORE_NAME = 'person';
+
+		let _db = undefined;
+
+		const
+			_getOrCreateDB = () => {
+				const fn = '_getOrCreateDB';
+
+				return new Promise((resolve, reject) => {
+
+					if (_db) {
+						return resolve(_db);
+					}
+
+					if (!(indexedDB)) {
+						Analytics.sendException(`${fn}.checkSupport: This browser doesn\'t support IndexedDB`, true);
+						return reject();
+					}
+
+					const idb = indexedDB.open(DB_NAME);
+
+					idb.onerror = function (event) {
+						Analytics.sendException(`${fn}.indexedDB.open: ${JSON.stringify(event)}`, true);
+						reject();
+					};
+
+					idb.onsuccess = (event) => {
+						_db = event.target.result;
+
+						_db.onerror = function (event) {
+							Analytics.sendException(`${fn}.db.any: ${JSON.stringify(event)}`, true);
+						};
+
+						resolve(_db);
+					};
+
+					idb.onupgradeneeded = function (event) {
+						Analytics.sendEvent(`${fn}.onupgradeneeded`, 'log', JSON.stringify(event));
+
+						_db = event.target.result;
+
+						if (_db.objectStoreNames.contains(STORE_NAME) === false) {
+							_db.createObjectStore(STORE_NAME, { keyPath: "uid" });
+						}
+					};
+				});
+			},
+			_get = function(db, uid) {
+				const fn = '_get';
+
+				return new Promise((resolve, reject) => {
+					const objectStore = db.transaction([ STORE_NAME ], "readonly").objectStore(STORE_NAME);
+					const request = objectStore.get(uid);
+					request.onsuccess = event => {
+						Analytics.sendEvent(`${fn}.objectStore.get`, 'log', uid);
+						if (event.target.result) {
+							resolve(event.target.result);
+						} else {
+							reject(`not found uid ${uid} in ${STORE_NAME} store`);
+						}
+					};
+					request.onerror = reject;
+				});
+			},
+			_getAll = function (db) {
+				const fn = '_getAll';
+
+				return new Promise(function (resolve, reject) {
+					const personList = [];
+					const objectStore = db.transaction([ STORE_NAME ], "readonly").objectStore(STORE_NAME);
+					objectStore.openCursor().onsuccess = function (event) {
+						var cursor = event.target.result;
+						if (cursor) {
+							personList.push(cursor.value);
+							cursor.continue();
+						} else {
+							Analytics.sendEvent(`${fn}.personList`, 'log', `size ${personList.length}`);
+
+							personList.sort(function (a, b) {
+								return a.name.localeCompare(b.name);
+							});
+
+							resolve(personList);
+						}
+					};
+				});
+			},
+			_addOrUpdateItem = function (db, person) {
+				const fn = '_addOrUpdateItem';
+
+				return new Promise(function (resolve, reject) {
+
+					const transaction = db.transaction([ STORE_NAME ], "readwrite");
+
+					transaction.oncomplete = resolve;
+
+					transaction.onerror = function (event) {
+						Analytics.sendException(`${fn}.transaction: ${JSON.stringify(event)}`, true);
+						reject();
+					};
+
+					const objectStore = transaction.objectStore(STORE_NAME);
+
+					const singleKeyRange = IDBKeyRange.only(person.uid);
+					const _cursor = objectStore.openCursor(singleKeyRange);
+
+					_cursor.onsuccess = function (event) {
+						var cursor = event.target.result;
+
+						let request;
+						if (cursor) {
+							Analytics.sendEvent(`${fn}.objectStore.put`, 'log', person.uid);
+							request = objectStore.put(person);
+						} else {
+							Analytics.sendEvent(`${fn}.objectStore.add`, 'log', person.uid);
+							request = objectStore.add(person);
+						}
+
+						request.onerror = function (event) {
+							Analytics.sendException(`${fn}.objectStore.request: ${JSON.stringify(event)}`, false);
+							reject();
+						};
+					};
+
+					_cursor.onerror = function (event) {
+						Analytics.sendException(`${fn}.cursor.open: ${JSON.stringify(event)}`, false);
+						reject();
+					};
+				});
+			},
+			_createReport = () => {
+				_getOrCreateDB()
+					.then(_getAll)
+					.then(personArr => {
+						window.open().document.write(`
+							<pre>${JSON.stringify(personArr, undefined, 4)}</pre>
+						`);
+					});
+			};
+
+		return {
+			getOrCreateDB: _getOrCreateDB,
+			get: _get,
+			getAll: _getAll,
+			addOrUpdateItem: _addOrUpdateItem,
+			createReport: _createReport,
+		};
+	}();
+
+	Presto.modules.IndexedDB = _Module;
+
+})(Presto, indexedDB);
+
+// https://www.w3schools.com/howto/howto_css_modals.asp
+
+(function(Presto) {
+
+    'use strict';
+
+    const _Module = function() {
+
+        const
+            MODAL_SELECTOR = '#presto-modal',
+            MODAL = '<div class="micromodal micromodal-slide" id="presto-modal" aria-hidden="true"><div class="modal__overlay" tabindex="-1" data-micromodal-close><div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="presto-modal-title"><header class="modal__header"><h2 class="modal__title" id="presto-modal-title"></h2><button class="modal__close" aria-label="Close modal" data-micromodal-close></button></header><main class="modal__content" id="presto-modal-content"></main><footer class="modal__footer"><button class="modal__btn modal__btn-primary" data-micromodal-close aria-label="Close this dialog window">Continue</button> <button class="modal__btn" data-micromodal-close aria-label="Close this dialog window">Close</button></footer></div></div></div>';
+
+        const
+            _asyncReflow = function(...taskArr) {
+                taskArr.map(task => setTimeout(task, 25));
+            },
+            _addModalToPage = () => {
+                let container = document.createElement('div');
+                container.innerHTML = MODAL;
+                document.body.appendChild(container.firstChild);
+            },
+            _addScriptToPage = () => {
+                let script = document.createElement('script');
+                /**
+                 * https://micromodal.vercel.app/
+                 * https://github.com/Ghosh/micromodal
+                 */
+                script.src = 'https://cdn.jsdelivr.net/npm/micromodal/dist/micromodal.min.js';
+                document.body.appendChild(script);
+            },
+            _open = options => {
+                let modal = document.querySelector(MODAL_SELECTOR);
+                modal.querySelector('.modal__title').textContent = options.title;
+                modal.querySelector('.modal__content').innerHTML = '';
+                modal.querySelector('.modal__content').appendChild(options.content);
+                modal.querySelector('.modal__btn-primary').onclick = options.mainAction;
+
+                window.MicroModal.show(MODAL_SELECTOR.substring(1));
+            },
+            _init = () => {
+                _asyncReflow(
+                    _addModalToPage,
+                    _addScriptToPage,
+                );
+            };
+
+        return {
+            init: _init,
+            open: _open,
+        };
+    }();
+
+    /* Module Definition */
+
+    Presto.modules.Modal = _Module;
+
+})(window.Presto);
+
+(function(Presto) {
+
+    'use strict';
+
+    const _Module = function() {
+
+        const
+            SHOW_CLASS = 'show',
+            $ = document.querySelector.bind(document),
+            _fire = message => {
+                let x = $('#snackbar');
+
+                if (!!!x) {
+                    x = document.createElement('div');
+                    x.id = 'snackbar';
+                    $('body').appendChild(x);
+                }
+
+                x.textContent = message;
+
+                x.classList.add(SHOW_CLASS);
+                setTimeout(() => { x.classList.remove(SHOW_CLASS) }, 2850);
+            };
+
+        return {
+            fire: _fire,
+        };
+    }();
+
+    /* Module Definition */
+
+    Presto.modules.Snackbar = _Module;
+
+})(window.Presto);
+
+(function(Presto) {
+
+    'use strict';
+
+    const _Module = function() {
+
+        const CSS = '.fab-container{position:fixed;bottom:50px;right:50px;z-index:9999;cursor:pointer}.fab-icon-holder{width:50px;height:50px;border-radius:100%;background-image:linear-gradient(to bottom right,#ba39be,#05b370);box-shadow:0 6px 25px rgba(0,0,0,.35)}.fab-image-holder{background-image:url(https://i.imgur.com/6xZyXGT.png);background-size:58px;background-repeat:no-repeat;background-position:right}.fab-icon-holder:hover{opacity:.8}.fab-icon-holder i{display:flex;align-items:center;justify-content:center;height:100%;font-size:25px;color:#fff}.fab-main{width:60px;height:60px}.fab-main::before{content:"";position:absolute;width:100%;height:100%;bottom:10px}.fab-options{list-style-type:none;margin:0;position:absolute;bottom:70px;right:0;opacity:0;transition:all .3s ease;transform:scale(0);transform-origin:85% bottom}.fab-main:hover+.fab-options,.fab-options:hover{opacity:1;transform:scale(1)}.fab-options li{display:flex;justify-content:flex-end;padding:5px}.fab-label{padding:2px 5px;align-self:center;user-select:none;white-space:nowrap;border-radius:3px;font-size:16px;background:#666;color:#fff;box-shadow:0 6px 20px rgba(0,0,0,.2);margin-right:10px}.micromodal{font-family:-apple-system,BlinkMacSystemFont,avenir next,avenir,helvetica neue,helvetica,ubuntu,roboto,noto,segoe ui,arial,sans-serif}.micromodal *{box-sizing:border-box}.modal__overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);display:flex;justify-content:center;align-items:center;z-index:999999}.modal__container{background-color:#fff;padding:30px;max-width:500px;max-height:100vh;border-radius:4px;overflow-y:auto;box-sizing:border-box;min-width:30%}.modal__header{display:flex;justify-content:space-between;align-items:center}.modal__title{margin-top:0;margin-bottom:0;font-weight:600;font-size:1.25rem;line-height:1.25;color:#ba39be;box-sizing:border-box}.modal__close{background-color:transparent!important;border:0}.modal__close:before{content:"\\2715"}.modal__close:focus,.modal__close:hover{color:#000;text-decoration:none;opacity:.75}.modal__content{margin-top:2rem;margin-bottom:2rem;line-height:1.5;color:rgba(0,0,0,.8)}.modal__footer{text-align:right}.modal__btn{font-size:.875rem;padding-left:1rem;padding-right:1rem;padding-top:.5rem;padding-bottom:.5rem;background-color:#e6e6e6!important;color:rgba(0,0,0,.8);border-radius:.25rem;border-style:none;border-width:0;cursor:pointer;-webkit-appearance:button;text-transform:none;overflow:visible;line-height:1.15;margin:0;will-change:transform;-moz-osx-font-smoothing:grayscale;-webkit-backface-visibility:hidden;backface-visibility:hidden;-webkit-transform:translateZ(0);transform:translateZ(0);transition:-webkit-transform .25s ease-out;transition:transform .25s ease-out;transition:transform .25s ease-out,-webkit-transform .25s ease-out}.modal__btn:focus,.modal__btn:hover{-webkit-transform:scale(1.05);transform:scale(1.05)}.modal__btn-primary{background-color:#05b370!important;color:#fff}@keyframes mmfadeIn{from{opacity:0}to{opacity:1}}@keyframes mmfadeOut{from{opacity:1}to{opacity:0}}@keyframes mmslideIn{from{transform:translateY(15%)}to{transform:translateY(0)}}@keyframes mmslideOut{from{transform:translateY(0)}to{transform:translateY(-10%)}}.micromodal-slide{display:none}.micromodal-slide.is-open{display:block}.micromodal-slide[aria-hidden=false] .modal__overlay{animation:mmfadeIn .3s cubic-bezier(0,0,.2,1)}.micromodal-slide[aria-hidden=false] .modal__container{animation:mmslideIn .3s cubic-bezier(0,0,.2,1)}.micromodal-slide[aria-hidden=true] .modal__overlay{animation:mmfadeOut .3s cubic-bezier(0,0,.2,1)}.micromodal-slide[aria-hidden=true] .modal__container{animation:mmslideOut .3s cubic-bezier(0,0,.2,1)}.micromodal-slide .modal__container,.micromodal-slide .modal__overlay{will-change:transform}.modal__container .text-muted{color:#6c757d!important}.modal__container .form-text{display:block;margin-top:.25rem}.modal__container .form-group{margin-bottom:1rem}.modal__container label{display:inline-block;margin-bottom:.5rem!important}.modal__container button,.modal__container input{overflow:visible}.modal__container button,.modal__container input,.modal__container optgroup,.modal__container select,.modal__container textarea{margin:0;font-family:inherit;font-size:inherit;line-height:inherit}.modal__container textarea{height:initial;overflow:auto;resize:vertical}.modal__container .form-control{display:block;width:100%;padding:.375rem .75rem;font-size:1rem;line-height:1.5;color:#495057;background-color:#fff;background-clip:padding-box;border:1px solid #ced4da;border-radius:.25rem;transition:border-color .15s ease-in-out,box-shadow .15s ease-in-out}.modal__container .form-control:focus{color:#495057;background-color:#fff;border-color:#80bdff;outline:0;box-shadow:0 0 0 .2rem rgb(0 123 255 / 25%)}#snackbar{visibility:hidden;opacity:0;min-width:250px;margin-left:-125px;background-image:linear-gradient(to bottom right,#ba39be,#05b370);color:#fff;text-align:center;border-radius:2px;padding:16px;position:fixed;z-index:9999999;left:50%;bottom:15%;font-size:17px}#snackbar.show{visibility:visible;opacity:1;-webkit-animation:fadein .5s,fadeout .5s 2.5s;animation:fadein .5s,fadeout .5s 2.5s}@-webkit-keyframes fadein{from{bottom:0;opacity:0}to{bottom:15%;opacity:1}}@keyframes fadein{from{bottom:0;opacity:0}to{bottom:15%;opacity:1}}@-webkit-keyframes fadeout{from{bottom:15%;opacity:1}to{bottom:0;opacity:0}}@keyframes fadeout{from{bottom:15%;opacity:1}to{bottom:0;opacity:0}}';
+
+        const
+            _addMaterialIconsToPage = () => {
+                let link = document.createElement('link');
+                link.rel = 'stylesheet';
+                /**
+                 * https://icons8.com/line-awesome
+                 * https://github.com/icons8/line-awesome
+                 */
+                link.href = 'https://maxst.icons8.com/vue-static/landings/line-awesome/line-awesome/1.3.0/css/line-awesome.min.css';
+                document.head.appendChild(link);
+            },
+            _addCustomCSSToPage = () => {
+                let style = document.createElement('style');
+                style.innerHTML = CSS;
+                document.head.appendChild(style);
+            },
+            _inject = () => {
+                _addMaterialIconsToPage();
+                _addCustomCSSToPage();
+            };
+
+        return {
+            inject: _inject,
+        };
+    }();
+
+    /* Module Definition */
+
+    Presto.modules.Style = _Module;
 
 })(window.Presto);
 
@@ -997,6 +1074,7 @@
         IndexedDB,
         Snackbar,
         FAB,
+        Modal,
 
     } = Presto.modules;
 
@@ -1006,9 +1084,148 @@
             // Inicio > Faturamento > Digitação > Digitar > Serviço Profissional/Serviço Auxiliar de Diagnóstico e Terapia - SP/SADT
             PATHNAME_REGEX = /faturamento\/digitar\/spsadt/,
 
-            FORM_FIELDSET_SELECTOR = "#formularioDigitacaoSPSADT fieldset div";
+            FORM_FIELDSET_SELECTOR = "#formularioDigitacaoSPSADT fieldset div",
+
+            MODAL_INPUT_APPOINTMENTS_DAYS_SELECTOR = '#presto-appointments-days',
+            MODAL_INPUT_APPOINTMENTS_MONTH_YEAR_SELECTOR = '#presto-appointments-month-year',
+            MODAL_INPUT_APPOINTMENTS_UNIT_VALUE_SELECTOR = '#presto-appointments-unit-value';
 
         const
+            /** Modal actions */
+            __removeInitialAppointment = () => {
+                let fakeTR = document.querySelector('#trProcedimento0');
+                if (fakeTR) {
+                    let tdArr = Array.from(fakeTR.querySelectorAll('td'))
+                    if (tdArr.filter(td => td.textContent === '-').length) {
+                        fakeTR.querySelector('input').checked = true;
+                        document.querySelector('#bt-addProcedimento').parentElement.querySelector('.bt-remover').click();
+                    }
+                }
+            },
+            _addAppointment = (days, monthYear, daysLength, unitValue) => {
+
+                let day = days.shift();
+
+                document.querySelector('#bt-addProcedimento').click(); // open modal
+
+                document.querySelector('#dataModalProcedimento').value = day + monthYear;
+                document.querySelector('#labelOrdemItemModalProcedimento').parentElement.querySelector('input').value = (daysLength - days.length);
+                document.querySelector('#tipoTabelaModalProcedimento').value = 22;
+                document.querySelector('#codigoModalProcedimento').value = 50000470;
+                document.querySelector('#codigoModalProcedimento').onblur();
+
+                let interval = setInterval(() => {
+                    let target = document.querySelector('#descricaoModalProcedimento');
+                    if (target.value) {
+                        clearInterval(interval);
+
+                        document.querySelector('#quantidadeModalProcedimento').value = 1;
+
+                        jQuery('#porcentagemRedAcrModalProcedimento').unmask();
+                        document.querySelector('#porcentagemRedAcrModalProcedimento').value = '1.00';
+
+                        document.querySelector('#valorUnitarioModalProcedimento').value = unitValue.replace(',','.');
+                        document.querySelector('#valorUnitarioModalProcedimento').onblur();
+
+                        interval = setInterval(() => {
+                            target = document.querySelector('#valorTotalModalProcedimento');
+                            if (target.value) {
+                                clearInterval(interval);
+
+                                setTimeout(() => {
+                                    document.querySelector('#bt-operacaoModalProcedimento').click(); // close modal
+                                    if (days.length) {
+                                        setTimeout(() => _addAppointment(days, monthYear, daysLength, unitValue), 1000);
+                                    }
+                                }, 1000);
+                            }
+                        }, 250);
+                    }
+                }, 250);
+            },
+            __fillForm_faturamentoDigitarSPSADT_onclick = () => {
+                /**
+                 * Modal Validations
+                 */
+                let _days = document.querySelector(MODAL_INPUT_APPOINTMENTS_DAYS_SELECTOR).value;
+                if (!!!_days) {
+                    Snackbar.fire('Informe os dias dos procedimentos!');
+                    return;
+                }
+
+                let _monthYear = document.querySelector(MODAL_INPUT_APPOINTMENTS_MONTH_YEAR_SELECTOR).value;
+                if (!!!_monthYear) {
+                    Snackbar.fire('Informe o mês/ano dos procedimentos!');
+                    return;
+                }
+
+                let _unitValue = document.querySelector(MODAL_INPUT_APPOINTMENTS_UNIT_VALUE_SELECTOR).value;
+                if (!!!_unitValue) {
+                    Snackbar.fire('Informe o valor unitário dos procedimentos no formato 12,34!');
+                    return;
+                }
+                /**
+                 * end Modal Validations
+                 */
+
+                _days = _days.split(',').map(day => day.padStart(2,'0'));
+                _monthYear = `/${_monthYear}`;
+                const _daysLength = _days.length;
+
+                __removeInitialAppointment();
+                _addAppointment(_days, _monthYear, _daysLength, _unitValue);
+            },
+            __buildFormGroup = (options) => {
+                let formGroup = document.createElement('div');
+                formGroup.classList.add('form-group');
+
+                let label = document.createElement('label');
+                label.textContent = options.textLabel;
+                formGroup.appendChild(label);
+
+                let textInput = document.createElement('input');
+                textInput.type = 'text';
+                textInput.classList.add('form-control');
+                textInput.id = options.inputId;
+                if (options.inputValue) textInput.value = options.inputValue;
+                formGroup.appendChild(textInput);
+
+                if (options.helpText) {
+                    let small = document.createElement('small');
+                    small.classList.add('form-text','text-muted');
+                    small.textContent = options.helpText;
+                    formGroup.appendChild(small);
+                }
+
+                return formGroup;
+            },
+            __buildModalContent = () => {
+                let content = document.createElement('div');
+
+                content.appendChild(__buildFormGroup({
+                    textLabel: 'DIAS',
+                    inputId: MODAL_INPUT_APPOINTMENTS_DAYS_SELECTOR.substr(1),
+                    helpText: 'Ex.: 7,14,21,28',
+                }));
+
+                content.appendChild(__buildFormGroup({
+                    textLabel: 'MÊS/ANO',
+                    inputId: MODAL_INPUT_APPOINTMENTS_MONTH_YEAR_SELECTOR.substr(1),
+                    inputValue: `${((new Date().getMonth()+1)+'').padStart(2,'0')}/${new Date().getFullYear()}`,
+                    helpText: 'Ex.: 06/2021',
+                }));
+
+                content.appendChild(__buildFormGroup({
+                    textLabel: 'VALOR UNITÁRIO',
+                    inputId: MODAL_INPUT_APPOINTMENTS_UNIT_VALUE_SELECTOR.substr(1),
+                    helpText: 'Ex.: 47,40',
+                }));
+
+                return content;
+            },
+
+            /** end Modal actions */
+
             _handleBtnGravarAlteracoes = person => {
                 const btnGravarAlteracoes = document.querySelector('#gravarAlteracoes');
                 const _onclick = btnGravarAlteracoes.onclick;
@@ -1138,14 +1355,29 @@
                     });
 
             },
+            __btnAdicionarProcedimentos_onclick = () => {
+                Modal.open({
+                    title: 'Adicionar Procedimentos',
+                    content: __buildModalContent(),
+                    mainAction: __fillForm_faturamentoDigitarSPSADT_onclick,
+                });
+            },
             _upgrade = () => {
+                Modal.init();
                 __loadProfiles();
 
-                FAB.build([ {
-                    textLabel: 'IndexedDB: Criar relatório',
-                    iconClass: 'las la-external-link-alt',
-                    click: IndexedDB.createReport,
-                } ]);
+                FAB.build([
+                    {
+                        textLabel: 'Adicionar Procedimentos',
+                        iconClass: 'las la-calendar-plus',
+                        click: __btnAdicionarProcedimentos_onclick,
+                    },
+                    {
+                        textLabel: 'IndexedDB: Criar relatório',
+                        iconClass: 'las la-external-link-alt',
+                        click: IndexedDB.createReport,
+                    }
+                ]);
 
                 let btnImport = document.querySelector('#senha').parentElement.querySelector('a.bt-procurar');
                 let btnImport_onclick = btnImport.onclick;

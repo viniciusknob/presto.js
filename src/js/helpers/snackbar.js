@@ -2,7 +2,7 @@
 
     'use strict';
 
-    const _Snackbar = function() {
+    const _Module = function() {
 
         const
             SHOW_CLASS = 'show',
@@ -29,6 +29,6 @@
 
     /* Module Definition */
 
-    Presto.modules.Snackbar = _Snackbar;
+    Presto.modules.Snackbar = _Module;
 
 })(window.Presto);

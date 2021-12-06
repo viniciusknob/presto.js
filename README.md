@@ -1,4 +1,4 @@
-# Presto.js 1.2.6
+# Presto.js 1.3.0
 Useful things for work with health insurance.
 
 ### Autor
@@ -20,3 +20,4 @@ UserScript: [presto.user.js](../../raw/main/presto.user.js)
 + Preencher o campo Procedimento com código para Sessão de Terapia (CanoasPrev);
 + Copiar os resultados em Localizar Procedimentos para fins de relatório mensal (CanoasPrev);
 + Em Faturamento > Digitar > Consultar e Detalhe, copiar os dados da página (SaudePetrobras);
++ Em Faturamento > Digitar, possibilitar uma forma mais humana de adicionar procedimentos (SaudePetrobras);

@@ -2,7 +2,7 @@
 
     'use strict';
 
-    const _Style = function() {
+    const _Module = function() {
 
         const CSS = '__css__';
 
@@ -34,6 +34,6 @@
 
     /* Module Definition */
 
-    Presto.modules.Style = _Style;
+    Presto.modules.Style = _Module;
 
 })(window.Presto);
