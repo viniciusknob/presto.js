@@ -2,14 +2,15 @@
 
 	'use strict';
 
-	const _Presto = function() {
+	const _Module = function() {
 
 		return {
+			env: '__env__',
 			modules: {},
 			pages: {},
 		};
 	}();
 
-	window.Presto = _Presto;
+	window.Presto = _Module;
 
 })(window);

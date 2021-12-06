@@ -45,8 +45,9 @@ function _cssMinify() {
         .pipe(dest(`${BUILD_PATH}/css`));
 }
 
-function _minToJS() {
-    return src(`${DIST_PATH}/presto.js`)
+function _minToJS(env) {
+    return () => src(`${DIST_PATH}/presto.js`)
+        .pipe(replace('__env__', env))
 		.pipe(replace('__modal__', fs.readFileSync(`${BUILD_PATH}/html/modal.min.html`, 'utf8')))
         .pipe(replace('__css__', fs.readFileSync(`${BUILD_PATH}/css/presto.min.css`, 'utf8')))
         .pipe(dest(DIST_PATH));
@@ -81,11 +82,14 @@ function _jsMinify() {
 	 .pipe(dest(DIST_PATH));
 };
 
-exports.default = series(
-	_htmlMinify,
+const files = env => [
+    _htmlMinify,
     _cssConcat,
     _cssMinify,
     _jsConcat,
-    _minToJS,
+    _minToJS(env),
     _jsMinify,
-);
+]
+
+exports.default = series(...files('dev'));
+exports.release = series(...files('prd'));

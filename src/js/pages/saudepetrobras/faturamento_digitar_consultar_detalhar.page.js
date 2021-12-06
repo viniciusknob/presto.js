@@ -4,6 +4,7 @@
 
     const {
         Analytics,
+        Clipboard,
         Snackbar,
         FAB,
 
@@ -36,8 +37,7 @@
 
                 let bazArrJoined = bazArr.join('\n');
 
-                navigator.clipboard
-                    .writeText(bazArrJoined)
+                Clipboard.write(bazArrJoined)
                     .then(() => Snackbar.fire('Copiado!'));
 
             },

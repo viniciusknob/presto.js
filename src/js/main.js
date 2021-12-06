@@ -52,8 +52,6 @@
 
     /* Public Functions */
 
-    Presto.bless = function() {
-        _initWithDelay();
-    };
+    Presto.bless = _initWithDelay;
 
 })(window.Presto, window.setInterval, window.clearInterval);

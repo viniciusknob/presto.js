@@ -4,6 +4,7 @@
 
     const {
         Analytics,
+        Clipboard,
         Snackbar,
         FAB,
 
@@ -16,7 +17,7 @@
             PATHNAME_REGEX = /recursoglosa\/buscaDetalheRecursoGlosa/;
 
         const
-            __createCopyButton_recursoGlosaDetalhe_onclick = function () {
+            __btnCopy_onclick = function () {
                 Analytics.sendEvent('clickButton', 'log', 'btnCopy');
 
                 let labelList = document.querySelectorAll('#body label');
@@ -60,16 +61,14 @@
 
                 let bazArrJoined = bazArr.join('\n');
 
-                navigator.clipboard
-                    .writeText(bazArrJoined)
-                    .then(() => Snackbar.fire('Copiado!'));
+                Clipboard.write(bazArrJoined).then(() => Snackbar.fire('Copiado!'));
 
             },
             _upgrade = () => {
                 FAB.build([ {
                     textLabel: 'Copiar dados',
                     iconClass: 'lar la-copy',
-                    click: __createCopyButton_recursoGlosaDetalhe_onclick,
+                    click: __btnCopy_onclick,
                 } ]);
             },
             _init = () => {

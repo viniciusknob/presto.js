@@ -13,7 +13,7 @@
 
     } = Presto.pages;
 
-    const _SaudePetrobras = function () {
+    const _Module = function () {
 
         const HOST = /portaltiss\.saudepetrobras\.com\.br/;
 
@@ -45,6 +45,6 @@
 
     }();
 
-    Presto.modules.SaudePetrobras = _SaudePetrobras;
+    Presto.modules.SaudePetrobras = _Module;
 
 })(Presto, location);

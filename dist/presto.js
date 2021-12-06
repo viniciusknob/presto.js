@@ -2,70 +2,80 @@
 
 	'use strict';
 
-	const _Presto = function() {
+	const _Module = function() {
 
 		return {
+			env: 'prd',
 			modules: {},
 			pages: {},
 		};
 	}();
 
-	window.Presto = _Presto;
+	window.Presto = _Module;
 
 })(window);
 
 (function(Presto, window, document) {
 
-    if (!window.gtag) {
-        let script = document.createElement('script');
-        script.src = 'https://www.googletagmanager.com/gtag/js';
-        script.async = 1;
-        document.querySelector('body').appendChild(script);
-
-        window.dataLayer = window.dataLayer || [];
-        window.gtag = function() { window.dataLayer.push(arguments); };
-        window.gtag('js', new Date());
-    }
-
-    var _GA_MEASUREMENT_ID = false;
-    const
-        _dataFlux = {
-            "_SulAmerica": "G-MXK1RQ5VT5",
-            "_SaudePetrobras": "G-MWGSGJR0QC",
+    if (Presto.env === 'dev') {
+        Presto.modules.Analytics = {
+            config: () => {},
+            sendEvent: () => {},
+            sendException: () => {},
         };
 
-    
-    const _Analytics = function() {
+    } else {
+        if (!window.gtag) {
+            let script = document.createElement('script');
+            script.src = 'https://www.googletagmanager.com/gtag/js';
+            script.async = 1;
+            document.querySelector('body').appendChild(script);
 
+            window.dataLayer = window.dataLayer || [];
+            window.gtag = function() { window.dataLayer.push(arguments); };
+            window.gtag('js', new Date());
+        }
+
+        var _GA_MEASUREMENT_ID = false;
         const
-            _config = (id) => {
-                _GA_MEASUREMENT_ID = _dataFlux[id];
-                window.gtag('config', _GA_MEASUREMENT_ID);
-            },
-            _sendEvent = (name, category, label, nonInteraction = true) => {
-                window.gtag('event', name, {
-                    'send_to': _GA_MEASUREMENT_ID,
-                    'event_category': category,
-                    'event_label': label,
-                    'non_interaction': nonInteraction,
-                });
-            },
-            _sendException = (description, fatal = false) => {
-                window.gtag('event', 'exception', {
-                    'send_to': _GA_MEASUREMENT_ID,
-                    'description': description,
-                    'fatal': fatal,
-                });
+            _dataFlux = {
+                "_SulAmerica": "G-MXK1RQ5VT5",
+                "_SaudePetrobras": "G-MWGSGJR0QC",
             };
 
-        return {
-            config: _config,
-            sendEvent: _sendEvent,
-            sendException: _sendException,
-        };
-    }();
+        const _Module = function() {
+    
+            const
+                _config = (id) => {
+                    _GA_MEASUREMENT_ID = _dataFlux[id];
+                    window.gtag('config', _GA_MEASUREMENT_ID);
+                },
+                _sendEvent = (name, category, label, nonInteraction = true) => {
+                    window.gtag('event', name, {
+                        'send_to': _GA_MEASUREMENT_ID,
+                        'event_category': category,
+                        'event_label': label,
+                        'non_interaction': nonInteraction,
+                    });
+                },
+                _sendException = (description, fatal = false) => {
+                    window.gtag('event', 'exception', {
+                        'send_to': _GA_MEASUREMENT_ID,
+                        'description': description,
+                        'fatal': fatal,
+                    });
+                };
 
-    Presto.modules.Analytics = _Analytics;
+            return {
+                config: _config,
+                sendEvent: _sendEvent,
+                sendException: _sendException,
+            };
+        }();
+
+        Presto.modules.Analytics = _Module;
+    }
+
 
 })(Presto, window, document);
 
@@ -481,7 +491,7 @@
 
     } = Presto.modules;
     
-    const _SulAmerica = function() {
+    const _Module = function() {
         
         const
             HOST = /saude.sulamericaseguros.com.br/,
@@ -636,7 +646,7 @@
 
     }();
 
-    Presto.modules.SulAmerica = _SulAmerica;
+    Presto.modules.SulAmerica = _Module;
 	
 })(Presto, location);
 
@@ -715,6 +725,7 @@
 
     const {
         Analytics,
+        Clipboard,
         Snackbar,
         FAB,
 
@@ -791,8 +802,7 @@
                             if (todoTasks.length) {
                                 execTask();
                             } else {
-                                navigator.clipboard
-                                    .writeText(bazArr.join('\n'))
+                                Clipboard.write(bazArr.join('\n'))
                                     .then(() => Snackbar.fire('Copiado!'));
                             }
                         }, 250);
@@ -841,8 +851,7 @@
                     });
                 });
 
-                navigator.clipboard
-                    .writeText(bazArr.join('\n'))
+                Clipboard.write(bazArr.join('\n'))
                     .then(() => Snackbar.fire('Copiado!'));
 
             },
@@ -880,6 +889,7 @@
 
     const {
         Analytics,
+        Clipboard,
         Snackbar,
         FAB,
 
@@ -908,8 +918,7 @@
 
                 let bazArrJoined = bazArr.join('\n');
 
-                navigator.clipboard
-                    .writeText(bazArrJoined)
+                Clipboard.write(bazArrJoined)
                     .then(() => Snackbar.fire('Copiado!'));
 
             },
@@ -940,6 +949,7 @@
 
     const {
         Analytics,
+        Clipboard,
         Snackbar,
         FAB,
 
@@ -975,8 +985,7 @@
 
                 let bazArrJoined = bazArr.join('\n');
 
-                navigator.clipboard
-                    .writeText(bazArrJoined)
+                Clipboard.write(bazArrJoined)
                     .then(() => Snackbar.fire('Copiado!'));
 
             },
@@ -1007,6 +1016,7 @@
 
     const {
         Analytics,
+        Clipboard,
         Snackbar,
         FAB,
 
@@ -1039,8 +1049,7 @@
 
                 let bazArrJoined = bazArr.join('\n');
 
-                navigator.clipboard
-                    .writeText(bazArrJoined)
+                Clipboard.write(bazArrJoined)
                     .then(() => Snackbar.fire('Copiado!'));
 
             },
@@ -1411,6 +1420,7 @@
 
     const {
         Analytics,
+        Clipboard,
         Snackbar,
         FAB,
 
@@ -1423,7 +1433,7 @@
             PATHNAME_REGEX = /recursoglosa\/buscaDetalheRecursoGlosa/;
 
         const
-            __createCopyButton_recursoGlosaDetalhe_onclick = function () {
+            __btnCopy_onclick = function () {
                 Analytics.sendEvent('clickButton', 'log', 'btnCopy');
 
                 let labelList = document.querySelectorAll('#body label');
@@ -1467,16 +1477,14 @@
 
                 let bazArrJoined = bazArr.join('\n');
 
-                navigator.clipboard
-                    .writeText(bazArrJoined)
-                    .then(() => Snackbar.fire('Copiado!'));
+                Clipboard.write(bazArrJoined).then(() => Snackbar.fire('Copiado!'));
 
             },
             _upgrade = () => {
                 FAB.build([ {
                     textLabel: 'Copiar dados',
                     iconClass: 'lar la-copy',
-                    click: __createCopyButton_recursoGlosaDetalhe_onclick,
+                    click: __btnCopy_onclick,
                 } ]);
             },
             _init = () => {
@@ -1508,7 +1516,7 @@
 
     } = Presto.pages;
 
-    const _SaudePetrobras = function () {
+    const _Module = function () {
 
         const HOST = /portaltiss\.saudepetrobras\.com\.br/;
 
@@ -1540,7 +1548,7 @@
 
     }();
 
-    Presto.modules.SaudePetrobras = _SaudePetrobras;
+    Presto.modules.SaudePetrobras = _Module;
 
 })(Presto, location);
 
@@ -1659,7 +1667,7 @@
 
     } = Presto.pages;
 
-    const _CanoasPrev = function () {
+    const _Module = function () {
 
         const HOST = /novowebplancanoasprev\.facilinformatica\.com\.br/;
 
@@ -1686,7 +1694,7 @@
 
     }();
 
-    Presto.modules.CanoasPrev = _CanoasPrev;
+    Presto.modules.CanoasPrev = _Module;
 
 })(Presto, location);
 
@@ -1744,9 +1752,7 @@
 
     /* Public Functions */
 
-    Presto.bless = function() {
-        _initWithDelay();
-    };
+    Presto.bless = _initWithDelay;
 
 })(window.Presto, window.setInterval, window.clearInterval);
 

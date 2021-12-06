@@ -8,7 +8,7 @@
 
     } = Presto.pages;
 
-    const _CanoasPrev = function () {
+    const _Module = function () {
 
         const HOST = /novowebplancanoasprev\.facilinformatica\.com\.br/;
 
@@ -35,6 +35,6 @@
 
     }();
 
-    Presto.modules.CanoasPrev = _CanoasPrev;
+    Presto.modules.CanoasPrev = _Module;
 
 })(Presto, location);

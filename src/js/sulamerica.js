@@ -7,7 +7,7 @@
 
     } = Presto.modules;
     
-    const _SulAmerica = function() {
+    const _Module = function() {
         
         const
             HOST = /saude.sulamericaseguros.com.br/,
@@ -162,6 +162,6 @@
 
     }();
 
-    Presto.modules.SulAmerica = _SulAmerica;
+    Presto.modules.SulAmerica = _Module;
 	
 })(Presto, location);

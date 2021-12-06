@@ -4,6 +4,7 @@
 
     const {
         Analytics,
+        Clipboard,
         Snackbar,
         FAB,
 
@@ -80,8 +81,7 @@
                             if (todoTasks.length) {
                                 execTask();
                             } else {
-                                navigator.clipboard
-                                    .writeText(bazArr.join('\n'))
+                                Clipboard.write(bazArr.join('\n'))
                                     .then(() => Snackbar.fire('Copiado!'));
                             }
                         }, 250);
@@ -130,8 +130,7 @@
                     });
                 });
 
-                navigator.clipboard
-                    .writeText(bazArr.join('\n'))
+                Clipboard.write(bazArr.join('\n'))
                     .then(() => Snackbar.fire('Copiado!'));
 
             },
