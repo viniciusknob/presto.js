@@ -24,6 +24,21 @@
             MODAL_INPUT_APPOINTMENTS_UNIT_VALUE_SELECTOR = '#presto-appointments-unit-value';
 
         const
+            __avoidErrorInClientCode = () => {
+                const brokenFn = window.removerItemDigitacao;
+                window.removerItemDigitacao = (...args) => {
+                    try { brokenFn(...args); }
+                    catch(e) {
+                        /**
+                         * Uncaught TypeError: Cannot read properties of null (reading 'length')
+                         *   at removerItemDigitacao (tratamentosModalDigitacao.js:1126:31)
+                         *   at HTMLAnchorElement.onclick (spsadt.htm:2449:195)
+                         *   at __removeInitialAppointment (<anonymous>:1141:38)
+                         *   at HTMLButtonElement.__fillForm_faturamentoDigitarSPSADT_onclick (<anonymous>:1221:17)
+                         */
+                    };
+                };
+            },
             /** Modal actions */
             __removeInitialAppointment = () => {
                 let fakeTR = document.querySelector('#trProcedimento0');
@@ -108,47 +123,23 @@
                 __removeInitialAppointment();
                 _addAppointment(_days, _monthYear, _daysLength, _unitValue);
             },
-            __buildFormGroup = (options) => {
-                let formGroup = document.createElement('div');
-                formGroup.classList.add('form-group');
-
-                let label = document.createElement('label');
-                label.textContent = options.textLabel;
-                formGroup.appendChild(label);
-
-                let textInput = document.createElement('input');
-                textInput.type = 'text';
-                textInput.classList.add('form-control');
-                textInput.id = options.inputId;
-                if (options.inputValue) textInput.value = options.inputValue;
-                formGroup.appendChild(textInput);
-
-                if (options.helpText) {
-                    let small = document.createElement('small');
-                    small.classList.add('form-text','text-muted');
-                    small.textContent = options.helpText;
-                    formGroup.appendChild(small);
-                }
-
-                return formGroup;
-            },
             __buildModalContent = () => {
                 let content = document.createElement('div');
 
-                content.appendChild(__buildFormGroup({
+                content.appendChild(Modal.helpers.buildFormGroup({
                     textLabel: 'DIAS',
                     inputId: MODAL_INPUT_APPOINTMENTS_DAYS_SELECTOR.substr(1),
                     helpText: 'Ex.: 7,14,21,28',
                 }));
 
-                content.appendChild(__buildFormGroup({
+                content.appendChild(Modal.helpers.buildFormGroup({
                     textLabel: 'MÊS/ANO',
                     inputId: MODAL_INPUT_APPOINTMENTS_MONTH_YEAR_SELECTOR.substr(1),
                     inputValue: `${((new Date().getMonth()+1)+'').padStart(2,'0')}/${new Date().getFullYear()}`,
                     helpText: 'Ex.: 06/2021',
                 }));
 
-                content.appendChild(__buildFormGroup({
+                content.appendChild(Modal.helpers.buildFormGroup({
                     textLabel: 'VALOR UNITÁRIO',
                     inputId: MODAL_INPUT_APPOINTMENTS_UNIT_VALUE_SELECTOR.substr(1),
                     helpText: 'Ex.: 47,40',
@@ -296,6 +287,7 @@
                 });
             },
             _upgrade = () => {
+                __avoidErrorInClientCode();
                 Modal.init();
                 __loadProfiles();
 

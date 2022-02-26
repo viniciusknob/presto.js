@@ -4,6 +4,7 @@
 
     const {
         RecursoGlosaBuscaDetalhePage,
+        RecursoGlosaFiltroPage,
         ExtratoDetalhePagamentoPage,
         ExtratoBuscarLotePage,
         FormularioDigitarSPSADTPage,
@@ -26,6 +27,7 @@
             },
             _fixAnyPage = function () {
                 RecursoGlosaBuscaDetalhePage.upgrade();
+                RecursoGlosaFiltroPage.upgrade();
                 ExtratoDetalhePagamentoPage.upgrade();
                 ExtratoBuscarLotePage.upgrade();
                 FormularioDigitarSPSADTPage.upgrade();

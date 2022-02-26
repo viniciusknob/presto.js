@@ -44,9 +44,38 @@
                 );
             };
 
+        const
+            helpers = {
+                buildFormGroup: (options) => {
+                    let formGroup = document.createElement('div');
+                    formGroup.classList.add('form-group');
+
+                    let label = document.createElement('label');
+                    label.textContent = options.textLabel;
+                    formGroup.appendChild(label);
+
+                    let textInput = document.createElement('input');
+                    textInput.type = 'text';
+                    textInput.classList.add('form-control');
+                    textInput.id = options.inputId;
+                    if (options.inputValue) textInput.value = options.inputValue;
+                    formGroup.appendChild(textInput);
+
+                    if (options.helpText) {
+                        let small = document.createElement('small');
+                        small.classList.add('form-text','text-muted');
+                        small.textContent = options.helpText;
+                        formGroup.appendChild(small);
+                    }
+
+                    return formGroup;
+                },
+            };
+
         return {
             init: _init,
             open: _open,
+            helpers: helpers,
         };
     }();
 

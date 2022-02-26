@@ -5,7 +5,7 @@
 	const _Module = function() {
 
 		return {
-			env: 'dev',
+			env: 'prd',
 			modules: {},
 			pages: {},
 		};
@@ -395,9 +395,38 @@
                 );
             };
 
+        const
+            helpers = {
+                buildFormGroup: (options) => {
+                    let formGroup = document.createElement('div');
+                    formGroup.classList.add('form-group');
+
+                    let label = document.createElement('label');
+                    label.textContent = options.textLabel;
+                    formGroup.appendChild(label);
+
+                    let textInput = document.createElement('input');
+                    textInput.type = 'text';
+                    textInput.classList.add('form-control');
+                    textInput.id = options.inputId;
+                    if (options.inputValue) textInput.value = options.inputValue;
+                    formGroup.appendChild(textInput);
+
+                    if (options.helpText) {
+                        let small = document.createElement('small');
+                        small.classList.add('form-text','text-muted');
+                        small.textContent = options.helpText;
+                        formGroup.appendChild(small);
+                    }
+
+                    return formGroup;
+                },
+            };
+
         return {
             init: _init,
             open: _open,
+            helpers: helpers,
         };
     }();
 
@@ -1100,6 +1129,21 @@
             MODAL_INPUT_APPOINTMENTS_UNIT_VALUE_SELECTOR = '#presto-appointments-unit-value';
 
         const
+            __avoidErrorInClientCode = () => {
+                const brokenFn = window.removerItemDigitacao;
+                window.removerItemDigitacao = (...args) => {
+                    try { brokenFn(...args); }
+                    catch(e) {
+                        /**
+                         * Uncaught TypeError: Cannot read properties of null (reading 'length')
+                         *   at removerItemDigitacao (tratamentosModalDigitacao.js:1126:31)
+                         *   at HTMLAnchorElement.onclick (spsadt.htm:2449:195)
+                         *   at __removeInitialAppointment (<anonymous>:1141:38)
+                         *   at HTMLButtonElement.__fillForm_faturamentoDigitarSPSADT_onclick (<anonymous>:1221:17)
+                         */
+                    };
+                };
+            },
             /** Modal actions */
             __removeInitialAppointment = () => {
                 let fakeTR = document.querySelector('#trProcedimento0');
@@ -1184,47 +1228,23 @@
                 __removeInitialAppointment();
                 _addAppointment(_days, _monthYear, _daysLength, _unitValue);
             },
-            __buildFormGroup = (options) => {
-                let formGroup = document.createElement('div');
-                formGroup.classList.add('form-group');
-
-                let label = document.createElement('label');
-                label.textContent = options.textLabel;
-                formGroup.appendChild(label);
-
-                let textInput = document.createElement('input');
-                textInput.type = 'text';
-                textInput.classList.add('form-control');
-                textInput.id = options.inputId;
-                if (options.inputValue) textInput.value = options.inputValue;
-                formGroup.appendChild(textInput);
-
-                if (options.helpText) {
-                    let small = document.createElement('small');
-                    small.classList.add('form-text','text-muted');
-                    small.textContent = options.helpText;
-                    formGroup.appendChild(small);
-                }
-
-                return formGroup;
-            },
             __buildModalContent = () => {
                 let content = document.createElement('div');
 
-                content.appendChild(__buildFormGroup({
+                content.appendChild(Modal.helpers.buildFormGroup({
                     textLabel: 'DIAS',
                     inputId: MODAL_INPUT_APPOINTMENTS_DAYS_SELECTOR.substr(1),
                     helpText: 'Ex.: 7,14,21,28',
                 }));
 
-                content.appendChild(__buildFormGroup({
+                content.appendChild(Modal.helpers.buildFormGroup({
                     textLabel: 'MÊS/ANO',
                     inputId: MODAL_INPUT_APPOINTMENTS_MONTH_YEAR_SELECTOR.substr(1),
                     inputValue: `${((new Date().getMonth()+1)+'').padStart(2,'0')}/${new Date().getFullYear()}`,
                     helpText: 'Ex.: 06/2021',
                 }));
 
-                content.appendChild(__buildFormGroup({
+                content.appendChild(Modal.helpers.buildFormGroup({
                     textLabel: 'VALOR UNITÁRIO',
                     inputId: MODAL_INPUT_APPOINTMENTS_UNIT_VALUE_SELECTOR.substr(1),
                     helpText: 'Ex.: 47,40',
@@ -1372,6 +1392,7 @@
                 });
             },
             _upgrade = () => {
+                __avoidErrorInClientCode();
                 Modal.init();
                 __loadProfiles();
 
@@ -1556,12 +1577,110 @@
 
 })(Presto, location);
 
+(function(Presto, location) {
+
+	'use strict';
+
+    const {
+        Analytics,
+        Snackbar,
+        FAB,
+        Modal,
+
+    } = Presto.modules;
+
+	const _Page = function() {
+
+        const
+            // Inicio > Responder Recursos de Glosa
+            PATHNAME_REGEX = /recursoglosa\/filtroNew/,
+
+            MODAL_INPUT_PROTOCOLS_SELECTOR = '#presto-protocols';
+
+        const
+            __buildModalContent = () => {
+                let content = document.createElement('div');
+
+                content.appendChild(Modal.helpers.buildFormGroup({
+                    textLabel: 'PROTOCOLOS',
+                    inputId: MODAL_INPUT_PROTOCOLS_SELECTOR.substring(1),
+                    helpText: 'Ex.: 147634317,147634318 ou 147634317 147634318',
+                }));
+
+                return content;
+            },
+            __mainAction_checkStatus_onclick = () => {
+                Analytics.sendEvent('clickButton', 'log', 'checkStatus');
+
+                /**
+                   * Modal Validations
+                   */
+                let _protocols = document.querySelector(MODAL_INPUT_PROTOCOLS_SELECTOR).value;
+                if (!!!_protocols) {
+                    Snackbar.fire('Informe os protocolos de recurso de glosa!');
+                    return;
+                }
+                let tasks = _protocols.split(/[,\s]/);
+                /**
+                 * end Modal Validations
+                 */
+
+                const fn = () => {
+                    let query = tasks.shift();
+
+                    document.querySelector('#acompanharSolicitacao_protocoloRecurso').value = query;
+                    document.querySelector('#acompanharSolicitacao_btnBuscar').click();
+
+                    const interval = setInterval(() => {
+                        let tr = document.querySelector(`tr[id="${query}"]`);
+                        if (tr) clearInterval(interval); else return;
+
+                        let status = tr.querySelector(`td[aria-describedby*="statusRecurso"]`).textContent;
+                        console.log(`${query}: ${status}`);
+
+                        if (tasks.length) fn(); else Snackbar.fire('Pronto! Use F12 para ver os resultados.');
+                    }, 250);
+                };
+              
+                fn();
+            },
+            __menuItem_checkStatus_onclick = () => {
+                Modal.open({
+                    title: 'Verificar status',
+                    content: __buildModalContent(),
+                    mainAction: __mainAction_checkStatus_onclick,
+                });
+            },
+            _upgrade = () => {
+                Modal.init();
+                FAB.build([
+                    {
+                        textLabel: 'Verificar status em massa',
+                        iconClass: 'las la-search',
+                        click: __menuItem_checkStatus_onclick,
+                    },
+                ]);
+          },
+          _init = () => {
+              if (PATHNAME_REGEX.test(location.pathname))
+                  _upgrade();
+          };
+
+  return {
+          upgrade: _init,
+  };
+}();
+
+Presto.pages.RecursoGlosaFiltroPage = _Page;
+
+})(Presto, location);
 (function (Presto, location) {
 
     'use strict';
 
     const {
         RecursoGlosaBuscaDetalhePage,
+        RecursoGlosaFiltroPage,
         ExtratoDetalhePagamentoPage,
         ExtratoBuscarLotePage,
         FormularioDigitarSPSADTPage,
@@ -1584,6 +1703,7 @@
             },
             _fixAnyPage = function () {
                 RecursoGlosaBuscaDetalhePage.upgrade();
+                RecursoGlosaFiltroPage.upgrade();
                 ExtratoDetalhePagamentoPage.upgrade();
                 ExtratoBuscarLotePage.upgrade();
                 FormularioDigitarSPSADTPage.upgrade();
