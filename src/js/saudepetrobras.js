@@ -9,6 +9,7 @@
         ExtratoBuscarLotePage,
         FormularioDigitarSPSADTPage,
         AutorizacaoUltimasSolicitacoesPage,
+        AutorizacaoUltimasSolicitacoesBuscarStatusPage,
         FaturamentoDigitarConsultarPage,
         FaturamentoDigitarConsultarDetalhePage,
 
@@ -23,7 +24,11 @@
                 return HOST.test(location.host);
             },
             _isLoaded = function () {
-                return document.querySelector(".titulos-formularios");
+                const maybe = [
+                    '.titulos-formularios',
+                    '.box-formularios',
+                ];
+                return maybe.some(selector => document.querySelector(selector));
             },
             _fixAnyPage = function () {
                 RecursoGlosaBuscaDetalhePage.upgrade();
@@ -32,6 +37,7 @@
                 ExtratoBuscarLotePage.upgrade();
                 FormularioDigitarSPSADTPage.upgrade();
                 AutorizacaoUltimasSolicitacoesPage.upgrade();
+                AutorizacaoUltimasSolicitacoesBuscarStatusPage.upgrade();
                 FaturamentoDigitarConsultarPage.upgrade();
                 FaturamentoDigitarConsultarDetalhePage.upgrade();
             };
