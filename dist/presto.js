@@ -436,6 +436,70 @@
 
 })(window.Presto);
 
+(function(Presto, document) {
+
+    'use strict';
+
+    const _Module = function() {
+
+        const
+            _createSelectOptionsMonthYear = options => {
+                let label = document.createElement("label");
+                label.textContent = "Presto.js - Mês/Ano:";
+                label.style.marginRight = "1em";
+
+                let select = document.createElement("select");
+
+                let option = document.createElement("option");
+                option.value = "";
+                option.textContent = "Selecione...";
+                select.appendChild(option);
+
+                let currentYear = new Date().getFullYear();
+                let currentMonth = new Date().getMonth();
+                let monthsToGoBack = 24;
+
+                for (let goBack = 0; goBack >= 0 - monthsToGoBack; goBack--) {
+                    let date = new Date(currentYear, currentMonth + goBack, 1);
+                    let monthStr = new Intl.DateTimeFormat("pt-BR", { month: "short" }).format(date);
+
+                    let option = document.createElement("option");
+                    option.value = `${date.getMonth()}/${date.getFullYear()}`;
+                    option.textContent = `${monthStr}/${date.getFullYear()}`;
+                    select.appendChild(option);
+                }
+
+                select.onchange = (event) => {
+                    let partialDate = event.target.value.split("/");
+                    let year = partialDate[1];
+                    let month = parseInt(partialDate[0]) + 1;
+                    let monthStr = ("" + month).padStart(2, "0");
+                    let endOfMonth = new Date(year, month, 0).getDate();
+
+                    document.querySelector(options.dateBeginFieldId).value = `01/${monthStr}/${year}`;
+                    document.querySelector(options.dateEndFieldId).value = `${endOfMonth}/${monthStr}/${year}`;
+                };
+
+                let div = document.createElement("div");
+                div.style.paddingBottom = "3em";
+                div.style.marginLeft = "8em";
+                div.appendChild(label);
+                div.appendChild(select);
+
+                return div;
+            };
+
+        return {
+            createSelectOptionsMonthYear: _createSelectOptionsMonthYear,
+        };
+    }();
+
+    /* Module Definition */
+
+    Presto.modules.SaudePetrobrasHelper = _Module;
+
+})(window.Presto, window.document);
+
 (function(Presto) {
 
     'use strict';
@@ -682,6 +746,11 @@
 (function (Presto, location) {
     "use strict";
 
+    const {
+        SaudePetrobrasHelper,
+
+    } = Presto.modules;
+
     const _Page = (function () {
         const
             // Inicio > Autorização > Últimas Solicitações
@@ -691,47 +760,10 @@
 
         const 
             _upgrade = () => {
-                let label = document.createElement("label");
-                label.textContent = "Presto.js - Mês/Ano:";
-                label.style.marginRight = "1em";
-
-                let select = document.createElement("select");
-
-                let option = document.createElement("option");
-                option.value = "";
-                option.textContent = "Selecione...";
-                select.appendChild(option);
-
-                let currentYear = new Date().getFullYear();
-                let currentMonth = new Date().getMonth();
-                let monthsToGoBack = 24;
-
-                for (let goBack = 0; goBack >= 0 - monthsToGoBack; goBack--) {
-                    let date = new Date(currentYear, currentMonth + goBack, 1);
-                    let monthStr = new Intl.DateTimeFormat("pt-BR", { month: "short" }).format(date);
-
-                    let option = document.createElement("option");
-                    option.value = `${date.getMonth()}/${date.getFullYear()}`;
-                    option.textContent = `${monthStr}/${date.getFullYear()}`;
-                    select.appendChild(option);
-                }
-
-                select.onchange = (event) => {
-                    let partialDate = event.target.value.split("/");
-                    let year = partialDate[1];
-                    let month = parseInt(partialDate[0]) + 1;
-                    let monthStr = ("" + month).padStart(2, "0");
-                    let endOfMonth = new Date(year, month, 0).getDate();
-
-                    document.querySelector("#txtDataEnvioDe").value = `01/${monthStr}/${year}`;
-                    document.querySelector("#txtDataEnvioAte").value = `${endOfMonth}/${monthStr}/${year}`;
-                };
-
-                let div = document.createElement("div");
-                div.style.paddingBottom = "3em";
-                div.style.marginLeft = "8em";
-                div.appendChild(label);
-                div.appendChild(select);
+                const div = SaudePetrobrasHelper.createSelectOptionsMonthYear({
+                    dateBeginFieldId: '#txtDataEnvioDe',
+                    dateEndFieldId: '#txtDataEnvioAte',
+                });
 
                 const referenceNode = document.querySelector(FORM_FIELDSET_SELECTOR);
                 referenceNode.insertBefore(div, referenceNode.firstChild);
@@ -1058,137 +1090,6 @@
 	}();
 
 	Presto.pages.ExtratoDetalhePagamentoPage = _Page;
-
-})(Presto, location);
-
-(function(Presto, location) {
-
-	'use strict';
-
-    const {
-        Analytics,
-        Clipboard,
-        Snackbar,
-        FAB,
-
-    } = Presto.modules;
-
-	const _Page = function() {
-
-        const
-            // Inicio > Faturamento > Digitação > Consultar
-            PATHNAME_REGEX = /faturamento\/visualizar\/filtrarPorData/;
-
-        const
-            __createCopyButton_onclick = function () {
-                Analytics.sendEvent('clickButton', 'log', 'btnCopy');
-
-                let tbodyTrList = document.querySelectorAll('#tblListaLoteFaturamento tbody tr');
-                let barArr = [], bazArr = [];
-
-                tbodyTrList.forEach(tr => {
-                    const allowed = [2,3,4,5,6,7];
-                    tr.querySelectorAll('td').forEach((td, index) => {
-                        if (allowed.includes(index)) {
-                            let value = td.textContent;
-                            if (/\d+\.\d+/.test(value))
-                                value = value.replace('.', ',');
-                            barArr.push(value.trim());
-                        }
-                    });
-                    let barArrJoined = barArr.join('\t');
-                    bazArr.push(barArrJoined);
-                    barArr = [];
-                });
-
-                let bazArrJoined = bazArr.join('\n');
-
-                Clipboard.write(bazArrJoined)
-                    .then(() => Snackbar.fire('Copiado!'));
-
-            },
-            _upgrade = () => {
-                FAB.build([ {
-                    textLabel: 'Copiar dados',
-                    iconClass: 'lar la-copy',
-                    click: __createCopyButton_onclick,
-                } ]);
-            },
-            _init = () => {
-                if (PATHNAME_REGEX.test(location.pathname))
-                    _upgrade();
-            };
-
-		return {
-            upgrade: _init,
-		};
-	}();
-
-	Presto.pages.FaturamentoDigitarConsultarPage = _Page;
-
-})(Presto, location);
-
-(function(Presto, location) {
-
-	'use strict';
-
-    const {
-        Analytics,
-        Clipboard,
-        Snackbar,
-        FAB,
-
-    } = Presto.modules;
-
-	const _Page = function() {
-
-        const
-            // Inicio > Faturamento > Digitação > Consultar > Detalhe
-            PATHNAME_REGEX = /faturamento\/visualizar\/detalharLote/;
-
-        const
-            __createCopyButton_onclick = function () {
-                Analytics.sendEvent('clickButton', 'log', 'btnCopy');
-
-                let tbodyTrList = document.querySelectorAll('.tab-administracao tbody tr');
-                let barArr = [], bazArr = [];
-
-                tbodyTrList.forEach(tr => {
-                    tr.querySelectorAll('td').forEach(td => {
-                        let value = td.textContent;
-                        if (/^R\$/.test(value))
-                            value = value.replace('R$', '');
-                        barArr.push(value.trim());
-                    });
-                    let barArrJoined = barArr.join('\t');
-                    bazArr.push(barArrJoined);
-                    barArr = [];
-                });
-
-                let bazArrJoined = bazArr.join('\n');
-
-                Clipboard.write(bazArrJoined)
-                    .then(() => Snackbar.fire('Copiado!'));
-
-            },
-            _upgrade = () => {
-                FAB.build([ {
-                    textLabel: 'Copiar dados',
-                    iconClass: 'lar la-copy',
-                    click: __createCopyButton_onclick,
-                } ]);
-            },
-            _init = () => {
-                if (PATHNAME_REGEX.test(location.pathname))
-                    _upgrade();
-            };
-
-		return {
-            upgrade: _init,
-		};
-	}();
-
-	Presto.pages.FaturamentoDigitarConsultarDetalhePage = _Page;
 
 })(Presto, location);
 
@@ -1539,6 +1440,185 @@
 	const _Page = function() {
 
         const
+            // Inicio > Faturamento > Digitação > Consultar > Detalhe
+            PATHNAME_REGEX = /faturamento\/visualizar\/detalharLote/;
+
+        const
+            __createCopyButton_onclick = function () {
+                Analytics.sendEvent('clickButton', 'log', 'btnCopy');
+
+                let tbodyTrList = document.querySelectorAll('.tab-administracao tbody tr');
+                let barArr = [], bazArr = [];
+
+                tbodyTrList.forEach(tr => {
+                    tr.querySelectorAll('td').forEach(td => {
+                        let value = td.textContent;
+                        if (/^R\$/.test(value))
+                            value = value.replace('R$', '');
+                        barArr.push(value.trim());
+                    });
+                    let barArrJoined = barArr.join('\t');
+                    bazArr.push(barArrJoined);
+                    barArr = [];
+                });
+
+                let bazArrJoined = bazArr.join('\n');
+
+                Clipboard.write(bazArrJoined)
+                    .then(() => Snackbar.fire('Copiado!'));
+
+            },
+            _upgrade = () => {
+                FAB.build([ {
+                    textLabel: 'Copiar dados',
+                    iconClass: 'lar la-copy',
+                    click: __createCopyButton_onclick,
+                } ]);
+            },
+            _init = () => {
+                if (PATHNAME_REGEX.test(location.pathname))
+                    _upgrade();
+            };
+
+		return {
+            upgrade: _init,
+		};
+	}();
+
+	Presto.pages.FaturamentoVisualizarDetalharLotePage = _Page;
+
+})(Presto, location);
+
+(function(Presto, location) {
+
+	'use strict';
+
+    const {
+        Analytics,
+        Clipboard,
+        Snackbar,
+        FAB,
+        SaudePetrobrasHelper,
+
+    } = Presto.modules;
+
+	const _Page = function() {
+
+        const
+            // Inicio > Faturamento > Digitação > Consultar > Buscar
+            PATHNAME_REGEX = /faturamento\/visualizar\/filtrarPorData/,
+
+            FORM_FIELDSET_SELECTOR = "#formularioFiltroVisualizarDigitacao fieldset";
+
+        const
+            __createCopyButton_onclick = function () {
+                Analytics.sendEvent('clickButton', 'log', 'btnCopy');
+
+                let tbodyTrList = document.querySelectorAll('#tblListaLoteFaturamento tbody tr');
+                let barArr = [], bazArr = [];
+
+                tbodyTrList.forEach(tr => {
+                    const allowed = [2,3,4,5,6,7];
+                    tr.querySelectorAll('td').forEach((td, index) => {
+                        if (allowed.includes(index)) {
+                            let value = td.textContent;
+                            if (/\d+\.\d+/.test(value))
+                                value = value.replace('.', ',');
+                            barArr.push(value.trim());
+                        }
+                    });
+                    let barArrJoined = barArr.join('\t');
+                    bazArr.push(barArrJoined);
+                    barArr = [];
+                });
+
+                let bazArrJoined = bazArr.join('\n');
+
+                Clipboard.write(bazArrJoined)
+                    .then(() => Snackbar.fire('Copiado!'));
+
+            },
+            _upgrade = () => {
+                FAB.build([ {
+                    textLabel: 'Copiar dados',
+                    iconClass: 'lar la-copy',
+                    click: __createCopyButton_onclick,
+                } ]);
+
+                const div = SaudePetrobrasHelper.createSelectOptionsMonthYear({
+                    dateBeginFieldId: '#txtVisualizarDataInicial',
+                    dateEndFieldId: '#txtVisualizarDataFinal',
+                });
+
+                const referenceNode = document.querySelector(FORM_FIELDSET_SELECTOR);
+                referenceNode.insertBefore(div, referenceNode.firstChild);
+            },
+            _init = () => {
+                if (PATHNAME_REGEX.test(location.pathname))
+                    _upgrade();
+            };
+
+		return {
+            upgrade: _init,
+		};
+	}();
+
+	Presto.pages.FaturamentoVisualizarFiltrarPorDataPage = _Page;
+
+})(Presto, location);
+
+(function (Presto, location) {
+    "use strict";
+
+    const {
+        SaudePetrobrasHelper,
+
+    } = Presto.modules;
+
+    const _Page = (function () {
+        const
+            // Inicio > Faturamento > Digitação > Consultar
+            PATHNAME_REGEX = /faturamento\/visualizar\/filtro/,
+
+            FORM_FIELDSET_SELECTOR = "#formularioFiltroVisualizarDigitacao fieldset";
+
+        const 
+            _upgrade = () => {
+                const div = SaudePetrobrasHelper.createSelectOptionsMonthYear({
+                    dateBeginFieldId: '#txtVisualizarDataInicial2',
+                    dateEndFieldId: '#txtVisualizarDataFinal2',
+                });
+
+                const referenceNode = document.querySelector(FORM_FIELDSET_SELECTOR);
+                referenceNode.insertBefore(div, referenceNode.firstChild);
+            },
+            _init = () => {
+                if (PATHNAME_REGEX.test(location.pathname)) _upgrade();
+            };
+
+        return {
+            upgrade: _init,
+        };
+    })();
+
+    Presto.pages.FaturamentoVisualizarFiltroPage = _Page;
+})(Presto, location);
+
+(function(Presto, location) {
+
+	'use strict';
+
+    const {
+        Analytics,
+        Clipboard,
+        Snackbar,
+        FAB,
+
+    } = Presto.modules;
+
+	const _Page = function() {
+
+        const
             // Inicio > Acompanhar recurso de glosa > Detalhe
             PATHNAME_REGEX = /recursoglosa\/buscaDetalheRecursoGlosa/;
 
@@ -1775,8 +1855,9 @@ Presto.pages.RecursoGlosaFiltroPage = _Page;
         FormularioDigitarSPSADTPage,
         AutorizacaoUltimasSolicitacoesPage,
         AutorizacaoUltimasSolicitacoesBuscarStatusPage,
-        FaturamentoDigitarConsultarPage,
-        FaturamentoDigitarConsultarDetalhePage,
+        FaturamentoVisualizarFiltroPage,
+        FaturamentoVisualizarFiltrarPorDataPage,
+        FaturamentoVisualizarDetalharLotePage,
 
     } = Presto.pages;
 
@@ -1803,8 +1884,9 @@ Presto.pages.RecursoGlosaFiltroPage = _Page;
                 FormularioDigitarSPSADTPage.upgrade();
                 AutorizacaoUltimasSolicitacoesPage.upgrade();
                 AutorizacaoUltimasSolicitacoesBuscarStatusPage.upgrade();
-                FaturamentoDigitarConsultarPage.upgrade();
-                FaturamentoDigitarConsultarDetalhePage.upgrade();
+                FaturamentoVisualizarFiltroPage.upgrade();
+                FaturamentoVisualizarFiltrarPorDataPage.upgrade();
+                FaturamentoVisualizarDetalharLotePage.upgrade();
             };
 
 

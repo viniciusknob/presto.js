@@ -1,4 +1,4 @@
-# Presto.js 1.3.3
+# Presto.js 1.3.4
 Useful things for work with health insurance.
 
 ### Instalação
@@ -20,6 +20,7 @@ UserScript: [presto.user.js](../../raw/main/presto.user.js)
 + Em Faturamento > Digitar, escolher um paciente por meio de um combobox (SaudePetrobras);
 + Em Recurso de Glosa > Filtrar, possibilitar a consulta de status de protocolos em massa (SaudePetrobras);
 + Em Autorização > Últimas Solicitações > Buscar Status, copiar os dados referentes a senha para recurso de glosa (SaudePetrobras);
++ Em Faturamento > Digitacao > Consultar, escolher datas de início e fim por meio de um combobox com mês/ano (SaudePetrobras);
 
 ## Keep npm Packages Updated
 ```bash

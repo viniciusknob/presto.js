@@ -8,16 +8,16 @@
 
     const _Page = (function () {
         const
-            // Inicio > Autorização > Últimas Solicitações
-            PATHNAME_REGEX = /autorizacao\/ultimasSolicitacoes\/ultimasSolicitacoes/,
+            // Inicio > Faturamento > Digitação > Consultar
+            PATHNAME_REGEX = /faturamento\/visualizar\/filtro/,
 
-            FORM_FIELDSET_SELECTOR = "#formularioBase fieldset";
+            FORM_FIELDSET_SELECTOR = "#formularioFiltroVisualizarDigitacao fieldset";
 
         const 
             _upgrade = () => {
                 const div = SaudePetrobrasHelper.createSelectOptionsMonthYear({
-                    dateBeginFieldId: '#txtDataEnvioDe',
-                    dateEndFieldId: '#txtDataEnvioAte',
+                    dateBeginFieldId: '#txtVisualizarDataInicial2',
+                    dateEndFieldId: '#txtVisualizarDataFinal2',
                 });
 
                 const referenceNode = document.querySelector(FORM_FIELDSET_SELECTOR);
@@ -32,5 +32,5 @@
         };
     })();
 
-    Presto.pages.AutorizacaoUltimasSolicitacoesPage = _Page;
+    Presto.pages.FaturamentoVisualizarFiltroPage = _Page;
 })(Presto, location);

@@ -10,8 +10,9 @@
         FormularioDigitarSPSADTPage,
         AutorizacaoUltimasSolicitacoesPage,
         AutorizacaoUltimasSolicitacoesBuscarStatusPage,
-        FaturamentoDigitarConsultarPage,
-        FaturamentoDigitarConsultarDetalhePage,
+        FaturamentoVisualizarFiltroPage,
+        FaturamentoVisualizarFiltrarPorDataPage,
+        FaturamentoVisualizarDetalharLotePage,
 
     } = Presto.pages;
 
@@ -38,8 +39,9 @@
                 FormularioDigitarSPSADTPage.upgrade();
                 AutorizacaoUltimasSolicitacoesPage.upgrade();
                 AutorizacaoUltimasSolicitacoesBuscarStatusPage.upgrade();
-                FaturamentoDigitarConsultarPage.upgrade();
-                FaturamentoDigitarConsultarDetalhePage.upgrade();
+                FaturamentoVisualizarFiltroPage.upgrade();
+                FaturamentoVisualizarFiltrarPorDataPage.upgrade();
+                FaturamentoVisualizarDetalharLotePage.upgrade();
             };
 
 

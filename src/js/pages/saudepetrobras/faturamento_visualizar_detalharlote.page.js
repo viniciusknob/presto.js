@@ -13,25 +13,22 @@
 	const _Page = function() {
 
         const
-            // Inicio > Faturamento > Digitação > Consultar
-            PATHNAME_REGEX = /faturamento\/visualizar\/filtrarPorData/;
+            // Inicio > Faturamento > Digitação > Consultar > Detalhe
+            PATHNAME_REGEX = /faturamento\/visualizar\/detalharLote/;
 
         const
             __createCopyButton_onclick = function () {
                 Analytics.sendEvent('clickButton', 'log', 'btnCopy');
 
-                let tbodyTrList = document.querySelectorAll('#tblListaLoteFaturamento tbody tr');
+                let tbodyTrList = document.querySelectorAll('.tab-administracao tbody tr');
                 let barArr = [], bazArr = [];
 
                 tbodyTrList.forEach(tr => {
-                    const allowed = [2,3,4,5,6,7];
-                    tr.querySelectorAll('td').forEach((td, index) => {
-                        if (allowed.includes(index)) {
-                            let value = td.textContent;
-                            if (/\d+\.\d+/.test(value))
-                                value = value.replace('.', ',');
-                            barArr.push(value.trim());
-                        }
+                    tr.querySelectorAll('td').forEach(td => {
+                        let value = td.textContent;
+                        if (/^R\$/.test(value))
+                            value = value.replace('R$', '');
+                        barArr.push(value.trim());
                     });
                     let barArrJoined = barArr.join('\t');
                     bazArr.push(barArrJoined);
@@ -61,6 +58,6 @@
 		};
 	}();
 
-	Presto.pages.FaturamentoDigitarConsultarPage = _Page;
+	Presto.pages.FaturamentoVisualizarDetalharLotePage = _Page;
 
 })(Presto, location);
