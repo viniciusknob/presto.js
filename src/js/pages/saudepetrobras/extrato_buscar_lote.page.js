@@ -55,7 +55,9 @@
 
                             if (/Motivo.+Glosa/.test(labelText)) {
                                 let reasons = Array.from(label.parentElement.parentElement.querySelectorAll('ul li'));
-                                reasons = reasons.map(reason => reason.textContent.trim());
+                                reasons = reasons
+                                    .map(reason => reason.textContent.trim())
+                                    .map(reason => reason.replace(/\t/g, ''));
                                 value += ` (${reasons.join(';\n')});`;
                                 glosas.push(value);
                                 return;
