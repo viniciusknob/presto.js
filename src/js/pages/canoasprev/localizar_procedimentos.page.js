@@ -1,57 +1,48 @@
 (function (Presto, location, jQuery) {
-    "use strict";
+  "use strict";
 
-    const {
-        Analytics,
-        Clipboard,
-        Snackbar,
-        FAB,
+  const { Analytics, Clipboard, Snackbar, FAB } = Presto.modules;
 
-    } = Presto.modules;
+  const _Page = (function () {
+    const PATHNAME_REGEX = /GuiasTISS\/LocalizarProcedimentos/;
 
-    const _Page = (function () {
+    const __createCopyButton_relatorioMensal_onclick = () => {
+        Analytics.sendEvent("clickButton", "log", "btnCopyToReportMonthly");
 
-        const
-            PATHNAME_REGEX = /GuiasTISS\/LocalizarProcedimentos/;
+        const selectors = ["Senha", "CodigoBenficiario", "NomeBeneficiario"];
 
-        const 
-            __createCopyButton_relatorioMensal_onclick = () => {
-                Analytics.sendEvent('clickButton', 'log', 'btnCopyToReportMonthly');
+        let table = [];
+        document
+          .querySelectorAll("[data-bind*=guia-template]")
+          .forEach((div) => {
+            let line = [];
+            selectors.forEach((selector) => {
+              line.push(
+                div.querySelector(`[data-bind*=${selector}]`)?.textContent
+              );
+            });
+            table.push(line.join("\t"));
+          });
 
-                const selectors = [
-                    "DtLiberacao", "Senha", "CodigoBenficiario", "NomeBeneficiario"
-                ];
+        Clipboard.write(table.join("\n")).then(() => Snackbar.fire("Copiado!"));
+      },
+      _upgrade = () => {
+        FAB.build([
+          {
+            textLabel: "Copiar dados (relatório mensal)",
+            iconClass: "lar la-clipboard",
+            click: __createCopyButton_relatorioMensal_onclick,
+          },
+        ]);
+      },
+      _init = () => {
+        if (PATHNAME_REGEX.test(location.pathname)) _upgrade();
+      };
 
-                let table = [];
-                document.querySelectorAll("[data-bind*=guia-template]").forEach(div => {
-                    let line = [];
-                    selectors.forEach(selector => {
-                        line.push(div.querySelector(`[data-bind*=${selector}]`).textContent);
-                    });
-                    table.push(line.join('\t'));
-                });
-                
-                Clipboard.write(table.join('\n'))
-                    .then(() => Snackbar.fire('Copiado!'));
-            },
-            _upgrade = () => {
-                FAB.build([
-                    {
-                        textLabel: 'Copiar dados (relatório mensal)',
-                        iconClass: 'lar la-clipboard',
-                        click: __createCopyButton_relatorioMensal_onclick,
-                    },
-                ]);
-            },
-            _init = () => {
-                if (PATHNAME_REGEX.test(location.pathname)) _upgrade();
-            };
+    return {
+      upgrade: _init,
+    };
+  })();
 
-        return {
-            upgrade: _init,
-        };
-    })();
-
-    Presto.pages.LocalizarProcedimentosPage = _Page;
-
+  Presto.pages.LocalizarProcedimentosPage = _Page;
 })(Presto, location, jQuery);

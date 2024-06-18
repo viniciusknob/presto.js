@@ -1,77 +1,67 @@
-(function(Presto, location) {
+(function (Presto, location) {
+  "use strict";
 
-	'use strict';
+  const { Analytics, Clipboard, Snackbar, FAB, CommonsHelper } = Presto.modules;
 
-    const {
-        Analytics,
-        Clipboard,
-        Snackbar,
-        FAB,
-        SaudePetrobrasHelper,
+  const _Page = (function () {
+    const // Inicio > Faturamento > Digitação > Consultar > Buscar
+      PATHNAME_REGEX = /faturamento\/visualizar\/filtrarPorData/,
+      FORM_FIELDSET_SELECTOR = "#formularioFiltroVisualizarDigitacao fieldset";
 
-    } = Presto.modules;
+    const __createCopyButton_onclick = function () {
+        Analytics.sendEvent("clickButton", "log", "btnCopy");
 
-	const _Page = function() {
+        let tbodyTrList = document.querySelectorAll(
+          "#tblListaLoteFaturamento tbody tr"
+        );
+        let barArr = [],
+          bazArr = [];
 
-        const
-            // Inicio > Faturamento > Digitação > Consultar > Buscar
-            PATHNAME_REGEX = /faturamento\/visualizar\/filtrarPorData/,
+        tbodyTrList.forEach((tr) => {
+          const allowed = [2, 3, 4, 5, 6, 7];
+          tr.querySelectorAll("td").forEach((td, index) => {
+            if (allowed.includes(index)) {
+              let value = td.textContent;
+              if (/\d+\.\d+/.test(value)) value = value.replace(".", ",");
+              barArr.push(value.trim());
+            }
+          });
+          let barArrJoined = barArr.join("\t");
+          bazArr.push(barArrJoined);
+          barArr = [];
+        });
 
-            FORM_FIELDSET_SELECTOR = "#formularioFiltroVisualizarDigitacao fieldset";
+        let bazArrJoined = bazArr.join("\n");
 
-        const
-            __createCopyButton_onclick = function () {
-                Analytics.sendEvent('clickButton', 'log', 'btnCopy');
+        Clipboard.write(bazArrJoined).then(() => Snackbar.fire("Copiado!"));
+      },
+      _upgrade = () => {
+        FAB.build([
+          {
+            textLabel: "Copiar dados",
+            iconClass: "lar la-copy",
+            click: __createCopyButton_onclick,
+          },
+        ]);
 
-                let tbodyTrList = document.querySelectorAll('#tblListaLoteFaturamento tbody tr');
-                let barArr = [], bazArr = [];
+        const div = CommonsHelper.createSelectOptionsMonthYear({
+          dateBeginFieldId: "#txtVisualizarDataInicial",
+          dateEndFieldId: "#txtVisualizarDataFinal",
+        });
+        div.style.paddingBottom = "3em";
+        div.style.marginLeft = "8em";
 
-                tbodyTrList.forEach(tr => {
-                    const allowed = [2,3,4,5,6,7];
-                    tr.querySelectorAll('td').forEach((td, index) => {
-                        if (allowed.includes(index)) {
-                            let value = td.textContent;
-                            if (/\d+\.\d+/.test(value))
-                                value = value.replace('.', ',');
-                            barArr.push(value.trim());
-                        }
-                    });
-                    let barArrJoined = barArr.join('\t');
-                    bazArr.push(barArrJoined);
-                    barArr = [];
-                });
+        const referenceNode = document.querySelector(FORM_FIELDSET_SELECTOR);
+        referenceNode.insertBefore(div, referenceNode.firstChild);
+      },
+      _init = () => {
+        if (PATHNAME_REGEX.test(location.pathname)) _upgrade();
+      };
 
-                let bazArrJoined = bazArr.join('\n');
+    return {
+      upgrade: _init,
+    };
+  })();
 
-                Clipboard.write(bazArrJoined)
-                    .then(() => Snackbar.fire('Copiado!'));
-
-            },
-            _upgrade = () => {
-                FAB.build([ {
-                    textLabel: 'Copiar dados',
-                    iconClass: 'lar la-copy',
-                    click: __createCopyButton_onclick,
-                } ]);
-
-                const div = SaudePetrobrasHelper.createSelectOptionsMonthYear({
-                    dateBeginFieldId: '#txtVisualizarDataInicial',
-                    dateEndFieldId: '#txtVisualizarDataFinal',
-                });
-
-                const referenceNode = document.querySelector(FORM_FIELDSET_SELECTOR);
-                referenceNode.insertBefore(div, referenceNode.firstChild);
-            },
-            _init = () => {
-                if (PATHNAME_REGEX.test(location.pathname))
-                    _upgrade();
-            };
-
-		return {
-            upgrade: _init,
-		};
-	}();
-
-	Presto.pages.FaturamentoVisualizarFiltrarPorDataPage = _Page;
-
+  Presto.pages.FaturamentoVisualizarFiltrarPorDataPage = _Page;
 })(Presto, location);
