@@ -33,8 +33,15 @@
         let partialDate = event.target.value.split("/");
         let year = partialDate[1];
         let month = parseInt(partialDate[0]) + 1;
-        let monthStr = ("" + month).padStart(2, "0");
+        let monthStr = `${month}`.padStart(2, "0");
         let endOfMonth = new Date(year, month, 0).getDate();
+
+        if (
+          parseInt(year) === currentYear &&
+          parseInt(partialDate[0]) === currentMonth
+        ) {
+          endOfMonth = new Date().getDate();
+        }
 
         document.querySelector(
           options.dateBeginFieldId

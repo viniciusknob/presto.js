@@ -81,7 +81,14 @@ function _jsConcat() {
 }
 
 function _jsMinify() {
-  return src(["dist/presto.js"]).pipe(jsMinify()).pipe(dest(DIST_PATH));
+  return src(["dist/presto.js"])
+    .pipe(jsMinify())
+    .pipe(
+      rename({
+        suffix: ".min",
+      })
+    )
+    .pipe(dest(DIST_PATH));
 }
 
 const files = (env) => [

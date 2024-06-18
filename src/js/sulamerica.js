@@ -17,16 +17,22 @@
       // Prestador > Serviços Médicos > Contas Médicas > Faturamento > Fechamento de Lote > Fechamento de Lote
       FECHAMENTO_DE_LOTE = /fechamento-de-lote/,
       // Prestador > Serviços Médicos > Contas Médicas > Faturamento > Validar procedimento autorizado
-      PROCEDIMENTO_AUTORIZADO = /validar-procedimento-autorizado/;
+      PROCEDIMENTO_AUTORIZADO = /validar-procedimento-autorizado/,
+      // Prestador > Serviços Médicos > Demonstrativos TISS 3 > Demonstrativo de Pagamento > Demonstrativo de Pagamento
+      DEMONSTRATIVO_PAGAMENTO =
+        /demonstrativos-tiss-3(\/demonstrativo-de-pagamento)?/;
 
     const _is = function () {
         return HOST.test(location.host);
       },
       _isLoaded = function () {
-        return (
-          document.querySelector("#box-validacao-beneficiario") ||
-          document.querySelector(".box-indicador-elegibilidade")
-        );
+        return [
+          "#box-validacao-beneficiario",
+          ".box-indicador-elegibilidade",
+          ".box-padrao",
+        ]
+          .map((x) => document.querySelector(x))
+          .some((x) => x);
       },
       _buildComboBox = function (insuredList = []) {
         if (insuredList.length === 0) return null;
@@ -66,7 +72,20 @@
         return select;
       },
       _fixAnyPage = function () {
-        if (ELEGIBILIDADE_RESULTADO.test(location.pathname)) {
+        if (DEMONSTRATIVO_PAGAMENTO.test(location.pathname)) {
+          // BEGIN create field for month/year
+          const dateBeginFieldSelector = 'input[name="data-inicial"]';
+          const div = CommonsHelper.createSelectOptionsMonthYear({
+            dateBeginFieldId: dateBeginFieldSelector,
+            dateEndFieldId: 'input[name="data-final"]',
+          });
+          div.firstElementChild.style.width = "initial"; // label
+          div.style.display = "block";
+          const node = document.querySelector(dateBeginFieldSelector)
+            .parentElement.parentElement;
+          node.insertBefore(div, node.childNodes[1]);
+          // END create field for month/year
+        } else if (ELEGIBILIDADE_RESULTADO.test(location.pathname)) {
           let eligibleBox = document.querySelector(
             ".box-indicador-elegibilidade .linha"
           );
