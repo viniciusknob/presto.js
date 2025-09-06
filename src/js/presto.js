@@ -1,16 +1,14 @@
-(function(window) {
+(function (window) {
+  "use strict";
 
-	'use strict';
+  const _Module = (function () {
+    return {
+      env: "__env__",
+      models: {},
+      modules: {},
+      pages: {},
+    };
+  })();
 
-	const _Module = function() {
-
-		return {
-			env: '__env__',
-			modules: {},
-			pages: {},
-		};
-	}();
-
-	window.Presto = _Module;
-
+  window.Presto = _Module;
 })(window);

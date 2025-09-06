@@ -66,13 +66,19 @@ function _minToJS(env) {
 function _jsConcat() {
   return src([
     "src/js/presto.js",
-    "src/js/analytics.js",
-    "src/js/helpers/*",
+    "src/js/helpers/*.js",
+    "src/js/databases/indexeddb/client.js",
+    "src/js/databases/indexeddb/models/*.js",
+    "src/js/pages/sulamerica/*.js",
     "src/js/sulamerica.js",
     "src/js/pages/saudepetrobras/*.js",
     "src/js/saudepetrobras.js",
     "src/js/pages/canoasprev/*.js",
     "src/js/canoasprev.js",
+    "src/js/pages/cabergs/*.js",
+    "src/js/cabergs.js",
+    "src/js/pages/contaagil/*.js",
+    "src/js/contaagil.js",
     "src/js/main.js",
     "src/js/init.js",
   ])

@@ -15,14 +15,11 @@
 }
 
 .fab-image-holder {
-    background-image: url(https://i.imgur.com/6xZyXGT.png);
+    background-image: url(https://i.imgur.com/x6YRXy8.png);
+    background-color: white;
     background-size: 58px;
     background-repeat: no-repeat;
     background-position: right;
-}
-
-.fab-icon-holder:hover {
-    opacity: 0.8;
 }
 
 .fab-icon-holder i {
@@ -83,3 +80,10 @@
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
     margin-right: 10px;
 }
+
+/* Specific content for numbers */
+.icon-number-1::before { content: "①"; }
+.icon-number-2::before { content: "②"; }
+.icon-number-3::before { content: "③"; }
+.icon-number-4::before { content: "④"; }
+.icon-number-5::before { content: "⑤"; }

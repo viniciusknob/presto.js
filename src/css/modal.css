@@ -30,11 +30,15 @@
     background-color: #fff;
     padding: 30px;
     max-width: 500px;
-    max-height: 100vh;
+    max-height: 80vh;
     border-radius: 4px;
     overflow-y: auto;
     box-sizing: border-box;
     min-width: 30%;
+}
+
+.modal__container header, .modal__container main {
+    padding: initial !important;
 }
 
 .modal__header {
@@ -47,8 +51,8 @@
     margin-top: 0;
     margin-bottom: 0;
     font-weight: 600;
-    font-size: 1.25rem;
-    line-height: 1.25;
+    font-size: 1.5rem;
+    line-height: 1.5;
     color: #ba39be;
     box-sizing: border-box;
 }
@@ -205,6 +209,23 @@
 
 .modal__container .form-group {
     margin-bottom: 1rem;
+}
+
+.modal__container .form-check {
+    position: relative;
+    display: block;
+    padding-left: 1.25rem;
+}
+
+.modal__container .form-check-input {
+    position: absolute;
+    margin-top: .3rem;
+    margin-left: -1.25rem;
+    padding-right: 20px;
+}
+
+.modal__container .form-check-label {
+    margin-left: 5px;
 }
 
 .modal__container label {

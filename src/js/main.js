@@ -1,57 +1,28 @@
-(function(Presto, setInterval, clearInterval) {
+(function (Presto, setInterval, clearInterval) {
+  const { Style, SulAmerica, SaudePetrobras, CanoasPrev, Cabergs, ContaAgil } =
+    Presto.modules;
 
-    const {
-        Analytics,
-        Style,
-        SulAmerica,
-        SaudePetrobras,
-        CanoasPrev,
-    
-    } = Presto.modules;
+  const pages = [SulAmerica, SaudePetrobras, CanoasPrev, Cabergs, ContaAgil];
 
-    const
-        _init = function() {
-            Style.inject();
+  const _init = function () {
+      Style.inject();
+      pages.forEach((x) => {
+        if (x.is()) x.fix();
+      });
+    },
+    _isLoaded = function () {
+      return pages.some((x) => x.is() && x.isLoaded());
+    },
+    _initWithDelay = function () {
+      var interval = setInterval(function () {
+        if (_isLoaded()) {
+          clearInterval(interval);
+          _init();
+        }
+      }, 250);
+    };
 
-            if (SulAmerica.is()) {
-                Analytics.config('_SulAmerica');
-                SulAmerica.fix();
-            }
-            if (SaudePetrobras.is()) {
-                Analytics.config('_SaudePetrobras');
-                SaudePetrobras.fix();
-            }
-            if (CanoasPrev.is()) {
-                Analytics.config('_CanoasPrev');
-                CanoasPrev.fix();
-            }
+  /* Public Functions */
 
-            // others...
-        },
-        _isLoaded = function() {
-            if (SulAmerica.is())
-                return SulAmerica.isLoaded();
-
-            if (SaudePetrobras.is())
-                return SaudePetrobras.isLoaded();
-
-            if (CanoasPrev.is())
-                return CanoasPrev.isLoaded();
-
-            // others...
-        },
-        _initWithDelay = function() {
-            var interval = setInterval(function() {
-                if (_isLoaded()) {
-                    clearInterval(interval);
-                    _init();
-                }
-            }, 250);
-        };
-
-
-    /* Public Functions */
-
-    Presto.bless = _initWithDelay;
-
+  Presto.bless = _initWithDelay;
 })(window.Presto, window.setInterval, window.clearInterval);
