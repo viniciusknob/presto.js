@@ -1,7 +1,10 @@
 (function (Presto, location) {
   "use strict";
 
-  const { Analytics, IndexedDB, CommonsHelper } = Presto.modules;
+  const { PatientModel } = Presto.models;
+  const dbVersion = 2; // IndexedDB
+  const { SolicitacaoDeSPSADTPage, GuiaDeSPSADTIncluirPage } = Presto.pages;
+  const { CommonsHelper } = Presto.modules;
 
   const _Module = (function () {
     const HOST = /saude.sulamericaseguros.com.br/,
@@ -11,7 +14,8 @@
       ELEGIBILIDADE_RESULTADO =
         /validacao-de-elegibilidade\/elegibilidade-resultado/,
       // Prestador > Segurado > Validação de Procedimentos > Solicitação
-      PROCEDIMENTO_SOLICITACAO = /validacao-de-procedimentos(\/solicitacao)?/,
+      PROCEDIMENTO_SOLICITACAO =
+        /validacao-de-procedimentos\/?(solicitacao)?\/?$/,
       // Prestador > Segurado > Validação de Procedimentos > Consulta > Consulta de Solicitações
       PROCEDIMENTO_CONSULTA = /validacao-de-procedimentos\/consulta/,
       // Prestador > Serviços Médicos > Contas Médicas > Faturamento > Fechamento de Lote > Fechamento de Lote
@@ -34,7 +38,7 @@
           .map((x) => document.querySelector(x))
           .some((x) => x);
       },
-      _buildComboBox = function (insuredList = []) {
+      _buildComboBox = async function (insuredList = []) {
         if (insuredList.length === 0) return null;
 
         let select = document.createElement("SELECT");
@@ -47,8 +51,6 @@
 
         select.onchange = () => {
           let option = select.querySelector(":checked");
-
-          Analytics.sendEvent("person_selected", "log", option.value, false);
 
           document.querySelector("#codigo-beneficiario-1").value =
             option.value.substr(0, 3);
@@ -64,14 +66,17 @@
 
         insuredList.forEach((insured) => {
           let option = document.createElement("OPTION");
-          option.value = insured.uid;
+          option.value = insured.id;
           option.textContent = insured.name;
           select.appendChild(option);
         });
 
         return select;
       },
-      _fixAnyPage = function () {
+      _fixAnyPage = async function () {
+        GuiaDeSPSADTIncluirPage.upgrade();
+        SolicitacaoDeSPSADTPage.upgrade();
+
         if (DEMONSTRATIVO_PAGAMENTO.test(location.pathname)) {
           // BEGIN create field for month/year
           const dateBeginFieldSelector = 'input[name="data-inicial"]';
@@ -91,8 +96,8 @@
           );
           let eligible = eligibleBox.querySelector(".atencao").textContent;
 
-          var person = {
-            uid: "",
+          let patient = {
+            id: "",
             name: "",
           };
 
@@ -102,23 +107,25 @@
               if (strong) {
                 let strongText = strong.textContent;
                 if (/Carteira/.test(strongText)) {
-                  person.uid = strong.parentElement
+                  patient.id = strong.parentElement
                     .querySelector("span")
                     .textContent.replace(/\s/g, "");
                 }
                 if (/Nome/.test(strongText)) {
-                  person.name =
+                  patient.name =
                     strong.parentElement.querySelector("span").textContent;
                 }
               }
             });
           });
 
-          Analytics.sendEvent(
-            "checkPersonEligibility",
-            "log",
-            `${person.uid} => ${eligible}`
-          );
+          if (patient.id) {
+            const _patient = await PatientModel.getOrCreateDB(dbVersion)
+              .then(PatientModel.getAll)
+              .then((patients) => patients.find((x) => x.id === patient.id));
+
+            patient = _patient || patient;
+          }
 
           if (eligible === "SIM") {
             let divStatus = document.createElement("DIV");
@@ -127,23 +134,21 @@
             divStatus.textContent = "Salvando...";
             eligibleBox.appendChild(divStatus);
 
-            IndexedDB.getOrCreateDB()
-              .then((db) => IndexedDB.addOrUpdateItem(db, person))
+            PatientModel.getOrCreateDB(dbVersion)
+              .then((db) => PatientModel.addOrUpdateItem(db, patient))
               .then(() => {
                 eligibleBox.querySelector("#js-presto-status").textContent =
                   "Salvo!";
-                Analytics.sendEvent("personSaved", "log", person.uid);
               })
               .catch((err) => {
-                Analytics.sendException(
-                  `_fixAnyPage: ${JSON.stringify(err)}`,
-                  true
+                console.log(
+                  `_fixAnyPage: [eligible=${eligible}] ${JSON.stringify(err)}`
                 );
               });
           }
         } else {
-          IndexedDB.getOrCreateDB()
-            .then(IndexedDB.getAll)
+          PatientModel.getOrCreateDB(dbVersion)
+            .then(PatientModel.getAll)
             .then(_buildComboBox)
             .then((comboBox) => {
               if (!comboBox) return;
@@ -206,6 +211,11 @@
                 node.insertBefore(div, node.childNodes[2]);
                 // END create field for month/year
               }
+            })
+            .catch((err) => {
+              console.log(
+                `_fixAnyPage: [eligible=${eligible}] ${JSON.stringify(err)}`
+              );
             });
         }
       };
