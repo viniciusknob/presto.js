@@ -1,7 +1,8 @@
 (function (Presto, location) {
   "use strict";
 
-  const { Clipboard, Snackbar, FAB } = Presto.modules;
+  const { Clipboard, Snackbar, FAB, DomHelper } = Presto.modules;
+  const { $$ } = DomHelper;
 
   const _Page = (function () {
     const // Inicio > Autorização > Últimas Solicitações > Buscar Status Autorização
@@ -19,7 +20,7 @@
     ];
 
     const __btnCopy_onclick = function () {
-        const labelList = document.querySelectorAll("#body label");
+        const labelList = $$("#body label");
         let barArr = [];
 
         labelList.forEach((label) => {
@@ -43,11 +44,11 @@
           barArr.push(`${labelText} ${value}`);
         });
 
-        const thList = document.querySelectorAll(".tab-administracao th");
-        const trList = document.querySelectorAll(".tab-administracao tr");
+        const thList = $$(".tab-administracao th");
+        const trList = $$(".tab-administracao tr");
 
         trList.forEach((tr) => {
-          tr.querySelectorAll("td").forEach((td, index) => {
+          $$("td", tr).forEach((td, index) => {
             let tdText = td.textContent;
             barArr.push(`${thList[index].textContent}: ${tdText}`);
           });

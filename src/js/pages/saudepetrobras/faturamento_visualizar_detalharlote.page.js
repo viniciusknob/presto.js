@@ -1,21 +1,20 @@
 (function (Presto, location) {
   "use strict";
 
-  const { Clipboard, Snackbar, FAB } = Presto.modules;
+  const { Clipboard, Snackbar, FAB, DomHelper } = Presto.modules;
+  const { $$ } = DomHelper;
 
   const _Page = (function () {
     const // Inicio > Faturamento > Digitação > Consultar > Detalhe
       PATHNAME_REGEX = /faturamento\/visualizar\/detalharLote/;
 
     const __createCopyButton_onclick = function () {
-        let tbodyTrList = document.querySelectorAll(
-          ".tab-administracao tbody tr"
-        );
+        let tbodyTrList = $$(".tab-administracao tbody tr");
         let barArr = [],
           bazArr = [];
 
         tbodyTrList.forEach((tr) => {
-          tr.querySelectorAll("td").forEach((td) => {
+          $$("td", tr).forEach((td) => {
             let value = td.textContent;
             if (/^R\$/.test(value)) value = value.replace("R$", "");
             barArr.push(value.trim());

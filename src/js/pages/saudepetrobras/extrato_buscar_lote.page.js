@@ -1,24 +1,23 @@
 (function (Presto, location) {
   "use strict";
 
-  const { Clipboard, Snackbar, FAB } = Presto.modules;
+  const { Clipboard, Snackbar, FAB, DomHelper } = Presto.modules;
+  const { $$ } = DomHelper;
 
   const _Page = (function () {
     const // Inicio > Extrato > Visualizar > Detalhe do Pagamento > Detalhe Lote
       PATHNAME_REGEX = /extrato\/buscarLote/;
 
     const __createDeepCopyButton_extratoDetalhePgtoLote_onclick = function () {
-        let formList = document.querySelectorAll(
-          'form[id*="formularioTratarGlosas"]'
-        );
+        let formList = $$('form[id*="formularioTratarGlosas"]');
         let bazArr = [],
           todoTasks = [];
 
         formList.forEach((form) => {
           var table = form.querySelector("table");
-          var tbodyTrList = table.querySelectorAll("tbody tr");
+          var tbodyTrList = $$("tbody tr", table);
           tbodyTrList.forEach((tr) => {
-            tr.querySelectorAll("td").forEach((td) => {
+            $$("td", tr).forEach((td) => {
               let child = td.firstElementChild;
               if (child && child.nodeName === "A") {
                 todoTasks.push(child);
@@ -39,7 +38,7 @@
 
             let glosas = [];
 
-            eAjaxContent.querySelectorAll("label").forEach((label) => {
+            $$("label", eAjaxContent).forEach((label) => {
               let labelText = label.textContent.replace(":", "").trim();
               let value = label.parentElement
                 .querySelector("span")
@@ -47,9 +46,7 @@
                 .trim();
 
               if (/Motivo.+Glosa/.test(labelText)) {
-                let reasons = Array.from(
-                  label.parentElement.parentElement.querySelectorAll("ul li")
-                );
+                let reasons = $$("ul li", label.parentElement.parentElement);
                 reasons = reasons
                   .map((reason) => reason.textContent.trim())
                   .map((reason) => reason.replace(/\t/g, ""));
@@ -88,21 +85,19 @@
         execTask();
       },
       __createCopyButton_extratoDetalhePgtoLote_onclick = function () {
-        let formList = document.querySelectorAll(
-          'form[id*="formularioTratarGlosas"]'
-        );
+        let formList = $$('form[id*="formularioTratarGlosas"]');
         let bazArr = [],
           todoTasks = [];
 
         formList.forEach((form) => {
           var table = form.querySelector("table");
-          var tbodyTrList = table.querySelectorAll("tbody tr");
+          var tbodyTrList = $$("tbody tr", table);
           tbodyTrList.forEach((tr) => {
             var barArr = [];
 
             // bloco cinza...
 
-            var labelList = form.querySelectorAll("label");
+            var labelList = $$("label", form);
             labelList.forEach((label) => {
               let value = label.parentElement
                 .querySelector("span")
@@ -110,7 +105,7 @@
               barArr.push(value);
             });
 
-            tr.querySelectorAll("td").forEach((td) => {
+            $$("td", tr).forEach((td) => {
               let child = td.firstElementChild;
               if (child && child.nodeName === "A") {
                 todoTasks.push(child);

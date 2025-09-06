@@ -2,7 +2,8 @@
   "use strict";
 
   const { PersonModel } = Presto.models;
-  const { Snackbar, FAB, Modal } = Presto.modules;
+  const { Snackbar, FAB, Modal, DomHelper } = Presto.modules;
+  const { $$ } = DomHelper;
 
   const _Page = (function () {
     const // Inicio > Faturamento > Digitação > Digitar > Serviço Profissional/Serviço Auxiliar de Diagnóstico e Terapia - SP/SADT
@@ -34,7 +35,7 @@
       __removeInitialAppointment = () => {
         let fakeTR = document.querySelector("#trProcedimento0");
         if (fakeTR) {
-          let tdArr = Array.from(fakeTR.querySelectorAll("td"));
+          let tdArr = $$("td", fakeTR);
           if (tdArr.filter((td) => td.textContent === "-").length) {
             fakeTR.querySelector("input").checked = true;
             document
@@ -222,9 +223,7 @@
           "ordemItemModalProcedimento",
         ];
 
-        Array.from(
-          document.querySelectorAll("input[type=text],select,textarea")
-        )
+        $$("input[type=text],select,textarea")
           .filter((item) => idIgnoredArr.includes(item.id) === false)
           .map((item) => {
             let _onchange = item.onchange;

@@ -1,7 +1,8 @@
 (function (Presto, location) {
   "use strict";
 
-  const { Clipboard, Snackbar, FAB, CommonsHelper } = Presto.modules;
+  const { Clipboard, Snackbar, FAB, CommonsHelper, DomHelper } = Presto.modules;
+  const { $$ } = DomHelper;
 
   const _Page = (function () {
     const // Inicio > Faturamento > Digitação > Consultar > Buscar
@@ -9,15 +10,13 @@
       FORM_FIELDSET_SELECTOR = "#formularioFiltroVisualizarDigitacao fieldset";
 
     const __createCopyButton_onclick = function () {
-        let tbodyTrList = document.querySelectorAll(
-          "#tblListaLoteFaturamento tbody tr"
-        );
+        let tbodyTrList = $$("#tblListaLoteFaturamento tbody tr");
         let barArr = [],
           bazArr = [];
 
         tbodyTrList.forEach((tr) => {
           const allowed = [2, 3, 4, 5, 6, 7];
-          tr.querySelectorAll("td").forEach((td, index) => {
+          $$("td", tr).forEach((td, index) => {
             if (allowed.includes(index)) {
               let value = td.textContent;
               if (/\d+\.\d+/.test(value)) value = value.replace(".", ",");

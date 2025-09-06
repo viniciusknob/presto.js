@@ -1,7 +1,8 @@
 (function (Presto, location) {
   "use strict";
 
-  const { Clipboard, Snackbar, FAB } = Presto.modules;
+  const { Clipboard, Snackbar, FAB, DomHelper } = Presto.modules;
+  const { $$ } = DomHelper;
 
   const _Page = (function () {
     const // Inicio > Acompanhar recurso de glosa > Detalhe
@@ -17,7 +18,7 @@
     ];
 
     const __btnCopy_onclick = function () {
-        let labelList = document.querySelectorAll("#body label");
+        let labelList = $$("#body label");
         let barArr = [],
           bazArr = [];
 
@@ -32,9 +33,7 @@
           let value = "";
 
           if (/Motivo.+Glosa/.test(labelText)) {
-            let reasons = Array.from(
-              label.parentElement.querySelectorAll("ul li")
-            );
+            let reasons = $$("ul li", label.parentElement);
             reasons = reasons.map((reason) => reason.textContent.trim());
             value = reasons.join(";");
             stopLoop = true;
@@ -60,7 +59,7 @@
         );
       },
       __btnCopyMessages_onclick = function () {
-        let labelList = document.querySelectorAll("#body label");
+        let labelList = $$("#body label");
 
         let stopLoop = false;
         let resourceNumber = "";
@@ -82,7 +81,7 @@
 
         let lines = [];
 
-        var boxMessageList = document.querySelectorAll(
+        var boxMessageList = $$(
           ".box-resposta-mensagem,.box-resposta-resposta"
         );
         boxMessageList.forEach((box) => {

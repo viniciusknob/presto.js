@@ -1,7 +1,8 @@
 (function (Presto, location) {
   "use strict";
 
-  const { Clipboard, Snackbar, FAB } = Presto.modules;
+  const { Clipboard, Snackbar, FAB, DomHelper } = Presto.modules;
+  const { $$ } = DomHelper;
 
   const _Page = (function () {
     const PATHNAME_REGEX = /GuiasTISS\/LocalizarProcedimentos/;
@@ -10,17 +11,15 @@
         const selectors = ["Senha", "CodigoBenficiario", "NomeBeneficiario"];
 
         let table = [];
-        document
-          .querySelectorAll("[data-bind*=guia-template]")
-          .forEach((div) => {
-            let line = [];
-            selectors.forEach((selector) => {
-              line.push(
-                div.querySelector(`[data-bind*=${selector}]`)?.textContent
-              );
-            });
-            table.push(line.join("\t"));
+        $$("[data-bind*=guia-template]").forEach((div) => {
+          let line = [];
+          selectors.forEach((selector) => {
+            line.push(
+              div.querySelector(`[data-bind*=${selector}]`)?.textContent
+            );
           });
+          table.push(line.join("\t"));
+        });
 
         Clipboard.write(table.join("\n")).then(() => Snackbar.fire("Copiado!"));
       },

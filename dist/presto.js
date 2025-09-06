@@ -215,7 +215,7 @@
   "use strict";
 
   const _Module = (function () {
-    // Seletores
+    // Selectors
     const $$ = (selector, scope = document) => [
       ...scope.querySelectorAll(selector),
     ];
@@ -731,7 +731,7 @@
 
         let carteira = undefined;
         $$(".linha").forEach((line) => {
-          let strongList = line.querySelectorAll("strong");
+          let strongList = $$("strong", line);
           strongList.forEach((strong) => {
             if (strong) {
               let strongText = strong.textContent;
@@ -1000,7 +1000,7 @@
 
         let carteira = undefined;
         $$(".linha").forEach((line) => {
-          let strongList = line.querySelectorAll("strong");
+          let strongList = $$("strong", line);
           strongList.forEach((strong) => {
             if (strong) {
               let strongText = strong.textContent;
@@ -1461,7 +1461,7 @@
         const trList = $$(".tab-administracao tr");
 
         trList.forEach((tr) => {
-          tr.querySelectorAll("td").forEach((td, index) => {
+          $$("td", tr).forEach((td, index) => {
             let tdText = td.textContent;
             barArr.push(`${thList[index].textContent}: ${tdText}`);
           });
@@ -1509,9 +1509,9 @@
 
         formList.forEach((form) => {
           var table = form.querySelector("table");
-          var tbodyTrList = table.querySelectorAll("tbody tr");
+          var tbodyTrList = $$("tbody tr", table);
           tbodyTrList.forEach((tr) => {
-            tr.querySelectorAll("td").forEach((td) => {
+            $$("td", tr).forEach((td) => {
               let child = td.firstElementChild;
               if (child && child.nodeName === "A") {
                 todoTasks.push(child);
@@ -1532,7 +1532,7 @@
 
             let glosas = [];
 
-            eAjaxContent.querySelectorAll("label").forEach((label) => {
+            $$("label", eAjaxContent).forEach((label) => {
               let labelText = label.textContent.replace(":", "").trim();
               let value = label.parentElement
                 .querySelector("span")
@@ -1540,9 +1540,7 @@
                 .trim();
 
               if (/Motivo.+Glosa/.test(labelText)) {
-                let reasons = Array.from(
-                  label.parentElement.parentElement.querySelectorAll("ul li")
-                );
+                let reasons = $$("ul li", label.parentElement.parentElement);
                 reasons = reasons
                   .map((reason) => reason.textContent.trim())
                   .map((reason) => reason.replace(/\t/g, ""));
@@ -1587,13 +1585,13 @@
 
         formList.forEach((form) => {
           var table = form.querySelector("table");
-          var tbodyTrList = table.querySelectorAll("tbody tr");
+          var tbodyTrList = $$("tbody tr", table);
           tbodyTrList.forEach((tr) => {
             var barArr = [];
 
             // bloco cinza...
 
-            var labelList = form.querySelectorAll("label");
+            var labelList = $$("label", form);
             labelList.forEach((label) => {
               let value = label.parentElement
                 .querySelector("span")
@@ -1601,7 +1599,7 @@
               barArr.push(value);
             });
 
-            tr.querySelectorAll("td").forEach((td) => {
+            $$("td", tr).forEach((td) => {
               let child = td.firstElementChild;
               if (child && child.nodeName === "A") {
                 todoTasks.push(child);
@@ -1740,7 +1738,7 @@
       __removeInitialAppointment = () => {
         let fakeTR = document.querySelector("#trProcedimento0");
         if (fakeTR) {
-          let tdArr = Array.from(fakeTR.querySelectorAll("td"));
+          let tdArr = $$("td", fakeTR);
           if (tdArr.filter((td) => td.textContent === "-").length) {
             fakeTR.querySelector("input").checked = true;
             document
@@ -2134,7 +2132,7 @@
           bazArr = [];
 
         tbodyTrList.forEach((tr) => {
-          tr.querySelectorAll("td").forEach((td) => {
+          $$("td", tr).forEach((td) => {
             let value = td.textContent;
             if (/^R\$/.test(value)) value = value.replace("R$", "");
             barArr.push(value.trim());
@@ -2187,7 +2185,7 @@
 
         tbodyTrList.forEach((tr) => {
           const allowed = [2, 3, 4, 5, 6, 7];
-          tr.querySelectorAll("td").forEach((td, index) => {
+          $$("td", tr).forEach((td, index) => {
             if (allowed.includes(index)) {
               let value = td.textContent;
               if (/\d+\.\d+/.test(value)) value = value.replace(".", ",");
@@ -2302,9 +2300,7 @@
           let value = "";
 
           if (/Motivo.+Glosa/.test(labelText)) {
-            let reasons = Array.from(
-              label.parentElement.querySelectorAll("ul li")
-            );
+            let reasons = $$("ul li", label.parentElement);
             reasons = reasons.map((reason) => reason.textContent.trim());
             value = reasons.join(";");
             stopLoop = true;
@@ -2599,12 +2595,10 @@
         setTimeout(() => clearInterval(interval), 10000);
       },
       __changeStatusAppointments_onclick = () => {
-        lines = Array.from(
-          document
-            .querySelectorAll("#lote-detalhes tbody")[0]
-            .querySelectorAll(
-              "tr td span[data-bind='displayDate: dataLiberacaoProcedimento']"
-            )
+        const tbody = $$("#lote-detalhes tbody");
+        lines = $$(
+          "tr td span[data-bind='displayDate: dataLiberacaoProcedimento']",
+          tbody[0]
         ).map((e) => e.parentElement.parentElement);
 
         fnProcess();
@@ -2635,7 +2629,8 @@
 (function (Presto, location) {
   "use strict";
 
-  const { Clipboard, Snackbar, FAB } = Presto.modules;
+  const { Clipboard, Snackbar, FAB, DomHelper } = Presto.modules;
+  const { $$ } = DomHelper;
 
   const _Page = (function () {
     const PATHNAME_REGEX = /GuiasTISS\/LocalizarProcedimentos/;
@@ -2644,17 +2639,15 @@
         const selectors = ["Senha", "CodigoBenficiario", "NomeBeneficiario"];
 
         let table = [];
-        document
-          .querySelectorAll("[data-bind*=guia-template]")
-          .forEach((div) => {
-            let line = [];
-            selectors.forEach((selector) => {
-              line.push(
-                div.querySelector(`[data-bind*=${selector}]`)?.textContent
-              );
-            });
-            table.push(line.join("\t"));
+        $$("[data-bind*=guia-template]").forEach((div) => {
+          let line = [];
+          selectors.forEach((selector) => {
+            line.push(
+              div.querySelector(`[data-bind*=${selector}]`)?.textContent
+            );
           });
+          table.push(line.join("\t"));
+        });
 
         Clipboard.write(table.join("\n")).then(() => Snackbar.fire("Copiado!"));
       },
@@ -2923,7 +2916,7 @@
         );
         localStorage.setItem(
           PROFILES_BULK_INSERT_APPOINTMENTS_ID,
-          Array.from(modal.querySelectorAll(`input[type="checkbox"]:checked`))
+          $$(`input[type="checkbox"]:checked`, modal)
             .map((x) => x.value)
             .join(`,`)
         );
@@ -3165,7 +3158,7 @@
                 // ...selecionar o primeiro profissional
                 const selSpanSuggestion =
                   'table.rich-sb-ext-decor-3 td[class*="rich-table-cell"] span';
-                Array.from(divSuggestions.querySelectorAll(selSpanSuggestion))
+                $$(selSpanSuggestion, divSuggestions)
                   .filter((x) => x.textContent == patient.professional)[0]
                   .click();
 
@@ -3194,7 +3187,7 @@
                 clearInterval(interval0);
 
                 // acessar opção 'Atendimento PRESENCIAL'
-                modal.querySelectorAll('input[type="radio"]')[1].click();
+                $$('input[type="radio"]', modal)[1].click();
 
                 // somente resolve quando o input de senha estiver criado/aparecendo
                 const interval1 = setInterval(() => {

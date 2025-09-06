@@ -1,7 +1,8 @@
 (function (Presto, location, jQuery) {
   "use strict";
 
-  const { CommonsHelper } = Presto.modules;
+  const { CommonsHelper, DomHelper } = Presto.modules;
+  const { $$ } = DomHelper;
 
   const _Page = (function () {
     const PATHNAME_REGEX = /notas_fiscais\/emitir_nota/;
@@ -29,12 +30,8 @@
         textarea.rows = 1;
 
         document.querySelector("#numDeskChar").style.padding = 0;
-        Array.from(document.querySelectorAll("hr")).forEach(
-          (hr) => (hr.style.margin = "10px 0")
-        );
-        Array.from(document.querySelectorAll(".form-group")).forEach(
-          (fg) => (fg.style.margin = "0 0 5px 0")
-        );
+        $$("hr").forEach((hr) => (hr.style.margin = "10px 0"));
+        $$(".form-group").forEach((fg) => (fg.style.margin = "0 0 5px 0"));
 
         const interval = setInterval(() => {
           const target = document.querySelector(".servico-show");

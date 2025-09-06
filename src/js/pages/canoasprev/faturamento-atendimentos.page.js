@@ -55,12 +55,10 @@
         setTimeout(() => clearInterval(interval), 10000);
       },
       __changeStatusAppointments_onclick = () => {
-        lines = Array.from(
-          document
-            .querySelectorAll("#lote-detalhes tbody")[0]
-            .querySelectorAll(
-              "tr td span[data-bind='displayDate: dataLiberacaoProcedimento']"
-            )
+        const tbody = $$("#lote-detalhes tbody");
+        lines = $$(
+          "tr td span[data-bind='displayDate: dataLiberacaoProcedimento']",
+          tbody[0]
         ).map((e) => e.parentElement.parentElement);
 
         fnProcess();

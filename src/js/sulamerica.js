@@ -2,9 +2,10 @@
   "use strict";
 
   const { PatientModel } = Presto.models;
-  const dbVersion = 2; // IndexedDB
   const { SolicitacaoDeSPSADTPage, GuiaDeSPSADTIncluirPage } = Presto.pages;
-  const { CommonsHelper } = Presto.modules;
+  const { CommonsHelper, DomHelper } = Presto.modules;
+  const { $$ } = DomHelper;
+  const dbVersion = 2; // IndexedDB
 
   const _Module = (function () {
     const HOST = /saude.sulamericaseguros.com.br/,
@@ -101,8 +102,8 @@
             name: "",
           };
 
-          document.querySelectorAll(".linha").forEach((line) => {
-            let strongList = line.querySelectorAll("strong");
+          $$(".linha").forEach((line) => {
+            let strongList = $$("strong", line);
             strongList.forEach((strong) => {
               if (strong) {
                 let strongText = strong.textContent;

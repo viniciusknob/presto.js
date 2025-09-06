@@ -2,7 +2,8 @@
   "use strict";
 
   const { PatientModel } = Presto.models;
-  const { CommonsHelper } = Presto.modules;
+  const { CommonsHelper, DomHelper } = Presto.modules;
+  const { $$ } = DomHelper;
 
   const _Page = (function () {
     const PATHNAME_REGEX = /prestador\/guiaexameexecucao/;
@@ -14,7 +15,7 @@
           const tbody = document.getElementById(
             "mainForm:resultadoPesquisaTable:tb"
           );
-          const rows = Array.from(tbody.querySelectorAll("tr.rich-table-row"));
+          const rows = $$("tr.rich-table-row", tbody);
 
           const selPatientName = "span[id$=nomePacientTooltip]";
           rows.sort((a, b) => {
@@ -71,7 +72,7 @@
                 clearInterval(interval);
                 patient.id = eCarteira.textContent.replace(/\D/g, "");
 
-                const eExecProcItems = document.querySelectorAll(
+                const eExecProcItems = $$(
                   `${painelSelector} ${execProcSelector}`
                 );
                 const execProc = Array.from(eExecProcItems).find(
@@ -142,7 +143,7 @@
                 // ...selecionar o primeiro profissional
                 const selSpanSuggestion =
                   'table.rich-sb-ext-decor-3 td[class*="rich-table-cell"] span';
-                Array.from(divSuggestions.querySelectorAll(selSpanSuggestion))
+                $$(selSpanSuggestion, divSuggestions)
                   .filter((x) => x.textContent == patient.professional)[0]
                   .click();
 
@@ -171,7 +172,7 @@
                 clearInterval(interval0);
 
                 // acessar opção 'Atendimento PRESENCIAL'
-                modal.querySelectorAll('input[type="radio"]')[1].click();
+                $$('input[type="radio"]', modal)[1].click();
 
                 // somente resolve quando o input de senha estiver criado/aparecendo
                 const interval1 = setInterval(() => {

@@ -1,14 +1,15 @@
 (function (Presto, location) {
   "use strict";
 
-  const { Clipboard, Snackbar, FAB } = Presto.modules;
+  const { Clipboard, Snackbar, FAB, DomHelper } = Presto.modules;
+  const { $$ } = DomHelper;
 
   const _Page = (function () {
     const // Inicio > Extrato > Visualizar > Detalhe do Pagamento
       PATHNAME_REGEX = /extrato\/detalhePagamento/;
 
     const __createCopyButton_extratoDetalhePgto_onclick = function () {
-        let labelList = document.querySelectorAll("#dados-solicitacao label");
+        let labelList = $$("#dados-solicitacao label");
         let barArr = [],
           bazArr = [];
 

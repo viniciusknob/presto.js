@@ -2,7 +2,8 @@
   "use strict";
 
   const { PatientModel } = Presto.models;
-  const { FAB, Modal } = Presto.modules;
+  const { FAB, Modal, DomHelper } = Presto.modules;
+  const { $$ } = DomHelper;
 
   const _Page = (function () {
     const // Guias > Guia de SP/SADT
@@ -169,7 +170,7 @@
 
               // Feche automaticamente o modal que apresenta a senha
               const interval = setInterval(() => {
-                const bArr = Array.from(document.querySelectorAll("b"));
+                const bArr = $$("b");
                 const b = bArr?.find((b) =>
                   b.textContent.includes("Nº Guia Operadora")
                 );
@@ -241,7 +242,7 @@
         );
         localStorage.setItem(
           PROFILES_BULK_INSERT_APPOINTMENTS_ID,
-          Array.from(modal.querySelectorAll(`input[type="checkbox"]:checked`))
+          $$(`input[type="checkbox"]:checked`, modal)
             .map((x) => x.value)
             .join(`,`)
         );

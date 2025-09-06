@@ -3,7 +3,8 @@
 
   const { PatientModel } = Presto.models;
   const dbVersion = 2; // IndexedDB
-  const { Snackbar, FAB, CommonsHelper } = Presto.modules;
+  const { Snackbar, FAB, CommonsHelper, DomHelper } = Presto.modules;
+  const { $$ } = DomHelper;
 
   const _Page = (function () {
     // validacao-de-procedimentos-tiss-3/validacao-de-procedimentos/solicitacao/solicitacao-de-sp-sadt.htm
@@ -16,8 +17,8 @@
         };
 
         let carteira = undefined;
-        document.querySelectorAll(".linha").forEach((line) => {
-          let strongList = line.querySelectorAll("strong");
+        $$(".linha").forEach((line) => {
+          let strongList = $$("strong", line);
           strongList.forEach((strong) => {
             if (strong) {
               let strongText = strong.textContent;

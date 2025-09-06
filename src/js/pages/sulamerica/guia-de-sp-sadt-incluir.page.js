@@ -3,7 +3,8 @@
 
   const { PatientModel } = Presto.models;
   const dbVersion = 2; // IndexedDB
-  const { Snackbar, FAB, Modal, CommonsHelper } = Presto.modules;
+  const { Snackbar, FAB, Modal, CommonsHelper, DomHelper } = Presto.modules;
+  const { $$ } = DomHelper;
 
   const _Page = (function () {
     const PATHNAME_REGEX = /guia-de-sp-sadt-incluir/,
@@ -20,8 +21,8 @@
         };
 
         let carteira = undefined;
-        document.querySelectorAll(".linha").forEach((line) => {
-          let strongList = line.querySelectorAll("strong");
+        $$(".linha").forEach((line) => {
+          let strongList = $$("strong", line);
           strongList.forEach((strong) => {
             if (strong) {
               let strongText = strong.textContent;
@@ -82,8 +83,7 @@
 
       __removeInitialAppointment = () => {
         const selector = ".bt-excluir-procedimento-realizado";
-        const elems = document.querySelectorAll(selector);
-        Array.from(elems).forEach((e) => e.click());
+        $$(selector).forEach((e) => e.click());
       },
       _addAppointment = (days, monthYear, unitValue) => {
         const day = days.shift();
