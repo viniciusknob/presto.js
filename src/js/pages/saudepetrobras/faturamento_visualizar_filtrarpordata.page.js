@@ -1,7 +1,7 @@
 (function (Presto, location) {
   "use strict";
 
-  const { Analytics, Clipboard, Snackbar, FAB, CommonsHelper } = Presto.modules;
+  const { Clipboard, Snackbar, FAB, CommonsHelper } = Presto.modules;
 
   const _Page = (function () {
     const // Inicio > Faturamento > Digitação > Consultar > Buscar
@@ -9,8 +9,6 @@
       FORM_FIELDSET_SELECTOR = "#formularioFiltroVisualizarDigitacao fieldset";
 
     const __createCopyButton_onclick = function () {
-        Analytics.sendEvent("clickButton", "log", "btnCopy");
-
         let tbodyTrList = document.querySelectorAll(
           "#tblListaLoteFaturamento tbody tr"
         );
