@@ -1,14 +1,12 @@
-(function (Presto, location, jQuery) {
+(function (Presto, location) {
   "use strict";
 
-  const { Analytics, Clipboard, Snackbar, FAB } = Presto.modules;
+  const { Clipboard, Snackbar, FAB } = Presto.modules;
 
   const _Page = (function () {
     const PATHNAME_REGEX = /GuiasTISS\/LocalizarProcedimentos/;
 
     const __createCopyButton_relatorioMensal_onclick = () => {
-        Analytics.sendEvent("clickButton", "log", "btnCopyToReportMonthly");
-
         const selectors = ["Senha", "CodigoBenficiario", "NomeBeneficiario"];
 
         let table = [];
@@ -45,4 +43,4 @@
   })();
 
   Presto.pages.LocalizarProcedimentosPage = _Page;
-})(Presto, location, jQuery);
+})(Presto, location);

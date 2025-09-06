@@ -1,40 +1,35 @@
 (function (Presto, location) {
+  "use strict";
 
-    'use strict';
+  const {
+    LocalizarProcedimentosPage,
+    ViewGuiaSPSADTPage,
+    FaturamentoAtendimentosPage,
+  } = Presto.pages;
 
-    const {
-        LocalizarProcedimentosPage,
-        ViewGuiaSPSADTPage,
+  const _Module = (function () {
+    const HOST = /novowebplancanoasprev\.facilinformatica\.com\.br/;
 
-    } = Presto.pages;
+    const _is = function () {
+        return HOST.test(location.host);
+      },
+      _isLoaded = function () {
+        return document.querySelector("#collapseMenu");
+      },
+      _fixAnyPage = function () {
+        ViewGuiaSPSADTPage.upgrade();
+        LocalizarProcedimentosPage.upgrade();
+        FaturamentoAtendimentosPage.upgrade();
+      };
 
-    const _Module = function () {
+    /* Public Functions */
 
-        const HOST = /novowebplancanoasprev\.facilinformatica\.com\.br/;
+    return {
+      is: _is,
+      isLoaded: _isLoaded,
+      fix: _fixAnyPage,
+    };
+  })();
 
-        const
-            _is = function () {
-                return HOST.test(location.host);
-            },
-            _isLoaded = function () {
-                return document.querySelector("#collapseMenu");
-            },
-            _fixAnyPage = function () {
-                ViewGuiaSPSADTPage.upgrade();
-                LocalizarProcedimentosPage.upgrade();
-            };
-
-
-        /* Public Functions */
-
-        return {
-            is: _is,
-            isLoaded: _isLoaded,
-            fix: _fixAnyPage,
-        };
-
-    }();
-
-    Presto.modules.CanoasPrev = _Module;
-
+  Presto.modules.CanoasPrev = _Module;
 })(Presto, location);
