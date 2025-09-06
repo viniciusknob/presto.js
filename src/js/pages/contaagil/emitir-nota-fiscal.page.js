@@ -2,7 +2,7 @@
   "use strict";
 
   const { CommonsHelper, DomHelper } = Presto.modules;
-  const { $$ } = DomHelper;
+  const { $, $$ } = DomHelper;
 
   const _Page = (function () {
     const PATHNAME_REGEX = /notas_fiscais\/emitir_nota/;
@@ -25,16 +25,16 @@
           "#CST",
           "1 - Tributada integralmente e sujeita ao regime do Simples Nacional"
         );
-        const textarea = document.querySelector("#servicoDescricao");
+        const textarea = $("#servicoDescricao");
         textarea.value = "Sessões de Terapia";
         textarea.rows = 1;
 
-        document.querySelector("#numDeskChar").style.padding = 0;
+        $("#numDeskChar").style.padding = 0;
         $$("hr").forEach((hr) => (hr.style.margin = "10px 0"));
         $$(".form-group").forEach((fg) => (fg.style.margin = "0 0 5px 0"));
 
         const interval = setInterval(() => {
-          const target = document.querySelector(".servico-show");
+          const target = $(".servico-show");
           if (target?.style.display === "block") {
             clearInterval(interval);
             const tgSty = target.style;
@@ -47,8 +47,7 @@
             };
             target.parentNode.insertBefore(anchor, target);
 
-            const rowBtnEnviar =
-              document.querySelector("#btnPostNf").parentElement.parentElement;
+            const rowBtnEnviar = $("#btnPostNf").parentElement.parentElement;
             target.parentNode.insertBefore(rowBtnEnviar, target.nextSibling);
 
             setTimeout(() => (tgSty.display = "none"), 250);
@@ -58,7 +57,7 @@
       _init = () => {
         if (PATHNAME_REGEX.test(location.pathname)) {
           const interval = setInterval(() => {
-            const btn = document.querySelector("#servicoDescricao");
+            const btn = $("#servicoDescricao");
             if (btn) {
               clearInterval(interval);
               _upgrade();

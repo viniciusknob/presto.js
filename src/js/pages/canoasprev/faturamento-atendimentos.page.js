@@ -1,7 +1,8 @@
 (function (Presto, location) {
   "use strict";
 
-  const { Snackbar, FAB } = Presto.modules;
+  const { Snackbar, FAB, DomHelper } = Presto.modules;
+  const { $ } = DomHelper;
 
   const _Page = (function () {
     const PATHNAME_REGEX = /GuiasTISS\/FaturamentoAtendimentos/;
@@ -29,17 +30,17 @@
       },
       fnProcess = () => {
         const tr = lines.shift();
-        const date = tr.querySelector(selectors.date).textContent;
+        const date = $(selectors.date, tr).textContent;
         const _isLastMonth = isLastMonth(date);
         if (_isLastMonth) {
-          tr.querySelector(selectors.iconSuccess).click();
+          $(selectors.iconSuccess, tr).click();
           console.log(`${date}: OK`);
         } else {
-          tr.querySelector(selectors.iconRemove).click();
+          $(selectors.iconRemove, tr).click();
           console.log(`${date}: Removed!`);
         }
         const interval = setInterval(() => {
-          const iconStatus = tr.querySelector(selectors.iconStatus);
+          const iconStatus = $(selectors.iconStatus, tr);
           const clazz = `text-${_isLastMonth ? "success" : "danger"}`;
           const updated = Array.from(iconStatus.classList).includes(clazz);
           if (updated) {

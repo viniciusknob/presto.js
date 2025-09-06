@@ -13,6 +13,8 @@
     FaturamentoVisualizarFiltrarPorDataPage,
     FaturamentoVisualizarDetalharLotePage,
   } = Presto.pages;
+  const { DomHelper } = Presto.modules;
+  const { $ } = DomHelper;
 
   const _Module = (function () {
     const HOST = /portaltiss\.saudepetrobras\.com\.br/;
@@ -22,7 +24,7 @@
       },
       _isLoaded = function () {
         const maybe = [".titulos-formularios", ".box-formularios"];
-        return maybe.some((selector) => document.querySelector(selector));
+        return maybe.some((selector) => $(selector));
       },
       _fixAnyPage = function () {
         RecursoGlosaBuscaDetalhePage.upgrade();

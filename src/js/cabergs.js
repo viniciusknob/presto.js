@@ -2,6 +2,8 @@
   "use strict";
 
   const { ExecucaoGuiaSADTPage } = Presto.pages;
+  const { DomHelper } = Presto.modules;
+  const { $ } = DomHelper;
 
   const _Module = (function () {
     const HOST = /portal\.cabergs\.org\.br/;
@@ -10,7 +12,7 @@
         return HOST.test(location.host);
       },
       _isLoaded = function () {
-        return document.querySelector("#container");
+        return $("#container");
       },
       _fixAnyPage = function () {
         ExecucaoGuiaSADTPage.upgrade();

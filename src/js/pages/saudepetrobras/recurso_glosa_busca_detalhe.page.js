@@ -2,7 +2,7 @@
   "use strict";
 
   const { Clipboard, Snackbar, FAB, DomHelper } = Presto.modules;
-  const { $$ } = DomHelper;
+  const { $, $$ } = DomHelper;
 
   const _Page = (function () {
     const // Inicio > Acompanhar recurso de glosa > Detalhe
@@ -41,7 +41,7 @@
             if (
               _btnCopy_ignoreFields.some((item) => item == labelText) === false
             ) {
-              let spanElement = label.parentElement.querySelector("span");
+              let spanElement = $("span", label.parentElement);
               value = spanElement ? spanElement.textContent : "";
               value = value ? value.replace("R$", "").trim() : "";
             } else {
@@ -73,7 +73,7 @@
           if (/Motivo.+Glosa/.test(labelText)) stopLoop = true;
 
           if (/^Recurso/.test(labelText)) {
-            let spanElement = label.parentElement.querySelector("span");
+            let spanElement = $("span", label.parentElement);
             let value = spanElement ? spanElement.textContent : "";
             resourceNumber = value ? value.replace("R$", "").trim() : "";
           }
@@ -85,12 +85,10 @@
           ".box-resposta-mensagem,.box-resposta-resposta"
         );
         boxMessageList.forEach((box) => {
-          let boxp1div = box.querySelector(".box-resposta-p1 div");
-          let user = boxp1div.querySelector("label").textContent.trim();
-          let date = boxp1div.querySelector("span").textContent.trim();
-          let message = box
-            .querySelector(".box-resposta-p2 span")
-            .textContent.trim();
+          let boxp1div = $(".box-resposta-p1 div", box);
+          let user = $("label", boxp1div).textContent.trim();
+          let date = $("span", boxp1div).textContent.trim();
+          let message = $(".box-resposta-p2 span", box).textContent.trim();
           message = message.replace(/[\n\t]*/g, "");
 
           let line = [resourceNumber, user, date, message];

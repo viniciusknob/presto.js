@@ -2,7 +2,7 @@
   "use strict";
 
   const { Clipboard, Snackbar, FAB, DomHelper } = Presto.modules;
-  const { $$ } = DomHelper;
+  const { $, $$ } = DomHelper;
 
   const _Page = (function () {
     const // Inicio > Autorização > Últimas Solicitações > Buscar Status Autorização
@@ -32,7 +32,7 @@
           if (
             _btnCopy_fields.some((fieldRegex) => fieldRegex.test(labelText))
           ) {
-            let spanElement = label.parentElement.querySelector("span");
+            let spanElement = $("span", label.parentElement);
             value = spanElement ? spanElement.textContent : "";
             value = value ? value.replace("R$", "").trim() : "";
           } else {

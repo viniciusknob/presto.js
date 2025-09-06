@@ -1,10 +1,10 @@
-(function (Presto, location) {
+(function (Presto, location, jQuery) {
   "use strict";
 
   const { PatientModel } = Presto.models;
   const dbVersion = 2; // IndexedDB
   const { Snackbar, FAB, Modal, CommonsHelper, DomHelper } = Presto.modules;
-  const { $$ } = DomHelper;
+  const { $, $$ } = DomHelper;
 
   const _Page = (function () {
     const PATHNAME_REGEX = /guia-de-sp-sadt-incluir/,
@@ -27,9 +27,10 @@
             if (strong) {
               let strongText = strong.textContent;
               if (/Carteira/.test(strongText)) {
-                carteira = strong.parentElement
-                  .querySelector("span")
-                  .textContent.replace(/\s/g, "");
+                carteira = $("span", strong.parentElement).textContent.replace(
+                  /\s/g,
+                  ""
+                );
               }
             }
           });
@@ -51,7 +52,7 @@
             const d = new Date();
             d.setDate(d.getDate() + 90);
             const sel = "#data-validade-senha";
-            document.querySelector(sel).value = formatBRDate(d);
+            $(sel).value = formatBRDate(d);
           }),
           Taskier.toText(
             "#nome-profissional-solicitante",
@@ -88,22 +89,15 @@
       _addAppointment = (days, monthYear, unitValue) => {
         const day = days.shift();
 
-        document.querySelector(
-          "[name='per.data']"
-        ).value = `${day}/${monthYear}`;
-
-        document.querySelector("[name='per.codigo-procedimento']").value =
-          "50000470";
-        document
-          .querySelector("[class='sasbt1 btn-busca-procedimento']")
-          .click();
+        $("[name='per.data']").value = `${day}/${monthYear}`;
+        $("[name='per.codigo-procedimento']").value = "50000470";
+        $("[class='sasbt1 btn-busca-procedimento']").click();
 
         setTimeout(() => {
-          document.querySelector("[name='per.quantidade']").value = "1";
-          document.querySelector("[name='per.valor-unitario']").value =
-            unitValue;
+          $("[name='per.quantidade']").value = "1";
+          $("[name='per.valor-unitario']").value = unitValue;
 
-          document.querySelector("#incluirPer").click();
+          $("#incluirPer").click();
 
           setTimeout(() => {
             if (days.length) {
@@ -118,25 +112,19 @@
         /**
          * Modal Validations
          */
-        let _days = document.querySelector(
-          MODAL_INPUT_APPOINTMENTS_DAYS_SELECTOR
-        ).value;
+        let _days = $(MODAL_INPUT_APPOINTMENTS_DAYS_SELECTOR).value;
         if (!!!_days) {
           Snackbar.fire("Informe os dias dos procedimentos!");
           return;
         }
 
-        let _monthYear = document.querySelector(
-          MODAL_INPUT_APPOINTMENTS_MONTH_YEAR_SELECTOR
-        ).value;
+        let _monthYear = $(MODAL_INPUT_APPOINTMENTS_MONTH_YEAR_SELECTOR).value;
         if (!!!_monthYear) {
           Snackbar.fire("Informe o mês/ano dos procedimentos!");
           return;
         }
 
-        let _unitValue = document.querySelector(
-          MODAL_INPUT_APPOINTMENTS_UNIT_VALUE_SELECTOR
-        ).value;
+        let _unitValue = $(MODAL_INPUT_APPOINTMENTS_UNIT_VALUE_SELECTOR).value;
         if (!!!_unitValue) {
           Snackbar.fire(
             "Informe o valor unitário dos procedimentos no formato 12,34!"
@@ -154,9 +142,10 @@
           ...Taskier.mapToFunc([
             Taskier.toFunc(__removeInitialAppointment),
             Taskier.toFunc(() => {
-              document
-                .querySelector("#formPer")
-                .scrollIntoView({ behavior: "smooth", block: "start" });
+              $("#formPer").scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+              });
 
               _days = _days.split(",").map((day) => day.padStart(2, "0"));
               _monthYear = `/${_monthYear}`;
@@ -222,13 +211,8 @@
         });
       },
       __buildPatientName = () => {
-        const e = document.querySelector(
-          ".box-padrao .box-padrao-int .tab .linha"
-        );
-
-        const carteira = e
-          .querySelector("div span")
-          .textContent.replace(/\s/g, "");
+        const e = $(".box-padrao .box-padrao-int .tab .linha");
+        const carteira = $("div span", e).textContent.replace(/\s/g, "");
 
         PatientModel.getOrCreateDB(dbVersion)
           .then(PatientModel.getAll)
@@ -269,4 +253,4 @@
   })();
 
   Presto.pages.GuiaDeSPSADTIncluirPage = _Page;
-})(Presto, location);
+})(window.Presto, window.location, window.jQuery);

@@ -13,6 +13,24 @@
   window.Presto = _Module;
 })(window);
 
+(function (Presto, document) {
+  "use strict";
+
+  const _Module = (function () {
+    // Selectors
+    const $ = (selector, scope = document) => scope?.querySelector(selector);
+    const $$ = (selector, scope = document) => [
+      ...(scope?.querySelectorAll(selector) || []),
+    ];
+
+    return { $, $$ };
+  })();
+
+  /* Module Definition */
+
+  Presto.modules.DomHelper = _Module;
+})(window.Presto, window.document);
+
 (function(Presto, navigator, isSecureContext, document) {
 
     'use strict';
@@ -58,6 +76,9 @@
 (function (Presto, document, jQuery) {
   "use strict";
 
+  const { DomHelper } = Presto.modules;
+  const { $ } = DomHelper;
+
   const _Module = (function () {
     const createSelectOptionsMonthYear = (options) => {
         let label = document.createElement("label");
@@ -100,12 +121,8 @@
             endOfMonth = new Date().getDate();
           }
 
-          document.querySelector(
-            options.dateBeginFieldId
-          ).value = `01/${monthStr}/${year}`;
-          document.querySelector(
-            options.dateEndFieldId
-          ).value = `${endOfMonth}/${monthStr}/${year}`;
+          $(options.dateBeginFieldId).value = `01/${monthStr}/${year}`;
+          $(options.dateEndFieldId).value = `${endOfMonth}/${monthStr}/${year}`;
         };
 
         let div = document.createElement("div");
@@ -115,7 +132,7 @@
         return div;
       },
       selectOption = (selector, optionByText) => {
-        const select = document.querySelector(selector);
+        const select = $(selector);
         const target = Array.from(select.options).find((x) =>
           new RegExp(optionByText).test(x.textContent)
         );
@@ -178,7 +195,7 @@
           } else {
             const { selector: sel, value: val } = task;
             if (task.type === "text") {
-              return () => (document.querySelector(sel).value = val);
+              return () => ($(sel).value = val);
             }
             if (task.type === "select") {
               return () => selectOption(sel, val);
@@ -210,23 +227,6 @@
 
   Presto.modules.CommonsHelper = _Module;
 })(window.Presto, window.document, window.jQuery);
-
-(function (Presto, document) {
-  "use strict";
-
-  const _Module = (function () {
-    // Selectors
-    const $$ = (selector, scope = document) => [
-      ...scope.querySelectorAll(selector),
-    ];
-
-    return { $$ };
-  })();
-
-  /* Module Definition */
-
-  Presto.modules.DomHelper = _Module;
-})(window.Presto, window.document);
 
 // https://stackoverflow.com/questions/29209244/css-floating-action-button
 
@@ -297,6 +297,9 @@
 (function (Presto) {
   "use strict";
 
+  const { DomHelper } = Presto.modules;
+  const { $ } = DomHelper;
+
   const _Module = (function () {
     const MODAL_SELECTOR = "#presto-modal",
       MODAL = `<div class="micromodal micromodal-slide" id="presto-modal" aria-hidden="true"><div class="modal__overlay" tabindex="-1" data-micromodal-close><div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="presto-modal-title"><header class="modal__header"><h2 class="modal__title" id="presto-modal-title"></h2><button class="modal__close" aria-label="Close modal" data-micromodal-close></button></header><main class="modal__content" id="presto-modal-content"></main><footer class="modal__footer"><button class="modal__btn modal__btn-primary" data-micromodal-close aria-label="Close this dialog window">Continue</button> <button class="modal__btn" data-micromodal-close aria-label="Close this dialog window">Close</button></footer></div></div></div>`;
@@ -321,15 +324,14 @@
       },
       _open = (options) => {
         const interval = setInterval(() => {
-          let modal = document.querySelector(MODAL_SELECTOR);
+          let modal = $(MODAL_SELECTOR);
           if (modal) {
             clearInterval(interval);
 
-            modal.querySelector(".modal__title").textContent = options.title;
-            modal.querySelector(".modal__content").innerHTML = "";
-            modal.querySelector(".modal__content").appendChild(options.content);
-            modal.querySelector(".modal__btn-primary").onclick =
-              options.mainAction;
+            $(".modal__title", modal).textContent = options.title;
+            $(".modal__content", modal).innerHTML = "";
+            $(".modal__content", modal).appendChild(options.content);
+            $(".modal__btn-primary", modal).onclick = options.mainAction;
 
             window.MicroModal.show(MODAL_SELECTOR.substring(1));
           }
@@ -398,39 +400,39 @@
   Presto.modules.Modal = _Module;
 })(window.Presto);
 
-(function(Presto) {
+(function (Presto) {
+  "use strict";
 
-    'use strict';
+  const { DomHelper } = Presto.modules;
+  const { $ } = DomHelper;
 
-    const _Module = function() {
+  const _Module = (function () {
+    const SHOW_CLASS = "show",
+      _fire = (message) => {
+        let x = $("#snackbar");
 
-        const
-            SHOW_CLASS = 'show',
-            $ = document.querySelector.bind(document),
-            _fire = message => {
-                let x = $('#snackbar');
+        if (!!!x) {
+          x = document.createElement("div");
+          x.id = "snackbar";
+          $("body").appendChild(x);
+        }
 
-                if (!!!x) {
-                    x = document.createElement('div');
-                    x.id = 'snackbar';
-                    $('body').appendChild(x);
-                }
+        x.textContent = message;
 
-                x.textContent = message;
+        x.classList.add(SHOW_CLASS);
+        setTimeout(() => {
+          x.classList.remove(SHOW_CLASS);
+        }, 2850);
+      };
 
-                x.classList.add(SHOW_CLASS);
-                setTimeout(() => { x.classList.remove(SHOW_CLASS) }, 2850);
-            };
+    return {
+      fire: _fire,
+    };
+  })();
 
-        return {
-            fire: _fire,
-        };
-    }();
+  /* Module Definition */
 
-    /* Module Definition */
-
-    Presto.modules.Snackbar = _Module;
-
+  Presto.modules.Snackbar = _Module;
 })(window.Presto);
 
 (function(Presto) {
@@ -707,13 +709,13 @@
   Presto.models.PersonModel = _Model;
 })(Presto, location);
 
-(function (Presto, location) {
+(function (Presto, location, jQuery) {
   "use strict";
 
   const { PatientModel } = Presto.models;
   const dbVersion = 2; // IndexedDB
   const { Snackbar, FAB, Modal, CommonsHelper, DomHelper } = Presto.modules;
-  const { $$ } = DomHelper;
+  const { $, $$ } = DomHelper;
 
   const _Page = (function () {
     const PATHNAME_REGEX = /guia-de-sp-sadt-incluir/,
@@ -736,9 +738,10 @@
             if (strong) {
               let strongText = strong.textContent;
               if (/Carteira/.test(strongText)) {
-                carteira = strong.parentElement
-                  .querySelector("span")
-                  .textContent.replace(/\s/g, "");
+                carteira = $("span", strong.parentElement).textContent.replace(
+                  /\s/g,
+                  ""
+                );
               }
             }
           });
@@ -760,7 +763,7 @@
             const d = new Date();
             d.setDate(d.getDate() + 90);
             const sel = "#data-validade-senha";
-            document.querySelector(sel).value = formatBRDate(d);
+            $(sel).value = formatBRDate(d);
           }),
           Taskier.toText(
             "#nome-profissional-solicitante",
@@ -797,22 +800,15 @@
       _addAppointment = (days, monthYear, unitValue) => {
         const day = days.shift();
 
-        document.querySelector(
-          "[name='per.data']"
-        ).value = `${day}/${monthYear}`;
-
-        document.querySelector("[name='per.codigo-procedimento']").value =
-          "50000470";
-        document
-          .querySelector("[class='sasbt1 btn-busca-procedimento']")
-          .click();
+        $("[name='per.data']").value = `${day}/${monthYear}`;
+        $("[name='per.codigo-procedimento']").value = "50000470";
+        $("[class='sasbt1 btn-busca-procedimento']").click();
 
         setTimeout(() => {
-          document.querySelector("[name='per.quantidade']").value = "1";
-          document.querySelector("[name='per.valor-unitario']").value =
-            unitValue;
+          $("[name='per.quantidade']").value = "1";
+          $("[name='per.valor-unitario']").value = unitValue;
 
-          document.querySelector("#incluirPer").click();
+          $("#incluirPer").click();
 
           setTimeout(() => {
             if (days.length) {
@@ -827,25 +823,19 @@
         /**
          * Modal Validations
          */
-        let _days = document.querySelector(
-          MODAL_INPUT_APPOINTMENTS_DAYS_SELECTOR
-        ).value;
+        let _days = $(MODAL_INPUT_APPOINTMENTS_DAYS_SELECTOR).value;
         if (!!!_days) {
           Snackbar.fire("Informe os dias dos procedimentos!");
           return;
         }
 
-        let _monthYear = document.querySelector(
-          MODAL_INPUT_APPOINTMENTS_MONTH_YEAR_SELECTOR
-        ).value;
+        let _monthYear = $(MODAL_INPUT_APPOINTMENTS_MONTH_YEAR_SELECTOR).value;
         if (!!!_monthYear) {
           Snackbar.fire("Informe o mês/ano dos procedimentos!");
           return;
         }
 
-        let _unitValue = document.querySelector(
-          MODAL_INPUT_APPOINTMENTS_UNIT_VALUE_SELECTOR
-        ).value;
+        let _unitValue = $(MODAL_INPUT_APPOINTMENTS_UNIT_VALUE_SELECTOR).value;
         if (!!!_unitValue) {
           Snackbar.fire(
             "Informe o valor unitário dos procedimentos no formato 12,34!"
@@ -863,9 +853,10 @@
           ...Taskier.mapToFunc([
             Taskier.toFunc(__removeInitialAppointment),
             Taskier.toFunc(() => {
-              document
-                .querySelector("#formPer")
-                .scrollIntoView({ behavior: "smooth", block: "start" });
+              $("#formPer").scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+              });
 
               _days = _days.split(",").map((day) => day.padStart(2, "0"));
               _monthYear = `/${_monthYear}`;
@@ -931,13 +922,8 @@
         });
       },
       __buildPatientName = () => {
-        const e = document.querySelector(
-          ".box-padrao .box-padrao-int .tab .linha"
-        );
-
-        const carteira = e
-          .querySelector("div span")
-          .textContent.replace(/\s/g, "");
+        const e = $(".box-padrao .box-padrao-int .tab .linha");
+        const carteira = $("div span", e).textContent.replace(/\s/g, "");
 
         PatientModel.getOrCreateDB(dbVersion)
           .then(PatientModel.getAll)
@@ -978,7 +964,7 @@
   })();
 
   Presto.pages.GuiaDeSPSADTIncluirPage = _Page;
-})(Presto, location);
+})(window.Presto, window.location, window.jQuery);
 
 (function (Presto, location) {
   "use strict";
@@ -986,7 +972,7 @@
   const { PatientModel } = Presto.models;
   const dbVersion = 2; // IndexedDB
   const { Snackbar, FAB, CommonsHelper, DomHelper } = Presto.modules;
-  const { $$ } = DomHelper;
+  const { $, $$ } = DomHelper;
 
   const _Page = (function () {
     // validacao-de-procedimentos-tiss-3/validacao-de-procedimentos/solicitacao/solicitacao-de-sp-sadt.htm
@@ -1005,9 +991,10 @@
             if (strong) {
               let strongText = strong.textContent;
               if (/Carteira/.test(strongText)) {
-                carteira = strong.parentElement
-                  .querySelector("span")
-                  .textContent.replace(/\s/g, "");
+                carteira = $("span", strong.parentElement).textContent.replace(
+                  /\s/g,
+                  ""
+                );
               }
             }
           });
@@ -1048,7 +1035,7 @@
             // const mm = d.getMonth();
             // const date = CommonsHelper.getFirstWeekdayOfMonth(yyyy, mm);
             const sel = "#data-atendimento";
-            document.querySelector(sel).value = formatBRDate(new Date());
+            $(sel).value = formatBRDate(new Date());
           }),
           Taskier.toSelect("#recem-nato", "Não"),
           Taskier.toSelect(
@@ -1056,34 +1043,30 @@
             "Convencional"
           ),
           Taskier.toText("[name='codigo-procedimento']", "50000470"),
-          Taskier.toFunc(() =>
-            document.querySelector("#btn-incluir-procedimento").click()
-          ),
+          Taskier.toFunc(() => $("#btn-incluir-procedimento").click()),
           Taskier.toFunc(() => {
             const sel = '[name="quantidade-solicitada"]';
-            const input = document.querySelector(sel);
+            const input = $(sel);
             input.value = qtdSolicitada;
 
             const event = new Event("change", { bubbles: true });
             input.dispatchEvent(event);
           }),
-          Taskier.toFunc(() =>
-            document.querySelector("#btn-validar-procedimento").click()
-          ),
+          Taskier.toFunc(() => $("#btn-validar-procedimento").click()),
         ]);
 
         Taskier.exec(tasks, 200)
           .then(() => Snackbar.fire("Pronto!"))
           .then(() => {
             const selector = "#btn-confirmar-solicitacao";
-            const elem = document.querySelector(selector);
+            const elem = $(selector);
             const originalClick = elem.click;
             elem.onclick = () => {
               const prefix = "solicitacao-sp-sadt.executante-solicitante";
-              const spcName = document.querySelector(
+              const spcName = $(
                 `[name='${prefix}.nome-profissional-solicitante']`
               ).value;
-              const spcNCRP = document.querySelector(
+              const spcNCRP = $(
                 `[name='${prefix}.conselho-profissional.numero']`
               ).value;
               patient = {
@@ -1149,7 +1132,7 @@
   const { PatientModel } = Presto.models;
   const { SolicitacaoDeSPSADTPage, GuiaDeSPSADTIncluirPage } = Presto.pages;
   const { CommonsHelper, DomHelper } = Presto.modules;
-  const { $$ } = DomHelper;
+  const { $, $$ } = DomHelper;
   const dbVersion = 2; // IndexedDB
 
   const _Module = (function () {
@@ -1181,7 +1164,7 @@
           ".box-indicador-elegibilidade",
           ".box-padrao",
         ]
-          .map((x) => document.querySelector(x))
+          .map((x) => $(x))
           .some((x) => x);
       },
       _buildComboBox = async function (insuredList = []) {
@@ -1196,18 +1179,13 @@
         select.appendChild(option);
 
         select.onchange = () => {
-          let option = select.querySelector(":checked");
+          let option = $(":checked", select);
 
-          document.querySelector("#codigo-beneficiario-1").value =
-            option.value.substr(0, 3);
-          document.querySelector("#codigo-beneficiario-2").value =
-            option.value.substr(3, 5);
-          document.querySelector("#codigo-beneficiario-3").value =
-            option.value.substr(8, 4);
-          document.querySelector("#codigo-beneficiario-4").value =
-            option.value.substr(12, 4);
-          document.querySelector("#codigo-beneficiario-5").value =
-            option.value.substr(16, 4);
+          $("#codigo-beneficiario-1").value = option.value.substr(0, 3);
+          $("#codigo-beneficiario-2").value = option.value.substr(3, 5);
+          $("#codigo-beneficiario-3").value = option.value.substr(8, 4);
+          $("#codigo-beneficiario-4").value = option.value.substr(12, 4);
+          $("#codigo-beneficiario-5").value = option.value.substr(16, 4);
         };
 
         insuredList.forEach((insured) => {
@@ -1232,15 +1210,12 @@
           });
           div.firstElementChild.style.width = "initial"; // label
           div.style.display = "block";
-          const node = document.querySelector(dateBeginFieldSelector)
-            .parentElement.parentElement;
+          const node = $(dateBeginFieldSelector).parentElement.parentElement;
           node.insertBefore(div, node.childNodes[1]);
           // END create field for month/year
         } else if (ELEGIBILIDADE_RESULTADO.test(location.pathname)) {
-          let eligibleBox = document.querySelector(
-            ".box-indicador-elegibilidade .linha"
-          );
-          let eligible = eligibleBox.querySelector(".atencao").textContent;
+          let eligibleBox = $(".box-indicador-elegibilidade .linha");
+          let eligible = $(".atencao", eligibleBox).textContent;
 
           let patient = {
             id: "",
@@ -1253,13 +1228,13 @@
               if (strong) {
                 let strongText = strong.textContent;
                 if (/Carteira/.test(strongText)) {
-                  patient.id = strong.parentElement
-                    .querySelector("span")
-                    .textContent.replace(/\s/g, "");
+                  patient.id = $(
+                    "span",
+                    strong.parentElement
+                  ).textContent.replace(/\s/g, "");
                 }
                 if (/Nome/.test(strongText)) {
-                  patient.name =
-                    strong.parentElement.querySelector("span").textContent;
+                  patient.name = $("span", strong.parentElement).textContent;
                 }
               }
             });
@@ -1282,10 +1257,10 @@
 
             PatientModel.getOrCreateDB(dbVersion)
               .then((db) => PatientModel.addOrUpdateItem(db, patient))
-              .then(() => {
-                eligibleBox.querySelector("#js-presto-status").textContent =
-                  "Salvo!";
-              })
+              .then(
+                () =>
+                  ($("#js-presto-status", eligibleBox).textContent = "Salvo!")
+              )
               .catch((err) => {
                 console.log(
                   `_fixAnyPage: [eligible=${eligible}] ${JSON.stringify(err)}`
@@ -1300,30 +1275,22 @@
               if (!comboBox) return;
 
               if (ELEGIBILIDADE.test(location.pathname)) {
-                let node = document.querySelector(
-                  "#box-validacao-beneficiario div"
-                );
+                let node = $("#box-validacao-beneficiario div");
                 node.insertBefore(comboBox, node.childNodes[2]);
-                document.querySelector(".box-padrao").style.width = "850px";
+                $(".box-padrao").style.width = "850px";
               }
               if (PROCEDIMENTO_SOLICITACAO.test(location.pathname)) {
                 if (PROCEDIMENTO_CONSULTA.test(location.pathname)) {
-                  let node = document.querySelector(
-                    "#box-validacao-beneficiario"
-                  );
+                  let node = $("#box-validacao-beneficiario");
                   node.insertBefore(comboBox, node.childNodes[2]);
                 } else {
-                  let node = document.querySelector(
-                    "#box-validacao-beneficiario div"
-                  );
+                  let node = $("#box-validacao-beneficiario div");
                   node.insertBefore(comboBox, node.childNodes[2]);
-                  document.querySelector(".box-padrao").style.width = "850px";
+                  $(".box-padrao").style.width = "850px";
                 }
               }
               if (FECHAMENTO_DE_LOTE.test(location.pathname)) {
-                let node = document.querySelector(
-                  "#box-validacao-beneficiario div"
-                );
+                let node = $("#box-validacao-beneficiario div");
                 node.insertBefore(comboBox, node.childNodes[2]);
 
                 // BEGIN create field for month/year
@@ -1332,17 +1299,14 @@
                   dateBeginFieldId: dateBeginFieldSelector,
                   dateEndFieldId: 'input[name="data-final"]',
                 });
-                node = document.querySelector(dateBeginFieldSelector)
-                  .parentElement.parentElement;
+                node = $(dateBeginFieldSelector).parentElement.parentElement;
                 node.insertBefore(div, node.childNodes[1]);
                 // END create field for month/year
               }
               if (PROCEDIMENTO_AUTORIZADO.test(location.pathname)) {
-                let node = document.querySelector(
-                  "#box-validacao-beneficiario"
-                );
+                let node = $("#box-validacao-beneficiario");
                 node.insertBefore(comboBox, node.childNodes[0]);
-                document.querySelector(".box-padrao").style.width = "780px";
+                $(".box-padrao").style.width = "780px";
 
                 // BEGIN create field for month/year
                 const dateBeginFieldSelector = 'input[name="data-inicio"]';
@@ -1352,8 +1316,7 @@
                 });
                 div.firstElementChild.style.width = "initial"; // label
                 div.style.marginRight = "1rem";
-                node = document.querySelector(dateBeginFieldSelector)
-                  .parentElement.parentElement;
+                node = $(dateBeginFieldSelector).parentElement.parentElement;
                 node.insertBefore(div, node.childNodes[2]);
                 // END create field for month/year
               }
@@ -1381,7 +1344,8 @@
 (function (Presto, location) {
   "use strict";
 
-  const { CommonsHelper } = Presto.modules;
+  const { CommonsHelper, DomHelper } = Presto.modules;
+  const { $ } = DomHelper;
 
   const _Page = (function () {
     const // Inicio > Autorização > Últimas Solicitações
@@ -1396,7 +1360,7 @@
         div.style.paddingBottom = "3em";
         div.style.marginLeft = "8em";
 
-        const referenceNode = document.querySelector(FORM_FIELDSET_SELECTOR);
+        const referenceNode = $(FORM_FIELDSET_SELECTOR);
         referenceNode.insertBefore(div, referenceNode.firstChild);
       },
       _init = () => {
@@ -1415,7 +1379,7 @@
   "use strict";
 
   const { Clipboard, Snackbar, FAB, DomHelper } = Presto.modules;
-  const { $$ } = DomHelper;
+  const { $, $$ } = DomHelper;
 
   const _Page = (function () {
     const // Inicio > Autorização > Últimas Solicitações > Buscar Status Autorização
@@ -1445,7 +1409,7 @@
           if (
             _btnCopy_fields.some((fieldRegex) => fieldRegex.test(labelText))
           ) {
-            let spanElement = label.parentElement.querySelector("span");
+            let spanElement = $("span", label.parentElement);
             value = spanElement ? spanElement.textContent : "";
             value = value ? value.replace("R$", "").trim() : "";
           } else {
@@ -1496,7 +1460,7 @@
   "use strict";
 
   const { Clipboard, Snackbar, FAB, DomHelper } = Presto.modules;
-  const { $$ } = DomHelper;
+  const { $, $$ } = DomHelper;
 
   const _Page = (function () {
     const // Inicio > Extrato > Visualizar > Detalhe do Pagamento > Detalhe Lote
@@ -1508,7 +1472,7 @@
           todoTasks = [];
 
         formList.forEach((form) => {
-          var table = form.querySelector("table");
+          var table = $("table", form);
           var tbodyTrList = $$("tbody tr", table);
           tbodyTrList.forEach((tr) => {
             $$("td", tr).forEach((td) => {
@@ -1525,7 +1489,7 @@
           var barArr = [];
           child.click();
           let interval = setInterval(() => {
-            let eAjaxContent = document.querySelector("#TB_ajaxContent");
+            let eAjaxContent = $("#TB_ajaxContent");
             if (!eAjaxContent) return;
 
             clearInterval(interval);
@@ -1534,8 +1498,7 @@
 
             $$("label", eAjaxContent).forEach((label) => {
               let labelText = label.textContent.replace(":", "").trim();
-              let value = label.parentElement
-                .querySelector("span")
+              let value = $("span", label.parentElement)
                 .textContent.replace(".", ",")
                 .trim();
 
@@ -1558,10 +1521,10 @@
 
             bazArr.push(barArr.join("\t"));
 
-            eAjaxContent.querySelector(".TB_closeWindowButton").click();
+            $(".TB_closeWindowButton", eAjaxContent).click();
 
             let innerInterval = setInterval(() => {
-              if (document.querySelector("#TB_ajaxContent")) return;
+              if ($("#TB_ajaxContent")) return;
 
               clearInterval(innerInterval);
 
@@ -1584,7 +1547,7 @@
           todoTasks = [];
 
         formList.forEach((form) => {
-          var table = form.querySelector("table");
+          var table = $("table", form);
           var tbodyTrList = $$("tbody tr", table);
           tbodyTrList.forEach((tr) => {
             var barArr = [];
@@ -1593,9 +1556,7 @@
 
             var labelList = $$("label", form);
             labelList.forEach((label) => {
-              let value = label.parentElement
-                .querySelector("span")
-                .textContent.trim();
+              let value = $("span", label.parentElement).textContent.trim();
               barArr.push(value);
             });
 
@@ -1611,11 +1572,7 @@
               }
             });
 
-            barArr.push(
-              document
-                .querySelector(".tab-administracao tbody tr td")
-                .textContent.trim()
-            );
+            barArr.push($(".tab-administracao tbody tr td").textContent.trim());
             bazArr.push(barArr.join("\t"));
           });
         });
@@ -1654,7 +1611,7 @@
   "use strict";
 
   const { Clipboard, Snackbar, FAB, DomHelper } = Presto.modules;
-  const { $$ } = DomHelper;
+  const { $, $$ } = DomHelper;
 
   const _Page = (function () {
     const // Inicio > Extrato > Visualizar > Detalhe do Pagamento
@@ -1666,8 +1623,7 @@
           bazArr = [];
 
         labelList.forEach((label) => {
-          let value = label.parentElement
-            .querySelector("span")
+          let value = $("span", label.parentElement)
             .textContent.replace("R$", "")
             .trim();
           barArr.push(value);
@@ -1701,12 +1657,12 @@
   Presto.pages.ExtratoDetalhePagamentoPage = _Page;
 })(Presto, location);
 
-(function (Presto, location) {
+(function (Presto, location, jQuery) {
   "use strict";
 
   const { PersonModel } = Presto.models;
   const { Snackbar, FAB, Modal, DomHelper } = Presto.modules;
-  const { $$ } = DomHelper;
+  const { $, $$ } = DomHelper;
 
   const _Page = (function () {
     const // Inicio > Faturamento > Digitação > Digitar > Serviço Profissional/Serviço Auxiliar de Diagnóstico e Terapia - SP/SADT
@@ -1736,58 +1692,51 @@
       },
       /** Modal actions */
       __removeInitialAppointment = () => {
-        let fakeTR = document.querySelector("#trProcedimento0");
+        let fakeTR = $("#trProcedimento0");
         if (fakeTR) {
           let tdArr = $$("td", fakeTR);
           if (tdArr.filter((td) => td.textContent === "-").length) {
-            fakeTR.querySelector("input").checked = true;
-            document
-              .querySelector("#bt-addProcedimento")
-              .parentElement.querySelector(".bt-remover")
-              .click();
+            $("input", fakeTR).checked = true;
+            const btap = $("#bt-addProcedimento");
+            $(".bt-remover", btap.parentElement).click();
           }
         }
       },
       _addAppointment = (days, monthYear, daysLength, unitValue) => {
         let day = days.shift();
 
-        document.querySelector("#bt-addProcedimento").click(); // open modal
+        $("#bt-addProcedimento").click(); // open modal
 
-        document.querySelector("#dataModalProcedimento").value =
-          day + monthYear;
-        document
-          .querySelector("#labelOrdemItemModalProcedimento")
-          .parentElement.querySelector("input").value =
-          daysLength - days.length;
-        document.querySelector("#tipoTabelaModalProcedimento").value = 22;
-        document.querySelector("#codigoModalProcedimento").value = 50000470;
-        document.querySelector("#codigoModalProcedimento").onblur();
+        $("#dataModalProcedimento").value = day + monthYear;
+        const labelOIMP = $("#labelOrdemItemModalProcedimento");
+        $("input", labelOIMP.parentElement).value = daysLength - days.length;
+        $("#tipoTabelaModalProcedimento").value = 22;
+        $("#codigoModalProcedimento").value = 50000470;
+        $("#codigoModalProcedimento").onblur();
 
         let interval = setInterval(() => {
-          let target = document.querySelector("#descricaoModalProcedimento");
+          let target = $("#descricaoModalProcedimento");
           if (target.value) {
             clearInterval(interval);
 
-            document.querySelector("#quantidadeModalProcedimento").value = 1;
+            $("#quantidadeModalProcedimento").value = 1;
 
             jQuery("#porcentagemRedAcrModalProcedimento").unmask();
-            document.querySelector(
-              "#porcentagemRedAcrModalProcedimento"
-            ).value = "1.00";
+            $("#porcentagemRedAcrModalProcedimento").value = "1.00";
 
-            document.querySelector("#valorUnitarioModalProcedimento").value =
-              unitValue.replace(",", ".");
-            document.querySelector("#valorUnitarioModalProcedimento").onblur();
+            $("#valorUnitarioModalProcedimento").value = unitValue.replace(
+              ",",
+              "."
+            );
+            $("#valorUnitarioModalProcedimento").onblur();
 
             interval = setInterval(() => {
-              target = document.querySelector("#valorTotalModalProcedimento");
+              target = $("#valorTotalModalProcedimento");
               if (target.value) {
                 clearInterval(interval);
 
                 setTimeout(() => {
-                  document
-                    .querySelector("#bt-operacaoModalProcedimento")
-                    .click(); // close modal
+                  $("#bt-operacaoModalProcedimento").click(); // close modal
                   if (days.length) {
                     setTimeout(
                       () =>
@@ -1807,25 +1756,19 @@
         /**
          * Modal Validations
          */
-        let _days = document.querySelector(
-          MODAL_INPUT_APPOINTMENTS_DAYS_SELECTOR
-        ).value;
+        let _days = $(MODAL_INPUT_APPOINTMENTS_DAYS_SELECTOR).value;
         if (!!!_days) {
           Snackbar.fire("Informe os dias dos procedimentos!");
           return;
         }
 
-        let _monthYear = document.querySelector(
-          MODAL_INPUT_APPOINTMENTS_MONTH_YEAR_SELECTOR
-        ).value;
+        let _monthYear = $(MODAL_INPUT_APPOINTMENTS_MONTH_YEAR_SELECTOR).value;
         if (!!!_monthYear) {
           Snackbar.fire("Informe o mês/ano dos procedimentos!");
           return;
         }
 
-        let _unitValue = document.querySelector(
-          MODAL_INPUT_APPOINTMENTS_UNIT_VALUE_SELECTOR
-        ).value;
+        let _unitValue = $(MODAL_INPUT_APPOINTMENTS_UNIT_VALUE_SELECTOR).value;
         if (!!!_unitValue) {
           Snackbar.fire(
             "Informe o valor unitário dos procedimentos no formato 12,34!"
@@ -1892,7 +1835,7 @@
       /** end Modal actions */
 
       _handleBtnGravarAlteracoes = (person) => {
-        const btnGravarAlteracoes = document.querySelector("#gravarAlteracoes");
+        const btnGravarAlteracoes = $("#gravarAlteracoes");
         const _onclick = btnGravarAlteracoes.onclick;
         btnGravarAlteracoes.onclick = () => {
           PersonModel.getOrCreateDB()
@@ -1914,11 +1857,9 @@
         };
 
         setTimeout(() => {
-          person.uid = document.querySelector(
-            "#txtNumeroCarteirinhaBeneficiario"
-          ).value;
-          person.name = document.querySelector("#txtNomeBeneficiario").value;
-          person.password = document.querySelector("#senha").value;
+          person.uid = $("#txtNumeroCarteirinhaBeneficiario").value;
+          person.name = $("#txtNomeBeneficiario").value;
+          person.password = $("#senha").value;
         }, 500);
 
         let idIgnoredArr = [
@@ -1957,7 +1898,7 @@
       _validateDueDate = () => {
         return new Promise((resolve, reject) => {
           let interval = setInterval(() => {
-            const eDueDatePwd = document.querySelector("#txtDataValidadeSenha");
+            const eDueDatePwd = $("#txtDataValidadeSenha");
             if (!!!eDueDatePwd.value) return;
 
             clearInterval(interval);
@@ -1971,8 +1912,7 @@
             if (duoDatePwd < new Date()) {
               eDueDatePwd.style.border = "red 2px solid";
               eDueDatePwd.style.color = "red";
-              eDueDatePwd.parentElement.querySelector("label").style.color =
-                "red";
+              $("label", eDueDatePwd.parentElement).style.color = "red";
               reject("Senha vencida!");
             } else resolve();
           }, 500);
@@ -1998,7 +1938,7 @@
         });
 
         select.onchange = (event) => {
-          document.querySelector("#senha").value = event.target.value;
+          $("#senha").value = event.target.value;
         };
 
         let div = document.createElement("div");
@@ -2007,7 +1947,7 @@
         div.appendChild(label);
         div.appendChild(select);
 
-        const referenceNode = document.querySelector(FORM_FIELDSET_SELECTOR);
+        const referenceNode = $(FORM_FIELDSET_SELECTOR);
         referenceNode.insertBefore(div, referenceNode.firstChild);
       },
       __loadProfiles = () => {
@@ -2030,41 +1970,37 @@
         });
       },
       __btnPreencherDadosPadrao_onclick = () => {
-        Array.from(
-          document.querySelector("#txtTipoDocumentoContratado").options
-        ).find((x) => x.textContent === "CPF").selected = true;
-        document.querySelector("#txtNomeProfissionalSolicitante").value =
-          document.querySelector("#txtNomeContratado").value;
-        Array.from(
-          document.querySelector("#txtUFProfissionalSolicitante").options
-        ).find((x) => x.value === "RS").selected = true;
-        Array.from(
-          document.querySelector("#txtTipoConselhoProfissionalSolicitante")
-            .options
-        ).find((x) => /CRP/.test(x.textContent)).selected = true;
-        document.querySelector(
-          "#txtNumeroConselhoProfissionalSolicitante"
-        ).value = "05014";
-        Array.from(
-          document.querySelector("#txtCBOSProfissionalSolicitante").options
-        ).find((x) => /Psic.logo cl.nico/.test(x.textContent)).selected = true;
-        Array.from(
-          document.querySelector("#txtCaraterInternacao").options
-        ).find((x) => /Eletiva/.test(x.textContent)).selected = true;
-        document.querySelector("#txtAreaIndicacaoClinica").value =
-          "Sessões de Terapia";
-        Array.from(document.querySelector("#txtTipoAtendimento").options).find(
-          (x) => /Outras Terapias/.test(x.textContent)
+        Array.from($("#txtTipoDocumentoContratado").options).find(
+          (x) => x.textContent === "CPF"
         ).selected = true;
-        Array.from(document.querySelector("#txtTipoConsulta").options).find(
-          (x) => /Seguimento/.test(x.textContent)
+        $("#txtNomeProfissionalSolicitante").value =
+          $("#txtNomeContratado").value;
+        Array.from($("#txtUFProfissionalSolicitante").options).find(
+          (x) => x.value === "RS"
         ).selected = true;
-        Array.from(
-          document.querySelector("#txtRegimeAtendimento").options
-        ).find((x) => /Ambulatorial/.test(x.textContent)).selected = true;
-        Array.from(
-          document.querySelector("#txtIndicacaoAcidente").options
-        ).find((x) => /N.o Acidentes/.test(x.textContent)).selected = true;
+        Array.from($("#txtTipoConselhoProfissionalSolicitante").options).find(
+          (x) => /CRP/.test(x.textContent)
+        ).selected = true;
+        $("#txtNumeroConselhoProfissionalSolicitante").value = "05014";
+        Array.from($("#txtCBOSProfissionalSolicitante").options).find((x) =>
+          /Psic.logo cl.nico/.test(x.textContent)
+        ).selected = true;
+        Array.from($("#txtCaraterInternacao").options).find((x) =>
+          /Eletiva/.test(x.textContent)
+        ).selected = true;
+        $("#txtAreaIndicacaoClinica").value = "Sessões de Terapia";
+        Array.from($("#txtTipoAtendimento").options).find((x) =>
+          /Outras Terapias/.test(x.textContent)
+        ).selected = true;
+        Array.from($("#txtTipoConsulta").options).find((x) =>
+          /Seguimento/.test(x.textContent)
+        ).selected = true;
+        Array.from($("#txtRegimeAtendimento").options).find((x) =>
+          /Ambulatorial/.test(x.textContent)
+        ).selected = true;
+        Array.from($("#txtIndicacaoAcidente").options).find((x) =>
+          /N.o Acidentes/.test(x.textContent)
+        ).selected = true;
       },
       _upgrade = () => {
         __avoidErrorInClientCode();
@@ -2089,16 +2025,14 @@
           },
         ]);
 
-        let btnImport = document
-          .querySelector("#senha")
-          .parentElement.querySelector("a.bt-procurar");
+        const eSenha = $("#senha");
+        let btnImport = $("a.bt-procurar", eSenha.parentElement);
         let btnImport_onclick = btnImport.onclick;
         btnImport.onclick = () => {
           btnImport_onclick();
           _validateDueDate()
             .then(() => {
-              document.querySelector("#txtNumeroGuiaPrestador").value =
-                new Date().getTime();
+              $("#txtNumeroGuiaPrestador").value = new Date().getTime();
               _watchForm();
             })
             .catch(Snackbar.fire);
@@ -2114,7 +2048,7 @@
   })();
 
   Presto.pages.FormularioDigitarSPSADTPage = _Page;
-})(Presto, location);
+})(window.Presto, window.location, window.jQuery);
 
 (function (Presto, location) {
   "use strict";
@@ -2171,7 +2105,7 @@
   "use strict";
 
   const { Clipboard, Snackbar, FAB, CommonsHelper, DomHelper } = Presto.modules;
-  const { $$ } = DomHelper;
+  const { $, $$ } = DomHelper;
 
   const _Page = (function () {
     const // Inicio > Faturamento > Digitação > Consultar > Buscar
@@ -2217,7 +2151,7 @@
         div.style.paddingBottom = "3em";
         div.style.marginLeft = "8em";
 
-        const referenceNode = document.querySelector(FORM_FIELDSET_SELECTOR);
+        const referenceNode = $(FORM_FIELDSET_SELECTOR);
         referenceNode.insertBefore(div, referenceNode.firstChild);
       },
       _init = () => {
@@ -2235,7 +2169,8 @@
 (function (Presto, location) {
   "use strict";
 
-  const { CommonsHelper } = Presto.modules;
+  const { CommonsHelper, DomHelper } = Presto.modules;
+  const { $ } = DomHelper;
 
   const _Page = (function () {
     const // Inicio > Faturamento > Digitação > Consultar
@@ -2250,7 +2185,7 @@
         div.style.paddingBottom = "3em";
         div.style.marginLeft = "8em";
 
-        const referenceNode = document.querySelector(FORM_FIELDSET_SELECTOR);
+        const referenceNode = $(FORM_FIELDSET_SELECTOR);
         referenceNode.insertBefore(div, referenceNode.firstChild);
       },
       _init = () => {
@@ -2269,7 +2204,7 @@
   "use strict";
 
   const { Clipboard, Snackbar, FAB, DomHelper } = Presto.modules;
-  const { $$ } = DomHelper;
+  const { $, $$ } = DomHelper;
 
   const _Page = (function () {
     const // Inicio > Acompanhar recurso de glosa > Detalhe
@@ -2308,7 +2243,7 @@
             if (
               _btnCopy_ignoreFields.some((item) => item == labelText) === false
             ) {
-              let spanElement = label.parentElement.querySelector("span");
+              let spanElement = $("span", label.parentElement);
               value = spanElement ? spanElement.textContent : "";
               value = value ? value.replace("R$", "").trim() : "";
             } else {
@@ -2340,7 +2275,7 @@
           if (/Motivo.+Glosa/.test(labelText)) stopLoop = true;
 
           if (/^Recurso/.test(labelText)) {
-            let spanElement = label.parentElement.querySelector("span");
+            let spanElement = $("span", label.parentElement);
             let value = spanElement ? spanElement.textContent : "";
             resourceNumber = value ? value.replace("R$", "").trim() : "";
           }
@@ -2352,12 +2287,10 @@
           ".box-resposta-mensagem,.box-resposta-resposta"
         );
         boxMessageList.forEach((box) => {
-          let boxp1div = box.querySelector(".box-resposta-p1 div");
-          let user = boxp1div.querySelector("label").textContent.trim();
-          let date = boxp1div.querySelector("span").textContent.trim();
-          let message = box
-            .querySelector(".box-resposta-p2 span")
-            .textContent.trim();
+          let boxp1div = $(".box-resposta-p1 div", box);
+          let user = $("label", boxp1div).textContent.trim();
+          let date = $("span", boxp1div).textContent.trim();
+          let message = $(".box-resposta-p2 span", box).textContent.trim();
           message = message.replace(/[\n\t]*/g, "");
 
           let line = [resourceNumber, user, date, message];
@@ -2395,7 +2328,8 @@
 (function (Presto, location) {
   "use strict";
 
-  const { Snackbar, FAB, Modal } = Presto.modules;
+  const { Snackbar, FAB, Modal, DomHelper } = Presto.modules;
+  const { $ } = DomHelper;
 
   const _Page = (function () {
     const // Inicio > Responder Recursos de Glosa
@@ -2421,9 +2355,7 @@
         /**
          * Modal Validations
          */
-        let _protocols = document.querySelector(
-          MODAL_INPUT_PROTOCOLS_SELECTOR
-        ).value;
+        let _protocols = $(MODAL_INPUT_PROTOCOLS_SELECTOR).value;
         if (!!!_protocols) {
           Snackbar.fire("Informe os protocolos de recurso de glosa!");
           return;
@@ -2436,18 +2368,17 @@
         const fn = () => {
           let query = tasks.shift();
 
-          document.querySelector(
-            "#acompanharSolicitacao_protocoloRecurso"
-          ).value = query;
-          document.querySelector("#acompanharSolicitacao_btnBuscar").click();
+          $("#acompanharSolicitacao_protocoloRecurso").value = query;
+          $("#acompanharSolicitacao_btnBuscar").click();
 
           const interval = setInterval(() => {
-            let tr = document.querySelector(`tr[id="${query}"]`);
+            let tr = $(`tr[id="${query}"]`);
             if (tr) clearInterval(interval);
             else return;
 
-            let status = tr.querySelector(
-              `td[aria-describedby*="statusRecurso"]`
+            let status = $(
+              `td[aria-describedby*="statusRecurso"]`,
+              tr
             ).textContent;
             console.log(`${query}: ${status}`);
 
@@ -2502,6 +2433,8 @@
     FaturamentoVisualizarFiltrarPorDataPage,
     FaturamentoVisualizarDetalharLotePage,
   } = Presto.pages;
+  const { DomHelper } = Presto.modules;
+  const { $ } = DomHelper;
 
   const _Module = (function () {
     const HOST = /portaltiss\.saudepetrobras\.com\.br/;
@@ -2511,7 +2444,7 @@
       },
       _isLoaded = function () {
         const maybe = [".titulos-formularios", ".box-formularios"];
-        return maybe.some((selector) => document.querySelector(selector));
+        return maybe.some((selector) => $(selector));
       },
       _fixAnyPage = function () {
         RecursoGlosaBuscaDetalhePage.upgrade();
@@ -2541,7 +2474,8 @@
 (function (Presto, location) {
   "use strict";
 
-  const { Snackbar, FAB } = Presto.modules;
+  const { Snackbar, FAB, DomHelper } = Presto.modules;
+  const { $ } = DomHelper;
 
   const _Page = (function () {
     const PATHNAME_REGEX = /GuiasTISS\/FaturamentoAtendimentos/;
@@ -2569,17 +2503,17 @@
       },
       fnProcess = () => {
         const tr = lines.shift();
-        const date = tr.querySelector(selectors.date).textContent;
+        const date = $(selectors.date, tr).textContent;
         const _isLastMonth = isLastMonth(date);
         if (_isLastMonth) {
-          tr.querySelector(selectors.iconSuccess).click();
+          $(selectors.iconSuccess, tr).click();
           console.log(`${date}: OK`);
         } else {
-          tr.querySelector(selectors.iconRemove).click();
+          $(selectors.iconRemove, tr).click();
           console.log(`${date}: Removed!`);
         }
         const interval = setInterval(() => {
-          const iconStatus = tr.querySelector(selectors.iconStatus);
+          const iconStatus = $(selectors.iconStatus, tr);
           const clazz = `text-${_isLastMonth ? "success" : "danger"}`;
           const updated = Array.from(iconStatus.classList).includes(clazz);
           if (updated) {
@@ -2630,7 +2564,7 @@
   "use strict";
 
   const { Clipboard, Snackbar, FAB, DomHelper } = Presto.modules;
-  const { $$ } = DomHelper;
+  const { $, $$ } = DomHelper;
 
   const _Page = (function () {
     const PATHNAME_REGEX = /GuiasTISS\/LocalizarProcedimentos/;
@@ -2642,9 +2576,7 @@
         $$("[data-bind*=guia-template]").forEach((div) => {
           let line = [];
           selectors.forEach((selector) => {
-            line.push(
-              div.querySelector(`[data-bind*=${selector}]`)?.textContent
-            );
+            line.push($(`[data-bind*=${selector}]`, div)?.textContent);
           });
           table.push(line.join("\t"));
         });
@@ -2677,7 +2609,7 @@
 
   const { PatientModel } = Presto.models;
   const { FAB, Modal, DomHelper } = Presto.modules;
-  const { $$ } = DomHelper;
+  const { $, $$ } = DomHelper;
 
   const _Page = (function () {
     const // Guias > Guia de SP/SADT
@@ -2705,16 +2637,16 @@
         jQuery(id).autocomplete("search");
 
         __selectFirstItemInAutocompleteMenu(id, () => {
-          document.querySelector("#ui-accordion-accordion-header-2").click();
+          $("#ui-accordion-accordion-header-2").click();
           setTimeout(() => {
-            document.querySelector("#incluirProcedimento").click();
+            $("#incluirProcedimento").click();
             const interval = setInterval(() => {
               // elemento utilizado para verificação apenas, quando ele estiver
               // pronto terá um valor retornado por textContent
-              const elem = document.querySelector("#registroProcedimentoID");
+              const elem = $("#registroProcedimentoID");
               if (elem.textContent) {
                 clearInterval(interval);
-                document.querySelector("#btnGravar").click();
+                $("#btnGravar").click();
               }
             }, 250);
           }, 500);
@@ -2772,7 +2704,7 @@
         divLine.style.marginBottom = "2em";
         divLine.append(divElemItem);
 
-        const referenceNode = document.querySelector("#guiaDadosPrincipais");
+        const referenceNode = $("#guiaDadosPrincipais");
         referenceNode.insertBefore(divLine, referenceNode.firstChild);
       },
       __buildModalForBulkInsert = (profiles) => {
@@ -2794,8 +2726,7 @@
         return content;
       },
       __getAccount = () => {
-        const data = document
-          .querySelector("footer p")
+        const data = $("footer p")
           .textContent.split("\n")
           .map((x) => x.trim())
           .filter((x) => x);
@@ -2820,17 +2751,17 @@
           });
       },
       __handleBtnGravar = () => {
-        const btn = document.querySelector("#btnGravar");
+        const btn = $("#btnGravar");
         const _onclick = btn.onclick;
         btn.onclick = () => {
           const account = __getAccount();
           const patient = {
-            id: document.querySelector("#numeroDaCarteira").value,
-            name: document.querySelector("#nomeDoBeneficiario").value,
+            id: $("#numeroDaCarteira").value,
+            name: $("#nomeDoBeneficiario").value,
             // specialist
             spc: {
-              id: document.querySelector("#idContratadoSolicitante").value,
-              name: document.querySelector("#nomeContratadoSolicitante").value,
+              id: $("#idContratadoSolicitante").value,
+              name: $("#nomeContratadoSolicitante").value,
             },
             acc: {
               id: account.id,
@@ -2849,7 +2780,7 @@
                   b.textContent.includes("Nº Guia Operadora")
                 );
                 const uiDialog = b?.closest(".ui-dialog");
-                const btnFechar = uiDialog?.querySelector("#fechar");
+                const btnFechar = $("#fechar", uiDialog);
                 if (btnFechar?.offsetParent) {
                   clearInterval(interval);
                   setTimeout(() => btnFechar.click(), 1000);
@@ -2865,15 +2796,14 @@
        * preencher a data de atendimento para o dia atual
        */
       __handleInputDataSolicitacao = () => {
-        document.querySelector("#dataSolicitacao").value =
-          new Intl.DateTimeFormat("pt-BR", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-          }).format(new Date());
+        $("#dataSolicitacao").value = new Intl.DateTimeFormat("pt-BR", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        }).format(new Date());
       },
       __handleBtnIncluirProcedimento = () => {
-        const elem = document.querySelector("#incluirProcedimento");
+        const elem = $("#incluirProcedimento");
         const elem_onclick = elem.onclick;
         elem.onclick = () => {
           elem_onclick();
@@ -2883,7 +2813,7 @@
           jQuery(selector).autocomplete("search");
 
           __selectFirstItemInAutocompleteMenu(selector, () => {
-            document.querySelector("#confirmarEdicaoDeProcedimento").click();
+            $("#confirmarEdicaoDeProcedimento").click();
           });
         };
       },
@@ -2894,9 +2824,7 @@
           const target = profiles.shift();
 
           // select person and click to trigger automation
-          const select = document.querySelector(
-            `#${PROFILES_SELECT_OPTION_ID}`
-          );
+          const select = $(`#${PROFILES_SELECT_OPTION_ID}`);
           select.value = target;
           select.dispatchEvent(new Event("change", { bubbles: true }));
 
@@ -2911,9 +2839,7 @@
         }
       },
       __fillForm_AdicionarProcedimentosEmLote_onclick = () => {
-        const modal = document.querySelector(
-          `#${PROFILES_BULK_INSERT_APPOINTMENTS_ID}`
-        );
+        const modal = $(`#${PROFILES_BULK_INSERT_APPOINTMENTS_ID}`);
         localStorage.setItem(
           PROFILES_BULK_INSERT_APPOINTMENTS_ID,
           $$(`input[type="checkbox"]:checked`, modal)
@@ -2934,7 +2860,7 @@
         __handleInputDataSolicitacao();
 
         // preencher tipo atendimento como TERAPIA
-        document.querySelector("#tipoAtendimento").value = "3";
+        $("#tipoAtendimento").value = "3";
 
         __handleBtnIncluirProcedimento();
         __handleBtnGravar();
@@ -2960,7 +2886,7 @@
       _init = () => {
         if (PATHNAME_REGEX.test(location.pathname)) {
           const interval = setInterval(() => {
-            const btn = document.querySelector("#btnGravar");
+            const btn = $("#btnGravar");
             if (btn) {
               clearInterval(interval);
               _upgrade();
@@ -2985,6 +2911,8 @@
     ViewGuiaSPSADTPage,
     FaturamentoAtendimentosPage,
   } = Presto.pages;
+  const { DomHelper } = Presto.modules;
+  const { $ } = DomHelper;
 
   const _Module = (function () {
     const HOST = /novowebplancanoasprev\.facilinformatica\.com\.br/;
@@ -2993,7 +2921,7 @@
         return HOST.test(location.host);
       },
       _isLoaded = function () {
-        return document.querySelector("#collapseMenu");
+        return $("#collapseMenu");
       },
       _fixAnyPage = function () {
         ViewGuiaSPSADTPage.upgrade();
@@ -3018,7 +2946,7 @@
 
   const { PatientModel } = Presto.models;
   const { CommonsHelper, DomHelper } = Presto.modules;
-  const { $$ } = DomHelper;
+  const { $, $$ } = DomHelper;
 
   const _Page = (function () {
     const PATHNAME_REGEX = /prestador\/guiaexameexecucao/;
@@ -3034,8 +2962,8 @@
 
           const selPatientName = "span[id$=nomePacientTooltip]";
           rows.sort((a, b) => {
-            const aText = a.querySelector(selPatientName).textContent.trim();
-            const bText = b.querySelector(selPatientName).textContent.trim();
+            const aText = $(selPatientName, a).textContent.trim();
+            const bText = $(selPatientName, b).textContent.trim();
             return aText.localeCompare(bText);
           });
 
@@ -3061,7 +2989,7 @@
 
           const selector =
             'div[id="mainForm:panelConfigPesquisa"] div.configPesquisaItens';
-          const setupBar = document.querySelector(selector);
+          const setupBar = $(selector);
 
           setupBar.appendChild(div);
         } finally {
@@ -3080,9 +3008,7 @@
             const execProcText = "Executar procedimento";
 
             const interval = setInterval(() => {
-              const eCarteira = document.querySelector(
-                `${painelSelector} ${carteiraSelector}`
-              );
+              const eCarteira = $(`${painelSelector} ${carteiraSelector}`);
               if (eCarteira) {
                 clearInterval(interval);
                 patient.id = eCarteira.textContent.replace(/\D/g, "");
@@ -3111,7 +3037,7 @@
             const selector =
               'input[id="formAddUpdate:profissionalexecucaoExame"]';
             const interval = setInterval(() => {
-              const eSpecialistInput = document.querySelector(selector);
+              const eSpecialistInput = $(selector);
               if (eSpecialistInput) {
                 clearInterval(interval);
                 resolve();
@@ -3129,7 +3055,7 @@
           // preencher o campo "Profissional Executante" com o nome do profissional vinculado ao paciente
           const selector =
             'input[id="formAddUpdate:profissionalexecucaoExame"]';
-          const input = document.querySelector(selector);
+          const input = $(selector);
           input.value = patient.professional;
 
           function dispatchEvent(el) {
@@ -3148,7 +3074,7 @@
           // observar se este campo deixa de ser display: none para então...
           const selDivSuggestions =
             'div[id*="formAddUpdate"].rich-sb-common-container';
-          const divSuggestions = document.querySelector(selDivSuggestions);
+          const divSuggestions = $(selDivSuggestions);
 
           return new Promise((resolve) => {
             const interval = setInterval(() => {
@@ -3175,14 +3101,12 @@
         console.log(`${fn} - Enter`);
         try {
           // clicar no botão autenticar para abrir o modal e inserir a senha de autorização
-          document.querySelector(".button-autenticar").click();
+          $(".button-autenticar").click();
 
           return new Promise((resolve) => {
             // aguardar abrir o modal e inserir a senha
             const interval0 = setInterval(() => {
-              const modal = document.querySelector(
-                "#autenticarModalPanelVirtualCDiv"
-              );
+              const modal = $("#autenticarModalPanelVirtualCDiv");
               if (modal?.offsetParent) {
                 clearInterval(interval0);
 
@@ -3191,8 +3115,9 @@
 
                 // somente resolve quando o input de senha estiver criado/aparecendo
                 const interval1 = setInterval(() => {
-                  const inputPwd = modal.querySelector(
-                    'input[id*="senhaPacienteBiometria"]'
+                  const inputPwd = $(
+                    'input[id*="senhaPacienteBiometria"]',
+                    modal
                   );
                   if (inputPwd?.offsetParent) {
                     clearInterval(interval1);
@@ -3217,11 +3142,11 @@
             btnFinish: 'a[title="Finalizar execução"]',
           };
 
-          const modal = document.querySelector(selector.modal);
-          const authBtn = modal.querySelector(selector.btnAuth);
+          const modal = $(selector.modal);
+          const authBtn = $(selector.btnAuth, modal);
           const triggerUpsertItem = async (e) => {
             await PatientModel.getOrCreateDB().then((db) => {
-              patient.password = modal.querySelector(selector.inputPwd).value;
+              patient.password = $(selector.inputPwd, modal).value;
               return PatientModel.addOrUpdateItem(db, patient);
             });
           };
@@ -3232,9 +3157,8 @@
             .then((patients) => patients.find((p) => p.id === patient.id))
             .then((patientDB) => {
               if (patientDB) {
-                modal.querySelector(selector.inputPwd).value =
-                  patientDB.password;
-                modal.querySelector(selector.btnAuth).click();
+                $(selector.inputPwd, modal).value = patientDB.password;
+                $(selector.btnAuth, modal).click();
 
                 // espere a autenticação finalizar
                 return new Promise((resolve) => {
@@ -3242,7 +3166,7 @@
                     if (!modal.offsetParent) {
                       clearInterval(interval);
                       setTimeout(() => {
-                        document.querySelector(selector.btnFinish).click();
+                        $(selector.btnFinish).click();
                         resolve();
                       }, 1000);
                     }
@@ -3288,9 +3212,7 @@
 
           const buildPatient = (span) => {
             const table = span.closest("table");
-            const professionalEl = table
-              ? table.querySelector('[title="Médico"]')
-              : null;
+            const professionalEl = table ? $('[title="Médico"]', table) : null;
             return {
               name: (span.textContent || "").trim(),
               professional: professionalEl
@@ -3303,12 +3225,12 @@
             const td = e.target.closest(selector.closestTD);
             if (!td) return;
 
-            const span = td.querySelector(selector.patient);
+            const span = $(selector.patient, td);
             const patient = buildPatient(span);
             _patientOnClick(patient);
           };
 
-          const gridSpan = document.querySelector(selector.grid);
+          const gridSpan = $(selector.grid);
           if (!gridSpan._hasTriggerPatientOnClick) {
             gridSpan.addEventListener("click", triggerPatientOnClick);
             gridSpan._hasTriggerPatientOnClick = true;
@@ -3323,7 +3245,7 @@
             "mainForm:resultadoPesquisaTable:tb"
           );
           if (tbody?.textContent) {
-            const ePrestoSetup = document.querySelector("#prestoSetup");
+            const ePrestoSetup = $("#prestoSetup");
             if (!ePrestoSetup) {
               _addSortAZButton();
               _configureAddAutomaticAppointment();
@@ -3347,6 +3269,8 @@
   "use strict";
 
   const { ExecucaoGuiaSADTPage } = Presto.pages;
+  const { DomHelper } = Presto.modules;
+  const { $ } = DomHelper;
 
   const _Module = (function () {
     const HOST = /portal\.cabergs\.org\.br/;
@@ -3355,7 +3279,7 @@
         return HOST.test(location.host);
       },
       _isLoaded = function () {
-        return document.querySelector("#container");
+        return $("#container");
       },
       _fixAnyPage = function () {
         ExecucaoGuiaSADTPage.upgrade();
@@ -3411,7 +3335,7 @@
   "use strict";
 
   const { CommonsHelper, DomHelper } = Presto.modules;
-  const { $$ } = DomHelper;
+  const { $, $$ } = DomHelper;
 
   const _Page = (function () {
     const PATHNAME_REGEX = /notas_fiscais\/emitir_nota/;
@@ -3434,16 +3358,16 @@
           "#CST",
           "1 - Tributada integralmente e sujeita ao regime do Simples Nacional"
         );
-        const textarea = document.querySelector("#servicoDescricao");
+        const textarea = $("#servicoDescricao");
         textarea.value = "Sessões de Terapia";
         textarea.rows = 1;
 
-        document.querySelector("#numDeskChar").style.padding = 0;
+        $("#numDeskChar").style.padding = 0;
         $$("hr").forEach((hr) => (hr.style.margin = "10px 0"));
         $$(".form-group").forEach((fg) => (fg.style.margin = "0 0 5px 0"));
 
         const interval = setInterval(() => {
-          const target = document.querySelector(".servico-show");
+          const target = $(".servico-show");
           if (target?.style.display === "block") {
             clearInterval(interval);
             const tgSty = target.style;
@@ -3456,8 +3380,7 @@
             };
             target.parentNode.insertBefore(anchor, target);
 
-            const rowBtnEnviar =
-              document.querySelector("#btnPostNf").parentElement.parentElement;
+            const rowBtnEnviar = $("#btnPostNf").parentElement.parentElement;
             target.parentNode.insertBefore(rowBtnEnviar, target.nextSibling);
 
             setTimeout(() => (tgSty.display = "none"), 250);
@@ -3467,7 +3390,7 @@
       _init = () => {
         if (PATHNAME_REGEX.test(location.pathname)) {
           const interval = setInterval(() => {
-            const btn = document.querySelector("#servicoDescricao");
+            const btn = $("#servicoDescricao");
             if (btn) {
               clearInterval(interval);
               _upgrade();
@@ -3488,6 +3411,8 @@
   "use strict";
 
   const { EmitirNotaFiscalPage, ConciliacaoBancariaPage } = Presto.pages;
+  const { DomHelper } = Presto.modules;
+  const { $ } = DomHelper;
 
   const _Module = (function () {
     const HOST = /app\.contaagil\.com\.br/;
@@ -3496,7 +3421,7 @@
         return HOST.test(location.host);
       },
       _isLoaded = function () {
-        return document.querySelector("#accordion");
+        return $("#accordion");
       },
       _fixAnyPage = function () {
         EmitirNotaFiscalPage.upgrade();

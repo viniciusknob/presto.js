@@ -2,7 +2,7 @@
   "use strict";
 
   const { Clipboard, Snackbar, FAB, DomHelper } = Presto.modules;
-  const { $$ } = DomHelper;
+  const { $, $$ } = DomHelper;
 
   const _Page = (function () {
     const PATHNAME_REGEX = /GuiasTISS\/LocalizarProcedimentos/;
@@ -14,9 +14,7 @@
         $$("[data-bind*=guia-template]").forEach((div) => {
           let line = [];
           selectors.forEach((selector) => {
-            line.push(
-              div.querySelector(`[data-bind*=${selector}]`)?.textContent
-            );
+            line.push($(`[data-bind*=${selector}]`, div)?.textContent);
           });
           table.push(line.join("\t"));
         });

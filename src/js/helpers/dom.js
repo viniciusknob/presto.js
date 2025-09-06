@@ -3,11 +3,12 @@
 
   const _Module = (function () {
     // Selectors
+    const $ = (selector, scope = document) => scope?.querySelector(selector);
     const $$ = (selector, scope = document) => [
-      ...scope.querySelectorAll(selector),
+      ...(scope?.querySelectorAll(selector) || []),
     ];
 
-    return { $$ };
+    return { $, $$ };
   })();
 
   /* Module Definition */

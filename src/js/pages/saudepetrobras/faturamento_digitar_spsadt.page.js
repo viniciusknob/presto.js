@@ -1,9 +1,9 @@
-(function (Presto, location) {
+(function (Presto, location, jQuery) {
   "use strict";
 
   const { PersonModel } = Presto.models;
   const { Snackbar, FAB, Modal, DomHelper } = Presto.modules;
-  const { $$ } = DomHelper;
+  const { $, $$ } = DomHelper;
 
   const _Page = (function () {
     const // Inicio > Faturamento > Digitação > Digitar > Serviço Profissional/Serviço Auxiliar de Diagnóstico e Terapia - SP/SADT
@@ -33,58 +33,51 @@
       },
       /** Modal actions */
       __removeInitialAppointment = () => {
-        let fakeTR = document.querySelector("#trProcedimento0");
+        let fakeTR = $("#trProcedimento0");
         if (fakeTR) {
           let tdArr = $$("td", fakeTR);
           if (tdArr.filter((td) => td.textContent === "-").length) {
-            fakeTR.querySelector("input").checked = true;
-            document
-              .querySelector("#bt-addProcedimento")
-              .parentElement.querySelector(".bt-remover")
-              .click();
+            $("input", fakeTR).checked = true;
+            const btap = $("#bt-addProcedimento");
+            $(".bt-remover", btap.parentElement).click();
           }
         }
       },
       _addAppointment = (days, monthYear, daysLength, unitValue) => {
         let day = days.shift();
 
-        document.querySelector("#bt-addProcedimento").click(); // open modal
+        $("#bt-addProcedimento").click(); // open modal
 
-        document.querySelector("#dataModalProcedimento").value =
-          day + monthYear;
-        document
-          .querySelector("#labelOrdemItemModalProcedimento")
-          .parentElement.querySelector("input").value =
-          daysLength - days.length;
-        document.querySelector("#tipoTabelaModalProcedimento").value = 22;
-        document.querySelector("#codigoModalProcedimento").value = 50000470;
-        document.querySelector("#codigoModalProcedimento").onblur();
+        $("#dataModalProcedimento").value = day + monthYear;
+        const labelOIMP = $("#labelOrdemItemModalProcedimento");
+        $("input", labelOIMP.parentElement).value = daysLength - days.length;
+        $("#tipoTabelaModalProcedimento").value = 22;
+        $("#codigoModalProcedimento").value = 50000470;
+        $("#codigoModalProcedimento").onblur();
 
         let interval = setInterval(() => {
-          let target = document.querySelector("#descricaoModalProcedimento");
+          let target = $("#descricaoModalProcedimento");
           if (target.value) {
             clearInterval(interval);
 
-            document.querySelector("#quantidadeModalProcedimento").value = 1;
+            $("#quantidadeModalProcedimento").value = 1;
 
             jQuery("#porcentagemRedAcrModalProcedimento").unmask();
-            document.querySelector(
-              "#porcentagemRedAcrModalProcedimento"
-            ).value = "1.00";
+            $("#porcentagemRedAcrModalProcedimento").value = "1.00";
 
-            document.querySelector("#valorUnitarioModalProcedimento").value =
-              unitValue.replace(",", ".");
-            document.querySelector("#valorUnitarioModalProcedimento").onblur();
+            $("#valorUnitarioModalProcedimento").value = unitValue.replace(
+              ",",
+              "."
+            );
+            $("#valorUnitarioModalProcedimento").onblur();
 
             interval = setInterval(() => {
-              target = document.querySelector("#valorTotalModalProcedimento");
+              target = $("#valorTotalModalProcedimento");
               if (target.value) {
                 clearInterval(interval);
 
                 setTimeout(() => {
-                  document
-                    .querySelector("#bt-operacaoModalProcedimento")
-                    .click(); // close modal
+                  $("#bt-operacaoModalProcedimento").click(); // close modal
                   if (days.length) {
                     setTimeout(
                       () =>
@@ -104,25 +97,19 @@
         /**
          * Modal Validations
          */
-        let _days = document.querySelector(
-          MODAL_INPUT_APPOINTMENTS_DAYS_SELECTOR
-        ).value;
+        let _days = $(MODAL_INPUT_APPOINTMENTS_DAYS_SELECTOR).value;
         if (!!!_days) {
           Snackbar.fire("Informe os dias dos procedimentos!");
           return;
         }
 
-        let _monthYear = document.querySelector(
-          MODAL_INPUT_APPOINTMENTS_MONTH_YEAR_SELECTOR
-        ).value;
+        let _monthYear = $(MODAL_INPUT_APPOINTMENTS_MONTH_YEAR_SELECTOR).value;
         if (!!!_monthYear) {
           Snackbar.fire("Informe o mês/ano dos procedimentos!");
           return;
         }
 
-        let _unitValue = document.querySelector(
-          MODAL_INPUT_APPOINTMENTS_UNIT_VALUE_SELECTOR
-        ).value;
+        let _unitValue = $(MODAL_INPUT_APPOINTMENTS_UNIT_VALUE_SELECTOR).value;
         if (!!!_unitValue) {
           Snackbar.fire(
             "Informe o valor unitário dos procedimentos no formato 12,34!"
@@ -189,7 +176,7 @@
       /** end Modal actions */
 
       _handleBtnGravarAlteracoes = (person) => {
-        const btnGravarAlteracoes = document.querySelector("#gravarAlteracoes");
+        const btnGravarAlteracoes = $("#gravarAlteracoes");
         const _onclick = btnGravarAlteracoes.onclick;
         btnGravarAlteracoes.onclick = () => {
           PersonModel.getOrCreateDB()
@@ -211,11 +198,9 @@
         };
 
         setTimeout(() => {
-          person.uid = document.querySelector(
-            "#txtNumeroCarteirinhaBeneficiario"
-          ).value;
-          person.name = document.querySelector("#txtNomeBeneficiario").value;
-          person.password = document.querySelector("#senha").value;
+          person.uid = $("#txtNumeroCarteirinhaBeneficiario").value;
+          person.name = $("#txtNomeBeneficiario").value;
+          person.password = $("#senha").value;
         }, 500);
 
         let idIgnoredArr = [
@@ -254,7 +239,7 @@
       _validateDueDate = () => {
         return new Promise((resolve, reject) => {
           let interval = setInterval(() => {
-            const eDueDatePwd = document.querySelector("#txtDataValidadeSenha");
+            const eDueDatePwd = $("#txtDataValidadeSenha");
             if (!!!eDueDatePwd.value) return;
 
             clearInterval(interval);
@@ -268,8 +253,7 @@
             if (duoDatePwd < new Date()) {
               eDueDatePwd.style.border = "red 2px solid";
               eDueDatePwd.style.color = "red";
-              eDueDatePwd.parentElement.querySelector("label").style.color =
-                "red";
+              $("label", eDueDatePwd.parentElement).style.color = "red";
               reject("Senha vencida!");
             } else resolve();
           }, 500);
@@ -295,7 +279,7 @@
         });
 
         select.onchange = (event) => {
-          document.querySelector("#senha").value = event.target.value;
+          $("#senha").value = event.target.value;
         };
 
         let div = document.createElement("div");
@@ -304,7 +288,7 @@
         div.appendChild(label);
         div.appendChild(select);
 
-        const referenceNode = document.querySelector(FORM_FIELDSET_SELECTOR);
+        const referenceNode = $(FORM_FIELDSET_SELECTOR);
         referenceNode.insertBefore(div, referenceNode.firstChild);
       },
       __loadProfiles = () => {
@@ -327,41 +311,37 @@
         });
       },
       __btnPreencherDadosPadrao_onclick = () => {
-        Array.from(
-          document.querySelector("#txtTipoDocumentoContratado").options
-        ).find((x) => x.textContent === "CPF").selected = true;
-        document.querySelector("#txtNomeProfissionalSolicitante").value =
-          document.querySelector("#txtNomeContratado").value;
-        Array.from(
-          document.querySelector("#txtUFProfissionalSolicitante").options
-        ).find((x) => x.value === "RS").selected = true;
-        Array.from(
-          document.querySelector("#txtTipoConselhoProfissionalSolicitante")
-            .options
-        ).find((x) => /CRP/.test(x.textContent)).selected = true;
-        document.querySelector(
-          "#txtNumeroConselhoProfissionalSolicitante"
-        ).value = "05014";
-        Array.from(
-          document.querySelector("#txtCBOSProfissionalSolicitante").options
-        ).find((x) => /Psic.logo cl.nico/.test(x.textContent)).selected = true;
-        Array.from(
-          document.querySelector("#txtCaraterInternacao").options
-        ).find((x) => /Eletiva/.test(x.textContent)).selected = true;
-        document.querySelector("#txtAreaIndicacaoClinica").value =
-          "Sessões de Terapia";
-        Array.from(document.querySelector("#txtTipoAtendimento").options).find(
-          (x) => /Outras Terapias/.test(x.textContent)
+        Array.from($("#txtTipoDocumentoContratado").options).find(
+          (x) => x.textContent === "CPF"
         ).selected = true;
-        Array.from(document.querySelector("#txtTipoConsulta").options).find(
-          (x) => /Seguimento/.test(x.textContent)
+        $("#txtNomeProfissionalSolicitante").value =
+          $("#txtNomeContratado").value;
+        Array.from($("#txtUFProfissionalSolicitante").options).find(
+          (x) => x.value === "RS"
         ).selected = true;
-        Array.from(
-          document.querySelector("#txtRegimeAtendimento").options
-        ).find((x) => /Ambulatorial/.test(x.textContent)).selected = true;
-        Array.from(
-          document.querySelector("#txtIndicacaoAcidente").options
-        ).find((x) => /N.o Acidentes/.test(x.textContent)).selected = true;
+        Array.from($("#txtTipoConselhoProfissionalSolicitante").options).find(
+          (x) => /CRP/.test(x.textContent)
+        ).selected = true;
+        $("#txtNumeroConselhoProfissionalSolicitante").value = "05014";
+        Array.from($("#txtCBOSProfissionalSolicitante").options).find((x) =>
+          /Psic.logo cl.nico/.test(x.textContent)
+        ).selected = true;
+        Array.from($("#txtCaraterInternacao").options).find((x) =>
+          /Eletiva/.test(x.textContent)
+        ).selected = true;
+        $("#txtAreaIndicacaoClinica").value = "Sessões de Terapia";
+        Array.from($("#txtTipoAtendimento").options).find((x) =>
+          /Outras Terapias/.test(x.textContent)
+        ).selected = true;
+        Array.from($("#txtTipoConsulta").options).find((x) =>
+          /Seguimento/.test(x.textContent)
+        ).selected = true;
+        Array.from($("#txtRegimeAtendimento").options).find((x) =>
+          /Ambulatorial/.test(x.textContent)
+        ).selected = true;
+        Array.from($("#txtIndicacaoAcidente").options).find((x) =>
+          /N.o Acidentes/.test(x.textContent)
+        ).selected = true;
       },
       _upgrade = () => {
         __avoidErrorInClientCode();
@@ -386,16 +366,14 @@
           },
         ]);
 
-        let btnImport = document
-          .querySelector("#senha")
-          .parentElement.querySelector("a.bt-procurar");
+        const eSenha = $("#senha");
+        let btnImport = $("a.bt-procurar", eSenha.parentElement);
         let btnImport_onclick = btnImport.onclick;
         btnImport.onclick = () => {
           btnImport_onclick();
           _validateDueDate()
             .then(() => {
-              document.querySelector("#txtNumeroGuiaPrestador").value =
-                new Date().getTime();
+              $("#txtNumeroGuiaPrestador").value = new Date().getTime();
               _watchForm();
             })
             .catch(Snackbar.fire);
@@ -411,4 +389,4 @@
   })();
 
   Presto.pages.FormularioDigitarSPSADTPage = _Page;
-})(Presto, location);
+})(window.Presto, window.location, window.jQuery);

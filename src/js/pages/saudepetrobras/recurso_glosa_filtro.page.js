@@ -1,7 +1,8 @@
 (function (Presto, location) {
   "use strict";
 
-  const { Snackbar, FAB, Modal } = Presto.modules;
+  const { Snackbar, FAB, Modal, DomHelper } = Presto.modules;
+  const { $ } = DomHelper;
 
   const _Page = (function () {
     const // Inicio > Responder Recursos de Glosa
@@ -27,9 +28,7 @@
         /**
          * Modal Validations
          */
-        let _protocols = document.querySelector(
-          MODAL_INPUT_PROTOCOLS_SELECTOR
-        ).value;
+        let _protocols = $(MODAL_INPUT_PROTOCOLS_SELECTOR).value;
         if (!!!_protocols) {
           Snackbar.fire("Informe os protocolos de recurso de glosa!");
           return;
@@ -42,18 +41,17 @@
         const fn = () => {
           let query = tasks.shift();
 
-          document.querySelector(
-            "#acompanharSolicitacao_protocoloRecurso"
-          ).value = query;
-          document.querySelector("#acompanharSolicitacao_btnBuscar").click();
+          $("#acompanharSolicitacao_protocoloRecurso").value = query;
+          $("#acompanharSolicitacao_btnBuscar").click();
 
           const interval = setInterval(() => {
-            let tr = document.querySelector(`tr[id="${query}"]`);
+            let tr = $(`tr[id="${query}"]`);
             if (tr) clearInterval(interval);
             else return;
 
-            let status = tr.querySelector(
-              `td[aria-describedby*="statusRecurso"]`
+            let status = $(
+              `td[aria-describedby*="statusRecurso"]`,
+              tr
             ).textContent;
             console.log(`${query}: ${status}`);
 

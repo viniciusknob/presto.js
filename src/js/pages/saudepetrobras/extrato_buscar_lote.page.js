@@ -2,7 +2,7 @@
   "use strict";
 
   const { Clipboard, Snackbar, FAB, DomHelper } = Presto.modules;
-  const { $$ } = DomHelper;
+  const { $, $$ } = DomHelper;
 
   const _Page = (function () {
     const // Inicio > Extrato > Visualizar > Detalhe do Pagamento > Detalhe Lote
@@ -14,7 +14,7 @@
           todoTasks = [];
 
         formList.forEach((form) => {
-          var table = form.querySelector("table");
+          var table = $("table", form);
           var tbodyTrList = $$("tbody tr", table);
           tbodyTrList.forEach((tr) => {
             $$("td", tr).forEach((td) => {
@@ -31,7 +31,7 @@
           var barArr = [];
           child.click();
           let interval = setInterval(() => {
-            let eAjaxContent = document.querySelector("#TB_ajaxContent");
+            let eAjaxContent = $("#TB_ajaxContent");
             if (!eAjaxContent) return;
 
             clearInterval(interval);
@@ -40,8 +40,7 @@
 
             $$("label", eAjaxContent).forEach((label) => {
               let labelText = label.textContent.replace(":", "").trim();
-              let value = label.parentElement
-                .querySelector("span")
+              let value = $("span", label.parentElement)
                 .textContent.replace(".", ",")
                 .trim();
 
@@ -64,10 +63,10 @@
 
             bazArr.push(barArr.join("\t"));
 
-            eAjaxContent.querySelector(".TB_closeWindowButton").click();
+            $(".TB_closeWindowButton", eAjaxContent).click();
 
             let innerInterval = setInterval(() => {
-              if (document.querySelector("#TB_ajaxContent")) return;
+              if ($("#TB_ajaxContent")) return;
 
               clearInterval(innerInterval);
 
@@ -90,7 +89,7 @@
           todoTasks = [];
 
         formList.forEach((form) => {
-          var table = form.querySelector("table");
+          var table = $("table", form);
           var tbodyTrList = $$("tbody tr", table);
           tbodyTrList.forEach((tr) => {
             var barArr = [];
@@ -99,9 +98,7 @@
 
             var labelList = $$("label", form);
             labelList.forEach((label) => {
-              let value = label.parentElement
-                .querySelector("span")
-                .textContent.trim();
+              let value = $("span", label.parentElement).textContent.trim();
               barArr.push(value);
             });
 
@@ -117,11 +114,7 @@
               }
             });
 
-            barArr.push(
-              document
-                .querySelector(".tab-administracao tbody tr td")
-                .textContent.trim()
-            );
+            barArr.push($(".tab-administracao tbody tr td").textContent.trim());
             bazArr.push(barArr.join("\t"));
           });
         });

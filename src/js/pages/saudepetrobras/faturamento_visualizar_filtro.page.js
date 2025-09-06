@@ -1,7 +1,8 @@
 (function (Presto, location) {
   "use strict";
 
-  const { CommonsHelper } = Presto.modules;
+  const { CommonsHelper, DomHelper } = Presto.modules;
+  const { $ } = DomHelper;
 
   const _Page = (function () {
     const // Inicio > Faturamento > Digitação > Consultar
@@ -16,7 +17,7 @@
         div.style.paddingBottom = "3em";
         div.style.marginLeft = "8em";
 
-        const referenceNode = document.querySelector(FORM_FIELDSET_SELECTOR);
+        const referenceNode = $(FORM_FIELDSET_SELECTOR);
         referenceNode.insertBefore(div, referenceNode.firstChild);
       },
       _init = () => {

@@ -4,7 +4,7 @@
   const { PatientModel } = Presto.models;
   const { SolicitacaoDeSPSADTPage, GuiaDeSPSADTIncluirPage } = Presto.pages;
   const { CommonsHelper, DomHelper } = Presto.modules;
-  const { $$ } = DomHelper;
+  const { $, $$ } = DomHelper;
   const dbVersion = 2; // IndexedDB
 
   const _Module = (function () {
@@ -36,7 +36,7 @@
           ".box-indicador-elegibilidade",
           ".box-padrao",
         ]
-          .map((x) => document.querySelector(x))
+          .map((x) => $(x))
           .some((x) => x);
       },
       _buildComboBox = async function (insuredList = []) {
@@ -51,18 +51,13 @@
         select.appendChild(option);
 
         select.onchange = () => {
-          let option = select.querySelector(":checked");
+          let option = $(":checked", select);
 
-          document.querySelector("#codigo-beneficiario-1").value =
-            option.value.substr(0, 3);
-          document.querySelector("#codigo-beneficiario-2").value =
-            option.value.substr(3, 5);
-          document.querySelector("#codigo-beneficiario-3").value =
-            option.value.substr(8, 4);
-          document.querySelector("#codigo-beneficiario-4").value =
-            option.value.substr(12, 4);
-          document.querySelector("#codigo-beneficiario-5").value =
-            option.value.substr(16, 4);
+          $("#codigo-beneficiario-1").value = option.value.substr(0, 3);
+          $("#codigo-beneficiario-2").value = option.value.substr(3, 5);
+          $("#codigo-beneficiario-3").value = option.value.substr(8, 4);
+          $("#codigo-beneficiario-4").value = option.value.substr(12, 4);
+          $("#codigo-beneficiario-5").value = option.value.substr(16, 4);
         };
 
         insuredList.forEach((insured) => {
@@ -87,15 +82,12 @@
           });
           div.firstElementChild.style.width = "initial"; // label
           div.style.display = "block";
-          const node = document.querySelector(dateBeginFieldSelector)
-            .parentElement.parentElement;
+          const node = $(dateBeginFieldSelector).parentElement.parentElement;
           node.insertBefore(div, node.childNodes[1]);
           // END create field for month/year
         } else if (ELEGIBILIDADE_RESULTADO.test(location.pathname)) {
-          let eligibleBox = document.querySelector(
-            ".box-indicador-elegibilidade .linha"
-          );
-          let eligible = eligibleBox.querySelector(".atencao").textContent;
+          let eligibleBox = $(".box-indicador-elegibilidade .linha");
+          let eligible = $(".atencao", eligibleBox).textContent;
 
           let patient = {
             id: "",
@@ -108,13 +100,13 @@
               if (strong) {
                 let strongText = strong.textContent;
                 if (/Carteira/.test(strongText)) {
-                  patient.id = strong.parentElement
-                    .querySelector("span")
-                    .textContent.replace(/\s/g, "");
+                  patient.id = $(
+                    "span",
+                    strong.parentElement
+                  ).textContent.replace(/\s/g, "");
                 }
                 if (/Nome/.test(strongText)) {
-                  patient.name =
-                    strong.parentElement.querySelector("span").textContent;
+                  patient.name = $("span", strong.parentElement).textContent;
                 }
               }
             });
@@ -137,10 +129,10 @@
 
             PatientModel.getOrCreateDB(dbVersion)
               .then((db) => PatientModel.addOrUpdateItem(db, patient))
-              .then(() => {
-                eligibleBox.querySelector("#js-presto-status").textContent =
-                  "Salvo!";
-              })
+              .then(
+                () =>
+                  ($("#js-presto-status", eligibleBox).textContent = "Salvo!")
+              )
               .catch((err) => {
                 console.log(
                   `_fixAnyPage: [eligible=${eligible}] ${JSON.stringify(err)}`
@@ -155,30 +147,22 @@
               if (!comboBox) return;
 
               if (ELEGIBILIDADE.test(location.pathname)) {
-                let node = document.querySelector(
-                  "#box-validacao-beneficiario div"
-                );
+                let node = $("#box-validacao-beneficiario div");
                 node.insertBefore(comboBox, node.childNodes[2]);
-                document.querySelector(".box-padrao").style.width = "850px";
+                $(".box-padrao").style.width = "850px";
               }
               if (PROCEDIMENTO_SOLICITACAO.test(location.pathname)) {
                 if (PROCEDIMENTO_CONSULTA.test(location.pathname)) {
-                  let node = document.querySelector(
-                    "#box-validacao-beneficiario"
-                  );
+                  let node = $("#box-validacao-beneficiario");
                   node.insertBefore(comboBox, node.childNodes[2]);
                 } else {
-                  let node = document.querySelector(
-                    "#box-validacao-beneficiario div"
-                  );
+                  let node = $("#box-validacao-beneficiario div");
                   node.insertBefore(comboBox, node.childNodes[2]);
-                  document.querySelector(".box-padrao").style.width = "850px";
+                  $(".box-padrao").style.width = "850px";
                 }
               }
               if (FECHAMENTO_DE_LOTE.test(location.pathname)) {
-                let node = document.querySelector(
-                  "#box-validacao-beneficiario div"
-                );
+                let node = $("#box-validacao-beneficiario div");
                 node.insertBefore(comboBox, node.childNodes[2]);
 
                 // BEGIN create field for month/year
@@ -187,17 +171,14 @@
                   dateBeginFieldId: dateBeginFieldSelector,
                   dateEndFieldId: 'input[name="data-final"]',
                 });
-                node = document.querySelector(dateBeginFieldSelector)
-                  .parentElement.parentElement;
+                node = $(dateBeginFieldSelector).parentElement.parentElement;
                 node.insertBefore(div, node.childNodes[1]);
                 // END create field for month/year
               }
               if (PROCEDIMENTO_AUTORIZADO.test(location.pathname)) {
-                let node = document.querySelector(
-                  "#box-validacao-beneficiario"
-                );
+                let node = $("#box-validacao-beneficiario");
                 node.insertBefore(comboBox, node.childNodes[0]);
-                document.querySelector(".box-padrao").style.width = "780px";
+                $(".box-padrao").style.width = "780px";
 
                 // BEGIN create field for month/year
                 const dateBeginFieldSelector = 'input[name="data-inicio"]';
@@ -207,8 +188,7 @@
                 });
                 div.firstElementChild.style.width = "initial"; // label
                 div.style.marginRight = "1rem";
-                node = document.querySelector(dateBeginFieldSelector)
-                  .parentElement.parentElement;
+                node = $(dateBeginFieldSelector).parentElement.parentElement;
                 node.insertBefore(div, node.childNodes[2]);
                 // END create field for month/year
               }

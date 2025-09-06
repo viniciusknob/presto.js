@@ -2,7 +2,7 @@
   "use strict";
 
   const { Clipboard, Snackbar, FAB, DomHelper } = Presto.modules;
-  const { $$ } = DomHelper;
+  const { $, $$ } = DomHelper;
 
   const _Page = (function () {
     const // Inicio > Extrato > Visualizar > Detalhe do Pagamento
@@ -14,8 +14,7 @@
           bazArr = [];
 
         labelList.forEach((label) => {
-          let value = label.parentElement
-            .querySelector("span")
+          let value = $("span", label.parentElement)
             .textContent.replace("R$", "")
             .trim();
           barArr.push(value);

@@ -1,6 +1,9 @@
 (function (Presto, document, jQuery) {
   "use strict";
 
+  const { DomHelper } = Presto.modules;
+  const { $ } = DomHelper;
+
   const _Module = (function () {
     const createSelectOptionsMonthYear = (options) => {
         let label = document.createElement("label");
@@ -43,12 +46,8 @@
             endOfMonth = new Date().getDate();
           }
 
-          document.querySelector(
-            options.dateBeginFieldId
-          ).value = `01/${monthStr}/${year}`;
-          document.querySelector(
-            options.dateEndFieldId
-          ).value = `${endOfMonth}/${monthStr}/${year}`;
+          $(options.dateBeginFieldId).value = `01/${monthStr}/${year}`;
+          $(options.dateEndFieldId).value = `${endOfMonth}/${monthStr}/${year}`;
         };
 
         let div = document.createElement("div");
@@ -58,7 +57,7 @@
         return div;
       },
       selectOption = (selector, optionByText) => {
-        const select = document.querySelector(selector);
+        const select = $(selector);
         const target = Array.from(select.options).find((x) =>
           new RegExp(optionByText).test(x.textContent)
         );
@@ -121,7 +120,7 @@
           } else {
             const { selector: sel, value: val } = task;
             if (task.type === "text") {
-              return () => (document.querySelector(sel).value = val);
+              return () => ($(sel).value = val);
             }
             if (task.type === "select") {
               return () => selectOption(sel, val);

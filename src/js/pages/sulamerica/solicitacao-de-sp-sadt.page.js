@@ -4,7 +4,7 @@
   const { PatientModel } = Presto.models;
   const dbVersion = 2; // IndexedDB
   const { Snackbar, FAB, CommonsHelper, DomHelper } = Presto.modules;
-  const { $$ } = DomHelper;
+  const { $, $$ } = DomHelper;
 
   const _Page = (function () {
     // validacao-de-procedimentos-tiss-3/validacao-de-procedimentos/solicitacao/solicitacao-de-sp-sadt.htm
@@ -23,9 +23,10 @@
             if (strong) {
               let strongText = strong.textContent;
               if (/Carteira/.test(strongText)) {
-                carteira = strong.parentElement
-                  .querySelector("span")
-                  .textContent.replace(/\s/g, "");
+                carteira = $("span", strong.parentElement).textContent.replace(
+                  /\s/g,
+                  ""
+                );
               }
             }
           });
@@ -66,7 +67,7 @@
             // const mm = d.getMonth();
             // const date = CommonsHelper.getFirstWeekdayOfMonth(yyyy, mm);
             const sel = "#data-atendimento";
-            document.querySelector(sel).value = formatBRDate(new Date());
+            $(sel).value = formatBRDate(new Date());
           }),
           Taskier.toSelect("#recem-nato", "Não"),
           Taskier.toSelect(
@@ -74,34 +75,30 @@
             "Convencional"
           ),
           Taskier.toText("[name='codigo-procedimento']", "50000470"),
-          Taskier.toFunc(() =>
-            document.querySelector("#btn-incluir-procedimento").click()
-          ),
+          Taskier.toFunc(() => $("#btn-incluir-procedimento").click()),
           Taskier.toFunc(() => {
             const sel = '[name="quantidade-solicitada"]';
-            const input = document.querySelector(sel);
+            const input = $(sel);
             input.value = qtdSolicitada;
 
             const event = new Event("change", { bubbles: true });
             input.dispatchEvent(event);
           }),
-          Taskier.toFunc(() =>
-            document.querySelector("#btn-validar-procedimento").click()
-          ),
+          Taskier.toFunc(() => $("#btn-validar-procedimento").click()),
         ]);
 
         Taskier.exec(tasks, 200)
           .then(() => Snackbar.fire("Pronto!"))
           .then(() => {
             const selector = "#btn-confirmar-solicitacao";
-            const elem = document.querySelector(selector);
+            const elem = $(selector);
             const originalClick = elem.click;
             elem.onclick = () => {
               const prefix = "solicitacao-sp-sadt.executante-solicitante";
-              const spcName = document.querySelector(
+              const spcName = $(
                 `[name='${prefix}.nome-profissional-solicitante']`
               ).value;
-              const spcNCRP = document.querySelector(
+              const spcNCRP = $(
                 `[name='${prefix}.conselho-profissional.numero']`
               ).value;
               patient = {

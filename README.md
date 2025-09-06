@@ -1,4 +1,4 @@
-# Presto.js 1.4.1
+# Presto.js 1.4.2
 
 Useful utilities for working with health insurance (userscript).
 

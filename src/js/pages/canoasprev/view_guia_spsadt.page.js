@@ -3,7 +3,7 @@
 
   const { PatientModel } = Presto.models;
   const { FAB, Modal, DomHelper } = Presto.modules;
-  const { $$ } = DomHelper;
+  const { $, $$ } = DomHelper;
 
   const _Page = (function () {
     const // Guias > Guia de SP/SADT
@@ -31,16 +31,16 @@
         jQuery(id).autocomplete("search");
 
         __selectFirstItemInAutocompleteMenu(id, () => {
-          document.querySelector("#ui-accordion-accordion-header-2").click();
+          $("#ui-accordion-accordion-header-2").click();
           setTimeout(() => {
-            document.querySelector("#incluirProcedimento").click();
+            $("#incluirProcedimento").click();
             const interval = setInterval(() => {
               // elemento utilizado para verificação apenas, quando ele estiver
               // pronto terá um valor retornado por textContent
-              const elem = document.querySelector("#registroProcedimentoID");
+              const elem = $("#registroProcedimentoID");
               if (elem.textContent) {
                 clearInterval(interval);
-                document.querySelector("#btnGravar").click();
+                $("#btnGravar").click();
               }
             }, 250);
           }, 500);
@@ -98,7 +98,7 @@
         divLine.style.marginBottom = "2em";
         divLine.append(divElemItem);
 
-        const referenceNode = document.querySelector("#guiaDadosPrincipais");
+        const referenceNode = $("#guiaDadosPrincipais");
         referenceNode.insertBefore(divLine, referenceNode.firstChild);
       },
       __buildModalForBulkInsert = (profiles) => {
@@ -120,8 +120,7 @@
         return content;
       },
       __getAccount = () => {
-        const data = document
-          .querySelector("footer p")
+        const data = $("footer p")
           .textContent.split("\n")
           .map((x) => x.trim())
           .filter((x) => x);
@@ -146,17 +145,17 @@
           });
       },
       __handleBtnGravar = () => {
-        const btn = document.querySelector("#btnGravar");
+        const btn = $("#btnGravar");
         const _onclick = btn.onclick;
         btn.onclick = () => {
           const account = __getAccount();
           const patient = {
-            id: document.querySelector("#numeroDaCarteira").value,
-            name: document.querySelector("#nomeDoBeneficiario").value,
+            id: $("#numeroDaCarteira").value,
+            name: $("#nomeDoBeneficiario").value,
             // specialist
             spc: {
-              id: document.querySelector("#idContratadoSolicitante").value,
-              name: document.querySelector("#nomeContratadoSolicitante").value,
+              id: $("#idContratadoSolicitante").value,
+              name: $("#nomeContratadoSolicitante").value,
             },
             acc: {
               id: account.id,
@@ -175,7 +174,7 @@
                   b.textContent.includes("Nº Guia Operadora")
                 );
                 const uiDialog = b?.closest(".ui-dialog");
-                const btnFechar = uiDialog?.querySelector("#fechar");
+                const btnFechar = $("#fechar", uiDialog);
                 if (btnFechar?.offsetParent) {
                   clearInterval(interval);
                   setTimeout(() => btnFechar.click(), 1000);
@@ -191,15 +190,14 @@
        * preencher a data de atendimento para o dia atual
        */
       __handleInputDataSolicitacao = () => {
-        document.querySelector("#dataSolicitacao").value =
-          new Intl.DateTimeFormat("pt-BR", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-          }).format(new Date());
+        $("#dataSolicitacao").value = new Intl.DateTimeFormat("pt-BR", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        }).format(new Date());
       },
       __handleBtnIncluirProcedimento = () => {
-        const elem = document.querySelector("#incluirProcedimento");
+        const elem = $("#incluirProcedimento");
         const elem_onclick = elem.onclick;
         elem.onclick = () => {
           elem_onclick();
@@ -209,7 +207,7 @@
           jQuery(selector).autocomplete("search");
 
           __selectFirstItemInAutocompleteMenu(selector, () => {
-            document.querySelector("#confirmarEdicaoDeProcedimento").click();
+            $("#confirmarEdicaoDeProcedimento").click();
           });
         };
       },
@@ -220,9 +218,7 @@
           const target = profiles.shift();
 
           // select person and click to trigger automation
-          const select = document.querySelector(
-            `#${PROFILES_SELECT_OPTION_ID}`
-          );
+          const select = $(`#${PROFILES_SELECT_OPTION_ID}`);
           select.value = target;
           select.dispatchEvent(new Event("change", { bubbles: true }));
 
@@ -237,9 +233,7 @@
         }
       },
       __fillForm_AdicionarProcedimentosEmLote_onclick = () => {
-        const modal = document.querySelector(
-          `#${PROFILES_BULK_INSERT_APPOINTMENTS_ID}`
-        );
+        const modal = $(`#${PROFILES_BULK_INSERT_APPOINTMENTS_ID}`);
         localStorage.setItem(
           PROFILES_BULK_INSERT_APPOINTMENTS_ID,
           $$(`input[type="checkbox"]:checked`, modal)
@@ -260,7 +254,7 @@
         __handleInputDataSolicitacao();
 
         // preencher tipo atendimento como TERAPIA
-        document.querySelector("#tipoAtendimento").value = "3";
+        $("#tipoAtendimento").value = "3";
 
         __handleBtnIncluirProcedimento();
         __handleBtnGravar();
@@ -286,7 +280,7 @@
       _init = () => {
         if (PATHNAME_REGEX.test(location.pathname)) {
           const interval = setInterval(() => {
-            const btn = document.querySelector("#btnGravar");
+            const btn = $("#btnGravar");
             if (btn) {
               clearInterval(interval);
               _upgrade();

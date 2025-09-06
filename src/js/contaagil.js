@@ -2,6 +2,8 @@
   "use strict";
 
   const { EmitirNotaFiscalPage, ConciliacaoBancariaPage } = Presto.pages;
+  const { DomHelper } = Presto.modules;
+  const { $ } = DomHelper;
 
   const _Module = (function () {
     const HOST = /app\.contaagil\.com\.br/;
@@ -10,7 +12,7 @@
         return HOST.test(location.host);
       },
       _isLoaded = function () {
-        return document.querySelector("#accordion");
+        return $("#accordion");
       },
       _fixAnyPage = function () {
         EmitirNotaFiscalPage.upgrade();

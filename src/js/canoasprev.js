@@ -6,6 +6,8 @@
     ViewGuiaSPSADTPage,
     FaturamentoAtendimentosPage,
   } = Presto.pages;
+  const { DomHelper } = Presto.modules;
+  const { $ } = DomHelper;
 
   const _Module = (function () {
     const HOST = /novowebplancanoasprev\.facilinformatica\.com\.br/;
@@ -14,7 +16,7 @@
         return HOST.test(location.host);
       },
       _isLoaded = function () {
-        return document.querySelector("#collapseMenu");
+        return $("#collapseMenu");
       },
       _fixAnyPage = function () {
         ViewGuiaSPSADTPage.upgrade();

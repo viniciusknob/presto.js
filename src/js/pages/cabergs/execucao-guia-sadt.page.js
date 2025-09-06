@@ -3,7 +3,7 @@
 
   const { PatientModel } = Presto.models;
   const { CommonsHelper, DomHelper } = Presto.modules;
-  const { $$ } = DomHelper;
+  const { $, $$ } = DomHelper;
 
   const _Page = (function () {
     const PATHNAME_REGEX = /prestador\/guiaexameexecucao/;
@@ -19,8 +19,8 @@
 
           const selPatientName = "span[id$=nomePacientTooltip]";
           rows.sort((a, b) => {
-            const aText = a.querySelector(selPatientName).textContent.trim();
-            const bText = b.querySelector(selPatientName).textContent.trim();
+            const aText = $(selPatientName, a).textContent.trim();
+            const bText = $(selPatientName, b).textContent.trim();
             return aText.localeCompare(bText);
           });
 
@@ -46,7 +46,7 @@
 
           const selector =
             'div[id="mainForm:panelConfigPesquisa"] div.configPesquisaItens';
-          const setupBar = document.querySelector(selector);
+          const setupBar = $(selector);
 
           setupBar.appendChild(div);
         } finally {
@@ -65,9 +65,7 @@
             const execProcText = "Executar procedimento";
 
             const interval = setInterval(() => {
-              const eCarteira = document.querySelector(
-                `${painelSelector} ${carteiraSelector}`
-              );
+              const eCarteira = $(`${painelSelector} ${carteiraSelector}`);
               if (eCarteira) {
                 clearInterval(interval);
                 patient.id = eCarteira.textContent.replace(/\D/g, "");
@@ -96,7 +94,7 @@
             const selector =
               'input[id="formAddUpdate:profissionalexecucaoExame"]';
             const interval = setInterval(() => {
-              const eSpecialistInput = document.querySelector(selector);
+              const eSpecialistInput = $(selector);
               if (eSpecialistInput) {
                 clearInterval(interval);
                 resolve();
@@ -114,7 +112,7 @@
           // preencher o campo "Profissional Executante" com o nome do profissional vinculado ao paciente
           const selector =
             'input[id="formAddUpdate:profissionalexecucaoExame"]';
-          const input = document.querySelector(selector);
+          const input = $(selector);
           input.value = patient.professional;
 
           function dispatchEvent(el) {
@@ -133,7 +131,7 @@
           // observar se este campo deixa de ser display: none para então...
           const selDivSuggestions =
             'div[id*="formAddUpdate"].rich-sb-common-container';
-          const divSuggestions = document.querySelector(selDivSuggestions);
+          const divSuggestions = $(selDivSuggestions);
 
           return new Promise((resolve) => {
             const interval = setInterval(() => {
@@ -160,14 +158,12 @@
         console.log(`${fn} - Enter`);
         try {
           // clicar no botão autenticar para abrir o modal e inserir a senha de autorização
-          document.querySelector(".button-autenticar").click();
+          $(".button-autenticar").click();
 
           return new Promise((resolve) => {
             // aguardar abrir o modal e inserir a senha
             const interval0 = setInterval(() => {
-              const modal = document.querySelector(
-                "#autenticarModalPanelVirtualCDiv"
-              );
+              const modal = $("#autenticarModalPanelVirtualCDiv");
               if (modal?.offsetParent) {
                 clearInterval(interval0);
 
@@ -176,8 +172,9 @@
 
                 // somente resolve quando o input de senha estiver criado/aparecendo
                 const interval1 = setInterval(() => {
-                  const inputPwd = modal.querySelector(
-                    'input[id*="senhaPacienteBiometria"]'
+                  const inputPwd = $(
+                    'input[id*="senhaPacienteBiometria"]',
+                    modal
                   );
                   if (inputPwd?.offsetParent) {
                     clearInterval(interval1);
@@ -202,11 +199,11 @@
             btnFinish: 'a[title="Finalizar execução"]',
           };
 
-          const modal = document.querySelector(selector.modal);
-          const authBtn = modal.querySelector(selector.btnAuth);
+          const modal = $(selector.modal);
+          const authBtn = $(selector.btnAuth, modal);
           const triggerUpsertItem = async (e) => {
             await PatientModel.getOrCreateDB().then((db) => {
-              patient.password = modal.querySelector(selector.inputPwd).value;
+              patient.password = $(selector.inputPwd, modal).value;
               return PatientModel.addOrUpdateItem(db, patient);
             });
           };
@@ -217,9 +214,8 @@
             .then((patients) => patients.find((p) => p.id === patient.id))
             .then((patientDB) => {
               if (patientDB) {
-                modal.querySelector(selector.inputPwd).value =
-                  patientDB.password;
-                modal.querySelector(selector.btnAuth).click();
+                $(selector.inputPwd, modal).value = patientDB.password;
+                $(selector.btnAuth, modal).click();
 
                 // espere a autenticação finalizar
                 return new Promise((resolve) => {
@@ -227,7 +223,7 @@
                     if (!modal.offsetParent) {
                       clearInterval(interval);
                       setTimeout(() => {
-                        document.querySelector(selector.btnFinish).click();
+                        $(selector.btnFinish).click();
                         resolve();
                       }, 1000);
                     }
@@ -273,9 +269,7 @@
 
           const buildPatient = (span) => {
             const table = span.closest("table");
-            const professionalEl = table
-              ? table.querySelector('[title="Médico"]')
-              : null;
+            const professionalEl = table ? $('[title="Médico"]', table) : null;
             return {
               name: (span.textContent || "").trim(),
               professional: professionalEl
@@ -288,12 +282,12 @@
             const td = e.target.closest(selector.closestTD);
             if (!td) return;
 
-            const span = td.querySelector(selector.patient);
+            const span = $(selector.patient, td);
             const patient = buildPatient(span);
             _patientOnClick(patient);
           };
 
-          const gridSpan = document.querySelector(selector.grid);
+          const gridSpan = $(selector.grid);
           if (!gridSpan._hasTriggerPatientOnClick) {
             gridSpan.addEventListener("click", triggerPatientOnClick);
             gridSpan._hasTriggerPatientOnClick = true;
@@ -308,7 +302,7 @@
             "mainForm:resultadoPesquisaTable:tb"
           );
           if (tbody?.textContent) {
-            const ePrestoSetup = document.querySelector("#prestoSetup");
+            const ePrestoSetup = $("#prestoSetup");
             if (!ePrestoSetup) {
               _addSortAZButton();
               _configureAddAutomaticAppointment();

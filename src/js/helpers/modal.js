@@ -3,6 +3,9 @@
 (function (Presto) {
   "use strict";
 
+  const { DomHelper } = Presto.modules;
+  const { $ } = DomHelper;
+
   const _Module = (function () {
     const MODAL_SELECTOR = "#presto-modal",
       MODAL = `__modal__`;
@@ -27,15 +30,14 @@
       },
       _open = (options) => {
         const interval = setInterval(() => {
-          let modal = document.querySelector(MODAL_SELECTOR);
+          let modal = $(MODAL_SELECTOR);
           if (modal) {
             clearInterval(interval);
 
-            modal.querySelector(".modal__title").textContent = options.title;
-            modal.querySelector(".modal__content").innerHTML = "";
-            modal.querySelector(".modal__content").appendChild(options.content);
-            modal.querySelector(".modal__btn-primary").onclick =
-              options.mainAction;
+            $(".modal__title", modal).textContent = options.title;
+            $(".modal__content", modal).innerHTML = "";
+            $(".modal__content", modal).appendChild(options.content);
+            $(".modal__btn-primary", modal).onclick = options.mainAction;
 
             window.MicroModal.show(MODAL_SELECTOR.substring(1));
           }
