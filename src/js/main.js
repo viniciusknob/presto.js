@@ -5,24 +5,26 @@
   const pages = [SulAmerica, SaudePetrobras, CanoasPrev, Cabergs, ContaAgil];
 
   const _init = function () {
-      Style.inject();
-      pages.forEach((x) => {
-        if (x.is()) x.fix();
-      });
-    },
-    _isLoaded = function () {
-      return pages.some((x) => x.is() && x.isLoaded());
-    },
-    _initWithDelay = function () {
-      var interval = setInterval(function () {
-        if (_isLoaded()) {
-          clearInterval(interval);
-          _init();
-        }
-      }, 250);
-    };
+    Style.inject();
+    pages.forEach((page) => {
+      if (page.isCurrentHost()) page.applyFeatures();
+    });
+  };
+
+  const _isPageReady = function () {
+    return pages.some((x) => x.isCurrentHost() && x.isPageReady());
+  };
+
+  const initWithDelay = function () {
+    var interval = setInterval(function () {
+      if (_isPageReady()) {
+        clearInterval(interval);
+        _init();
+      }
+    }, 250);
+  };
 
   /* Public Functions */
 
-  Presto.bless = _initWithDelay;
+  Presto.bless = initWithDelay;
 })(window.Presto, window.setInterval, window.clearInterval);

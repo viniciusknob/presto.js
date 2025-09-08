@@ -28,7 +28,9 @@
 
         Clipboard.write(bazArrJoined).then(() => Snackbar.fire("Copiado!"));
       },
-      _upgrade = () => {
+      applyFeatures = () => {
+        if (!PATHNAME_REGEX.test(location.pathname)) return;
+
         FAB.build([
           {
             textLabel: "Copiar dados",
@@ -36,13 +38,10 @@
             click: __createCopyButton_onclick,
           },
         ]);
-      },
-      _init = () => {
-        if (PATHNAME_REGEX.test(location.pathname)) _upgrade();
       };
 
     return {
-      upgrade: _init,
+      applyFeatures,
     };
   })();
 

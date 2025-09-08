@@ -69,7 +69,9 @@
           mainAction: __mainAction_checkStatus_onclick,
         });
       },
-      _upgrade = () => {
+      applyFeatures = () => {
+        if (!PATHNAME_REGEX.test(location.pathname)) return;
+
         Modal.init();
         FAB.build([
           {
@@ -78,13 +80,10 @@
             click: __menuItem_checkStatus_onclick,
           },
         ]);
-      },
-      _init = () => {
-        if (PATHNAME_REGEX.test(location.pathname)) _upgrade();
       };
 
     return {
-      upgrade: _init,
+      applyFeatures,
     };
   })();
 

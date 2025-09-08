@@ -58,7 +58,9 @@
           Snackbar.fire("Copiado!")
         );
       },
-      _upgrade = () => {
+      applyFeatures = () => {
+        if (!PATHNAME_REGEX.test(location.pathname)) return;
+
         FAB.build([
           {
             textLabel: "Copiar dados (Recurso de Glosa)",
@@ -66,13 +68,10 @@
             click: __btnCopy_onclick,
           },
         ]);
-      },
-      _init = () => {
-        if (PATHNAME_REGEX.test(location.pathname)) _upgrade();
       };
 
     return {
-      upgrade: _init,
+      applyFeatures,
     };
   })();
 

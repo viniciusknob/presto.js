@@ -21,7 +21,9 @@
 
         Clipboard.write(table.join("\n")).then(() => Snackbar.fire("Copiado!"));
       },
-      _upgrade = () => {
+      applyFeatures = () => {
+        if (!PATHNAME_REGEX.test(location.pathname)) return;
+
         FAB.build([
           {
             textLabel: "Copiar dados (relatório mensal)",
@@ -29,13 +31,10 @@
             click: __createCopyButton_relatorioMensal_onclick,
           },
         ]);
-      },
-      _init = () => {
-        if (PATHNAME_REGEX.test(location.pathname)) _upgrade();
       };
 
     return {
-      upgrade: _init,
+      applyFeatures,
     };
   })();
 

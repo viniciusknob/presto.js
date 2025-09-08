@@ -1,6 +1,6 @@
 {
   "name": "presto",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "description": "Useful utilities for working with health insurance (userscript)",
   "main": "dist/presto.min.js",
   "scripts": {

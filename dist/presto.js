@@ -941,7 +941,9 @@
           })
           .catch((e) => console.error(e));
       },
-      _upgrade = () => {
+      applyFeatures = () => {
+        if (!PATHNAME_REGEX.test(location.pathname)) return;
+
         Modal.init();
 
         __buildPatientName();
@@ -953,13 +955,10 @@
             click: __btnAdicionarProcedimentos_onclick,
           },
         ]);
-      },
-      _init = () => {
-        if (PATHNAME_REGEX.test(location.pathname)) _upgrade();
       };
 
     return {
-      upgrade: _init,
+      applyFeatures,
     };
   })();
 
@@ -1083,7 +1082,9 @@
             };
           });
       },
-      _upgrade = () => {
+      applyFeatures = () => {
+        if (!PATHNAME_REGEX.test(location.pathname)) return;
+
         FAB.build([
           {
             textLabel: "Autorizar 5 sessões",
@@ -1111,15 +1112,10 @@
             click: () => __btnPreencherDadosPadrao_onclick(1),
           },
         ]);
-      },
-      _init = () => {
-        if (PATHNAME_REGEX.test(location.pathname)) {
-          _upgrade();
-        }
       };
 
     return {
-      upgrade: _init,
+      applyFeatures,
     };
   })();
 
@@ -1155,186 +1151,188 @@
       DEMONSTRATIVO_PAGAMENTO =
         /demonstrativos-tiss-3(\/demonstrativo-de-pagamento)?/;
 
-    const _is = function () {
-        return HOST.test(location.host);
-      },
-      _isLoaded = function () {
-        return [
-          "#box-validacao-beneficiario",
-          ".box-indicador-elegibilidade",
-          ".box-padrao",
-        ]
-          .map((x) => $(x))
-          .some((x) => x);
-      },
-      _buildComboBox = async function (insuredList = []) {
-        if (insuredList.length === 0) return null;
+    const isCurrentHost = function () {
+      return HOST.test(location.host);
+    };
 
-        let select = document.createElement("SELECT");
-        select.style.cssText = "vertical-align: middle;";
+    const isPageReady = function () {
+      return [
+        "#box-validacao-beneficiario",
+        ".box-indicador-elegibilidade",
+        ".box-padrao",
+      ]
+        .map((x) => $(x))
+        .some((x) => x);
+    };
 
+    const _buildComboBox = async function (insuredList = []) {
+      if (insuredList.length === 0) return null;
+
+      let select = document.createElement("SELECT");
+      select.style.cssText = "vertical-align: middle;";
+
+      let option = document.createElement("OPTION");
+      option.value = "";
+      option.textContent = "ESCOLHA O BENEFICIÁRIO...";
+      select.appendChild(option);
+
+      select.onchange = () => {
+        let option = $(":checked", select);
+
+        $("#codigo-beneficiario-1").value = option.value.substr(0, 3);
+        $("#codigo-beneficiario-2").value = option.value.substr(3, 5);
+        $("#codigo-beneficiario-3").value = option.value.substr(8, 4);
+        $("#codigo-beneficiario-4").value = option.value.substr(12, 4);
+        $("#codigo-beneficiario-5").value = option.value.substr(16, 4);
+      };
+
+      insuredList.forEach((insured) => {
         let option = document.createElement("OPTION");
-        option.value = "";
-        option.textContent = "ESCOLHA O BENEFICIÁRIO...";
+        option.value = insured.id;
+        option.textContent = insured.name;
         select.appendChild(option);
+      });
 
-        select.onchange = () => {
-          let option = $(":checked", select);
+      return select;
+    };
 
-          $("#codigo-beneficiario-1").value = option.value.substr(0, 3);
-          $("#codigo-beneficiario-2").value = option.value.substr(3, 5);
-          $("#codigo-beneficiario-3").value = option.value.substr(8, 4);
-          $("#codigo-beneficiario-4").value = option.value.substr(12, 4);
-          $("#codigo-beneficiario-5").value = option.value.substr(16, 4);
+    const applyFeatures = async function () {
+      GuiaDeSPSADTIncluirPage.applyFeatures();
+      SolicitacaoDeSPSADTPage.applyFeatures();
+
+      if (DEMONSTRATIVO_PAGAMENTO.test(location.pathname)) {
+        // BEGIN create field for month/year
+        const dateBeginFieldSelector = 'input[name="data-inicial"]';
+        const div = CommonsHelper.createSelectOptionsMonthYear({
+          dateBeginFieldId: dateBeginFieldSelector,
+          dateEndFieldId: 'input[name="data-final"]',
+        });
+        div.firstElementChild.style.width = "initial"; // label
+        div.style.display = "block";
+        const node = $(dateBeginFieldSelector).parentElement.parentElement;
+        node.insertBefore(div, node.childNodes[1]);
+        // END create field for month/year
+      } else if (ELEGIBILIDADE_RESULTADO.test(location.pathname)) {
+        let eligibleBox = $(".box-indicador-elegibilidade .linha");
+        let eligible = $(".atencao", eligibleBox).textContent;
+
+        let patient = {
+          id: "",
+          name: "",
         };
 
-        insuredList.forEach((insured) => {
-          let option = document.createElement("OPTION");
-          option.value = insured.id;
-          option.textContent = insured.name;
-          select.appendChild(option);
+        $$(".linha").forEach((line) => {
+          let strongList = $$("strong", line);
+          strongList.forEach((strong) => {
+            if (strong) {
+              let strongText = strong.textContent;
+              if (/Carteira/.test(strongText)) {
+                patient.id = $(
+                  "span",
+                  strong.parentElement
+                ).textContent.replace(/\s/g, "");
+              }
+              if (/Nome/.test(strongText)) {
+                patient.name = $("span", strong.parentElement).textContent;
+              }
+            }
+          });
         });
 
-        return select;
-      },
-      _fixAnyPage = async function () {
-        GuiaDeSPSADTIncluirPage.upgrade();
-        SolicitacaoDeSPSADTPage.upgrade();
-
-        if (DEMONSTRATIVO_PAGAMENTO.test(location.pathname)) {
-          // BEGIN create field for month/year
-          const dateBeginFieldSelector = 'input[name="data-inicial"]';
-          const div = CommonsHelper.createSelectOptionsMonthYear({
-            dateBeginFieldId: dateBeginFieldSelector,
-            dateEndFieldId: 'input[name="data-final"]',
-          });
-          div.firstElementChild.style.width = "initial"; // label
-          div.style.display = "block";
-          const node = $(dateBeginFieldSelector).parentElement.parentElement;
-          node.insertBefore(div, node.childNodes[1]);
-          // END create field for month/year
-        } else if (ELEGIBILIDADE_RESULTADO.test(location.pathname)) {
-          let eligibleBox = $(".box-indicador-elegibilidade .linha");
-          let eligible = $(".atencao", eligibleBox).textContent;
-
-          let patient = {
-            id: "",
-            name: "",
-          };
-
-          $$(".linha").forEach((line) => {
-            let strongList = $$("strong", line);
-            strongList.forEach((strong) => {
-              if (strong) {
-                let strongText = strong.textContent;
-                if (/Carteira/.test(strongText)) {
-                  patient.id = $(
-                    "span",
-                    strong.parentElement
-                  ).textContent.replace(/\s/g, "");
-                }
-                if (/Nome/.test(strongText)) {
-                  patient.name = $("span", strong.parentElement).textContent;
-                }
-              }
-            });
-          });
-
-          if (patient.id) {
-            const _patient = await PatientModel.getOrCreateDB(dbVersion)
-              .then(PatientModel.getAll)
-              .then((patients) => patients.find((x) => x.id === patient.id));
-
-            patient = _patient || patient;
-          }
-
-          if (eligible === "SIM") {
-            let divStatus = document.createElement("DIV");
-            divStatus.id = "js-presto-status";
-            divStatus.style = "float:right;font-weight:bold;color:limegreen;";
-            divStatus.textContent = "Salvando...";
-            eligibleBox.appendChild(divStatus);
-
-            PatientModel.getOrCreateDB(dbVersion)
-              .then((db) => PatientModel.addOrUpdateItem(db, patient))
-              .then(
-                () =>
-                  ($("#js-presto-status", eligibleBox).textContent = "Salvo!")
-              )
-              .catch((err) => {
-                console.log(
-                  `_fixAnyPage: [eligible=${eligible}] ${JSON.stringify(err)}`
-                );
-              });
-          }
-        } else {
-          PatientModel.getOrCreateDB(dbVersion)
+        if (patient.id) {
+          const _patient = await PatientModel.getOrCreateDB(dbVersion)
             .then(PatientModel.getAll)
-            .then(_buildComboBox)
-            .then((comboBox) => {
-              if (!comboBox) return;
+            .then((patients) => patients.find((x) => x.id === patient.id));
 
-              if (ELEGIBILIDADE.test(location.pathname)) {
-                let node = $("#box-validacao-beneficiario div");
-                node.insertBefore(comboBox, node.childNodes[2]);
-                $(".box-padrao").style.width = "850px";
-              }
-              if (PROCEDIMENTO_SOLICITACAO.test(location.pathname)) {
-                if (PROCEDIMENTO_CONSULTA.test(location.pathname)) {
-                  let node = $("#box-validacao-beneficiario");
-                  node.insertBefore(comboBox, node.childNodes[2]);
-                } else {
-                  let node = $("#box-validacao-beneficiario div");
-                  node.insertBefore(comboBox, node.childNodes[2]);
-                  $(".box-padrao").style.width = "850px";
-                }
-              }
-              if (FECHAMENTO_DE_LOTE.test(location.pathname)) {
-                let node = $("#box-validacao-beneficiario div");
-                node.insertBefore(comboBox, node.childNodes[2]);
+          patient = _patient || patient;
+        }
 
-                // BEGIN create field for month/year
-                const dateBeginFieldSelector = 'input[name="data-inicial"]';
-                const div = CommonsHelper.createSelectOptionsMonthYear({
-                  dateBeginFieldId: dateBeginFieldSelector,
-                  dateEndFieldId: 'input[name="data-final"]',
-                });
-                node = $(dateBeginFieldSelector).parentElement.parentElement;
-                node.insertBefore(div, node.childNodes[1]);
-                // END create field for month/year
-              }
-              if (PROCEDIMENTO_AUTORIZADO.test(location.pathname)) {
-                let node = $("#box-validacao-beneficiario");
-                node.insertBefore(comboBox, node.childNodes[0]);
-                $(".box-padrao").style.width = "780px";
+        if (eligible === "SIM") {
+          let divStatus = document.createElement("DIV");
+          divStatus.id = "js-presto-status";
+          divStatus.style = "float:right;font-weight:bold;color:limegreen;";
+          divStatus.textContent = "Salvando...";
+          eligibleBox.appendChild(divStatus);
 
-                // BEGIN create field for month/year
-                const dateBeginFieldSelector = 'input[name="data-inicio"]';
-                const div = CommonsHelper.createSelectOptionsMonthYear({
-                  dateBeginFieldId: dateBeginFieldSelector,
-                  dateEndFieldId: 'input[name="data-termino"]',
-                });
-                div.firstElementChild.style.width = "initial"; // label
-                div.style.marginRight = "1rem";
-                node = $(dateBeginFieldSelector).parentElement.parentElement;
-                node.insertBefore(div, node.childNodes[2]);
-                // END create field for month/year
-              }
-            })
+          PatientModel.getOrCreateDB(dbVersion)
+            .then((db) => PatientModel.addOrUpdateItem(db, patient))
+            .then(
+              () => ($("#js-presto-status", eligibleBox).textContent = "Salvo!")
+            )
             .catch((err) => {
               console.log(
                 `_fixAnyPage: [eligible=${eligible}] ${JSON.stringify(err)}`
               );
             });
         }
-      };
+      } else {
+        PatientModel.getOrCreateDB(dbVersion)
+          .then(PatientModel.getAll)
+          .then(_buildComboBox)
+          .then((comboBox) => {
+            if (!comboBox) return;
+
+            if (ELEGIBILIDADE.test(location.pathname)) {
+              let node = $("#box-validacao-beneficiario div");
+              node.insertBefore(comboBox, node.childNodes[2]);
+              $(".box-padrao").style.width = "850px";
+            }
+            if (PROCEDIMENTO_SOLICITACAO.test(location.pathname)) {
+              if (PROCEDIMENTO_CONSULTA.test(location.pathname)) {
+                let node = $("#box-validacao-beneficiario");
+                node.insertBefore(comboBox, node.childNodes[2]);
+              } else {
+                let node = $("#box-validacao-beneficiario div");
+                node.insertBefore(comboBox, node.childNodes[2]);
+                $(".box-padrao").style.width = "850px";
+              }
+            }
+            if (FECHAMENTO_DE_LOTE.test(location.pathname)) {
+              let node = $("#box-validacao-beneficiario div");
+              node.insertBefore(comboBox, node.childNodes[2]);
+
+              // BEGIN create field for month/year
+              const dateBeginFieldSelector = 'input[name="data-inicial"]';
+              const div = CommonsHelper.createSelectOptionsMonthYear({
+                dateBeginFieldId: dateBeginFieldSelector,
+                dateEndFieldId: 'input[name="data-final"]',
+              });
+              node = $(dateBeginFieldSelector).parentElement.parentElement;
+              node.insertBefore(div, node.childNodes[1]);
+              // END create field for month/year
+            }
+            if (PROCEDIMENTO_AUTORIZADO.test(location.pathname)) {
+              let node = $("#box-validacao-beneficiario");
+              node.insertBefore(comboBox, node.childNodes[0]);
+              $(".box-padrao").style.width = "780px";
+
+              // BEGIN create field for month/year
+              const dateBeginFieldSelector = 'input[name="data-inicio"]';
+              const div = CommonsHelper.createSelectOptionsMonthYear({
+                dateBeginFieldId: dateBeginFieldSelector,
+                dateEndFieldId: 'input[name="data-termino"]',
+              });
+              div.firstElementChild.style.width = "initial"; // label
+              div.style.marginRight = "1rem";
+              node = $(dateBeginFieldSelector).parentElement.parentElement;
+              node.insertBefore(div, node.childNodes[2]);
+              // END create field for month/year
+            }
+          })
+          .catch((err) => {
+            console.log(
+              `_fixAnyPage: [eligible=${eligible}] ${JSON.stringify(err)}`
+            );
+          });
+      }
+    };
 
     /* Public Functions */
 
     return {
-      is: _is,
-      isLoaded: _isLoaded,
-      fix: _fixAnyPage,
+      isCurrentHost,
+      isPageReady,
+      applyFeatures,
     };
   })();
 
@@ -1352,23 +1350,22 @@
       PATHNAME_REGEX = /autorizacao\/ultimasSolicitacoes\/ultimasSolicitacoes/,
       FORM_FIELDSET_SELECTOR = "#formularioBase fieldset";
 
-    const _upgrade = () => {
-        const div = CommonsHelper.createSelectOptionsMonthYear({
-          dateBeginFieldId: "#txtDataEnvioDe",
-          dateEndFieldId: "#txtDataEnvioAte",
-        });
-        div.style.paddingBottom = "3em";
-        div.style.marginLeft = "8em";
+    const applyFeatures = () => {
+      if (!PATHNAME_REGEX.test(location.pathname)) return;
 
-        const referenceNode = $(FORM_FIELDSET_SELECTOR);
-        referenceNode.insertBefore(div, referenceNode.firstChild);
-      },
-      _init = () => {
-        if (PATHNAME_REGEX.test(location.pathname)) _upgrade();
-      };
+      const div = CommonsHelper.createSelectOptionsMonthYear({
+        dateBeginFieldId: "#txtDataEnvioDe",
+        dateEndFieldId: "#txtDataEnvioAte",
+      });
+      div.style.paddingBottom = "3em";
+      div.style.marginLeft = "8em";
+
+      const referenceNode = $(FORM_FIELDSET_SELECTOR);
+      referenceNode.insertBefore(div, referenceNode.firstChild);
+    };
 
     return {
-      upgrade: _init,
+      applyFeatures,
     };
   })();
 
@@ -1435,7 +1432,9 @@
           Snackbar.fire("Copiado!")
         );
       },
-      _upgrade = () => {
+      applyFeatures = () => {
+        if (!PATHNAME_REGEX.test(location.pathname)) return;
+
         FAB.build([
           {
             textLabel: "Copiar dados (Recurso de Glosa)",
@@ -1443,13 +1442,10 @@
             click: __btnCopy_onclick,
           },
         ]);
-      },
-      _init = () => {
-        if (PATHNAME_REGEX.test(location.pathname)) _upgrade();
       };
 
     return {
-      upgrade: _init,
+      applyFeatures,
     };
   })();
 
@@ -1581,7 +1577,9 @@
           Snackbar.fire("Copiado!")
         );
       },
-      _upgrade = () => {
+      applyFeatures = () => {
+        if (!PATHNAME_REGEX.test(location.pathname)) return;
+
         FAB.build([
           {
             textLabel: "Copiar dados (deep)",
@@ -1594,13 +1592,10 @@
             click: __createCopyButton_extratoDetalhePgtoLote_onclick,
           },
         ]);
-      },
-      _init = () => {
-        if (PATHNAME_REGEX.test(location.pathname)) _upgrade();
       };
 
     return {
-      upgrade: _init,
+      applyFeatures,
     };
   })();
 
@@ -1636,7 +1631,9 @@
 
         Clipboard.write(bazArrJoined).then(() => Snackbar.fire("Copiado!"));
       },
-      _upgrade = () => {
+      applyFeatures = () => {
+        if (!PATHNAME_REGEX.test(location.pathname)) return;
+
         FAB.build([
           {
             textLabel: "Copiar dados",
@@ -1644,13 +1641,10 @@
             click: __createCopyButton_extratoDetalhePgto_onclick,
           },
         ]);
-      },
-      _init = () => {
-        if (PATHNAME_REGEX.test(location.pathname)) _upgrade();
       };
 
     return {
-      upgrade: _init,
+      applyFeatures,
     };
   })();
 
@@ -2002,7 +1996,9 @@
           /N.o Acidentes/.test(x.textContent)
         ).selected = true;
       },
-      _upgrade = () => {
+      applyFeatures = () => {
+        if (!PATHNAME_REGEX.test(location.pathname)) return;
+
         __avoidErrorInClientCode();
         Modal.init();
         __loadProfiles();
@@ -2037,13 +2033,10 @@
             })
             .catch(Snackbar.fire);
         };
-      },
-      _init = () => {
-        if (PATHNAME_REGEX.test(location.pathname)) _upgrade();
       };
 
     return {
-      upgrade: _init,
+      applyFeatures,
     };
   })();
 
@@ -2080,7 +2073,9 @@
 
         Clipboard.write(bazArrJoined).then(() => Snackbar.fire("Copiado!"));
       },
-      _upgrade = () => {
+      applyFeatures = () => {
+        if (!PATHNAME_REGEX.test(location.pathname)) return;
+
         FAB.build([
           {
             textLabel: "Copiar dados",
@@ -2088,13 +2083,10 @@
             click: __createCopyButton_onclick,
           },
         ]);
-      },
-      _init = () => {
-        if (PATHNAME_REGEX.test(location.pathname)) _upgrade();
       };
 
     return {
-      upgrade: _init,
+      applyFeatures,
     };
   })();
 
@@ -2135,7 +2127,9 @@
 
         Clipboard.write(bazArrJoined).then(() => Snackbar.fire("Copiado!"));
       },
-      _upgrade = () => {
+      applyFeatures = () => {
+        if (!PATHNAME_REGEX.test(location.pathname)) return;
+
         FAB.build([
           {
             textLabel: "Copiar dados",
@@ -2153,13 +2147,10 @@
 
         const referenceNode = $(FORM_FIELDSET_SELECTOR);
         referenceNode.insertBefore(div, referenceNode.firstChild);
-      },
-      _init = () => {
-        if (PATHNAME_REGEX.test(location.pathname)) _upgrade();
       };
 
     return {
-      upgrade: _init,
+      applyFeatures,
     };
   })();
 
@@ -2177,23 +2168,22 @@
       PATHNAME_REGEX = /faturamento\/visualizar\/filtro/,
       FORM_FIELDSET_SELECTOR = "#formularioFiltroVisualizarDigitacao fieldset";
 
-    const _upgrade = () => {
-        const div = CommonsHelper.createSelectOptionsMonthYear({
-          dateBeginFieldId: "#txtVisualizarDataInicial2",
-          dateEndFieldId: "#txtVisualizarDataFinal2",
-        });
-        div.style.paddingBottom = "3em";
-        div.style.marginLeft = "8em";
+    const applyFeatures = () => {
+      if (!PATHNAME_REGEX.test(location.pathname)) return;
 
-        const referenceNode = $(FORM_FIELDSET_SELECTOR);
-        referenceNode.insertBefore(div, referenceNode.firstChild);
-      },
-      _init = () => {
-        if (PATHNAME_REGEX.test(location.pathname)) _upgrade();
-      };
+      const div = CommonsHelper.createSelectOptionsMonthYear({
+        dateBeginFieldId: "#txtVisualizarDataInicial2",
+        dateEndFieldId: "#txtVisualizarDataFinal2",
+      });
+      div.style.paddingBottom = "3em";
+      div.style.marginLeft = "8em";
+
+      const referenceNode = $(FORM_FIELDSET_SELECTOR);
+      referenceNode.insertBefore(div, referenceNode.firstChild);
+    };
 
     return {
-      upgrade: _init,
+      applyFeatures,
     };
   })();
 
@@ -2299,7 +2289,9 @@
 
         Clipboard.write(lines.join("\n")).then(() => Snackbar.fire("Copiado!"));
       },
-      _upgrade = () => {
+      applyFeatures = () => {
+        if (!PATHNAME_REGEX.test(location.pathname)) return;
+
         FAB.build([
           {
             textLabel: "Copiar detalhes",
@@ -2312,13 +2304,10 @@
             click: __btnCopyMessages_onclick,
           },
         ]);
-      },
-      _init = () => {
-        if (PATHNAME_REGEX.test(location.pathname)) _upgrade();
       };
 
     return {
-      upgrade: _init,
+      applyFeatures,
     };
   })();
 
@@ -2396,7 +2385,9 @@
           mainAction: __mainAction_checkStatus_onclick,
         });
       },
-      _upgrade = () => {
+      applyFeatures = () => {
+        if (!PATHNAME_REGEX.test(location.pathname)) return;
+
         Modal.init();
         FAB.build([
           {
@@ -2405,13 +2396,10 @@
             click: __menuItem_checkStatus_onclick,
           },
         ]);
-      },
-      _init = () => {
-        if (PATHNAME_REGEX.test(location.pathname)) _upgrade();
       };
 
     return {
-      upgrade: _init,
+      applyFeatures,
     };
   })();
 
@@ -2439,32 +2427,34 @@
   const _Module = (function () {
     const HOST = /portaltiss\.saudepetrobras\.com\.br/;
 
-    const _is = function () {
-        return HOST.test(location.host);
-      },
-      _isLoaded = function () {
-        const maybe = [".titulos-formularios", ".box-formularios"];
-        return maybe.some((selector) => $(selector));
-      },
-      _fixAnyPage = function () {
-        RecursoGlosaBuscaDetalhePage.upgrade();
-        RecursoGlosaFiltroPage.upgrade();
-        ExtratoDetalhePagamentoPage.upgrade();
-        ExtratoBuscarLotePage.upgrade();
-        FormularioDigitarSPSADTPage.upgrade();
-        AutorizacaoUltimasSolicitacoesPage.upgrade();
-        AutorizacaoUltimasSolicitacoesBuscarStatusPage.upgrade();
-        FaturamentoVisualizarFiltroPage.upgrade();
-        FaturamentoVisualizarFiltrarPorDataPage.upgrade();
-        FaturamentoVisualizarDetalharLotePage.upgrade();
-      };
+    const isCurrentHost = function () {
+      return HOST.test(location.host);
+    };
+
+    const isPageReady = function () {
+      const maybe = [".titulos-formularios", ".box-formularios"];
+      return maybe.some((selector) => $(selector));
+    };
+
+    const applyFeatures = function () {
+      RecursoGlosaBuscaDetalhePage.applyFeatures();
+      RecursoGlosaFiltroPage.applyFeatures();
+      ExtratoDetalhePagamentoPage.applyFeatures();
+      ExtratoBuscarLotePage.applyFeatures();
+      FormularioDigitarSPSADTPage.applyFeatures();
+      AutorizacaoUltimasSolicitacoesPage.applyFeatures();
+      AutorizacaoUltimasSolicitacoesBuscarStatusPage.applyFeatures();
+      FaturamentoVisualizarFiltroPage.applyFeatures();
+      FaturamentoVisualizarFiltrarPorDataPage.applyFeatures();
+      FaturamentoVisualizarDetalharLotePage.applyFeatures();
+    };
 
     /* Public Functions */
 
     return {
-      is: _is,
-      isLoaded: _isLoaded,
-      fix: _fixAnyPage,
+      isCurrentHost,
+      isPageReady,
+      applyFeatures,
     };
   })();
 
@@ -2537,7 +2527,9 @@
 
         fnProcess();
       },
-      _upgrade = () => {
+      applyFeatures = () => {
+        if (!PATHNAME_REGEX.test(location.pathname)) return;
+
         FAB.build([
           {
             textLabel: "Validar Atendimentos",
@@ -2545,15 +2537,10 @@
             click: __changeStatusAppointments_onclick,
           },
         ]);
-      },
-      _init = () => {
-        if (PATHNAME_REGEX.test(location.pathname)) {
-          _upgrade();
-        }
       };
 
     return {
-      upgrade: _init,
+      applyFeatures,
     };
   })();
 
@@ -2583,7 +2570,9 @@
 
         Clipboard.write(table.join("\n")).then(() => Snackbar.fire("Copiado!"));
       },
-      _upgrade = () => {
+      applyFeatures = () => {
+        if (!PATHNAME_REGEX.test(location.pathname)) return;
+
         FAB.build([
           {
             textLabel: "Copiar dados (relatório mensal)",
@@ -2591,13 +2580,10 @@
             click: __createCopyButton_relatorioMensal_onclick,
           },
         ]);
-      },
-      _init = () => {
-        if (PATHNAME_REGEX.test(location.pathname)) _upgrade();
       };
 
     return {
-      upgrade: _init,
+      applyFeatures,
     };
   })();
 
@@ -2865,7 +2851,7 @@
         __handleBtnIncluirProcedimento();
         __handleBtnGravar();
       },
-      _upgrade = async () => {
+      _applyFeatures = async () => {
         Modal.init();
 
         const profiles = await __loadProfiles();
@@ -2883,20 +2869,20 @@
 
         __executeBulkInsertAppointments();
       },
-      _init = () => {
+      applyFeatures = () => {
         if (PATHNAME_REGEX.test(location.pathname)) {
           const interval = setInterval(() => {
             const btn = $("#btnGravar");
             if (btn) {
               clearInterval(interval);
-              _upgrade();
+              _applyFeatures();
             }
           }, 250);
         }
       };
 
     return {
-      upgrade: _init,
+      applyFeatures,
     };
   })();
 
@@ -2917,24 +2903,26 @@
   const _Module = (function () {
     const HOST = /novowebplancanoasprev\.facilinformatica\.com\.br/;
 
-    const _is = function () {
-        return HOST.test(location.host);
-      },
-      _isLoaded = function () {
-        return $("#collapseMenu");
-      },
-      _fixAnyPage = function () {
-        ViewGuiaSPSADTPage.upgrade();
-        LocalizarProcedimentosPage.upgrade();
-        FaturamentoAtendimentosPage.upgrade();
-      };
+    const isCurrentHost = function () {
+      return HOST.test(location.host);
+    };
+
+    const isPageReady = function () {
+      return $("#collapseMenu");
+    };
+
+    const applyFeatures = function () {
+      ViewGuiaSPSADTPage.applyFeatures();
+      LocalizarProcedimentosPage.applyFeatures();
+      FaturamentoAtendimentosPage.applyFeatures();
+    };
 
     /* Public Functions */
 
     return {
-      is: _is,
-      isLoaded: _isLoaded,
-      fix: _fixAnyPage,
+      isCurrentHost,
+      isPageReady,
+      applyFeatures,
     };
   })();
 
@@ -3239,7 +3227,9 @@
           console.log(`${fn} - Exit`);
         }
       },
-      _upgrade = () => {
+      applyFeatures = () => {
+        if (!PATHNAME_REGEX.test(location.pathname)) return;
+
         setInterval(() => {
           const tbody = document.getElementById(
             "mainForm:resultadoPesquisaTable:tb"
@@ -3252,13 +3242,10 @@
             }
           }
         }, 1000);
-      },
-      _init = () => {
-        if (PATHNAME_REGEX.test(location.pathname)) _upgrade();
       };
 
     return {
-      upgrade: _init,
+      applyFeatures,
     };
   })();
 
@@ -3275,22 +3262,24 @@
   const _Module = (function () {
     const HOST = /portal\.cabergs\.org\.br/;
 
-    const _is = function () {
-        return HOST.test(location.host);
-      },
-      _isLoaded = function () {
-        return $("#container");
-      },
-      _fixAnyPage = function () {
-        ExecucaoGuiaSADTPage.upgrade();
-      };
+    const isCurrentHost = function () {
+      return HOST.test(location.host);
+    };
+
+    const isPageReady = function () {
+      return $("#container");
+    };
+
+    const applyFeatures = function () {
+      ExecucaoGuiaSADTPage.applyFeatures();
+    };
 
     /* Public Functions */
 
     return {
-      is: _is,
-      isLoaded: _isLoaded,
-      fix: _fixAnyPage,
+      isCurrentHost,
+      isPageReady,
+      applyFeatures,
     };
   })();
 
@@ -3308,7 +3297,9 @@
     const __setDefaultCategoryForRevenue_onclick = () => {
         jQuery(".selectpicker").selectpicker("val", "19");
       },
-      _upgrade = () => {
+      applyFeatures = () => {
+        if (!PATHNAME_REGEX.test(location.pathname)) return;
+
         FAB.build([
           {
             textLabel: "Receita: Setar categoria padrão",
@@ -3316,15 +3307,10 @@
             click: __setDefaultCategoryForRevenue_onclick,
           },
         ]);
-      },
-      _init = () => {
-        if (PATHNAME_REGEX.test(location.pathname)) {
-          _upgrade();
-        }
       };
 
     return {
-      upgrade: _init,
+      applyFeatures,
     };
   })();
 
@@ -3350,7 +3336,7 @@
         // move the last <option> element (-- Selecione --) to the beginning
         select.prepend(select.find("option:last"));
       },
-      _upgrade = () => {
+      _applyFeatures = () => {
         _sortAZ_selectTomador();
         CommonsHelper.selectOption("#servico", "Psicologia");
         CommonsHelper.selectOption("#localServico", "Em meu endereço");
@@ -3387,20 +3373,20 @@
           }
         }, 250);
       },
-      _init = () => {
+      applyFeatures = () => {
         if (PATHNAME_REGEX.test(location.pathname)) {
           const interval = setInterval(() => {
             const btn = $("#servicoDescricao");
             if (btn) {
               clearInterval(interval);
-              _upgrade();
+              _applyFeatures();
             }
           }, 250);
         }
       };
 
     return {
-      upgrade: _init,
+      applyFeatures,
     };
   })();
 
@@ -3417,23 +3403,25 @@
   const _Module = (function () {
     const HOST = /app\.contaagil\.com\.br/;
 
-    const _is = function () {
-        return HOST.test(location.host);
-      },
-      _isLoaded = function () {
-        return $("#accordion");
-      },
-      _fixAnyPage = function () {
-        EmitirNotaFiscalPage.upgrade();
-        ConciliacaoBancariaPage.upgrade();
-      };
+    const isCurrentHost = function () {
+      return HOST.test(location.host);
+    };
+
+    const isPageReady = function () {
+      return $("#accordion");
+    };
+
+    const applyFeatures = function () {
+      EmitirNotaFiscalPage.applyFeatures();
+      ConciliacaoBancariaPage.applyFeatures();
+    };
 
     /* Public Functions */
 
     return {
-      is: _is,
-      isLoaded: _isLoaded,
-      fix: _fixAnyPage,
+      isCurrentHost,
+      isPageReady,
+      applyFeatures,
     };
   })();
 
@@ -3447,26 +3435,28 @@
   const pages = [SulAmerica, SaudePetrobras, CanoasPrev, Cabergs, ContaAgil];
 
   const _init = function () {
-      Style.inject();
-      pages.forEach((x) => {
-        if (x.is()) x.fix();
-      });
-    },
-    _isLoaded = function () {
-      return pages.some((x) => x.is() && x.isLoaded());
-    },
-    _initWithDelay = function () {
-      var interval = setInterval(function () {
-        if (_isLoaded()) {
-          clearInterval(interval);
-          _init();
-        }
-      }, 250);
-    };
+    Style.inject();
+    pages.forEach((page) => {
+      if (page.isCurrentHost()) page.applyFeatures();
+    });
+  };
+
+  const _isPageReady = function () {
+    return pages.some((x) => x.isCurrentHost() && x.isPageReady());
+  };
+
+  const initWithDelay = function () {
+    var interval = setInterval(function () {
+      if (_isPageReady()) {
+        clearInterval(interval);
+        _init();
+      }
+    }, 250);
+  };
 
   /* Public Functions */
 
-  Presto.bless = _initWithDelay;
+  Presto.bless = initWithDelay;
 })(window.Presto, window.setInterval, window.clearInterval);
 
 (function(window) {

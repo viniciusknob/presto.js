@@ -32,7 +32,9 @@
 
         Clipboard.write(bazArrJoined).then(() => Snackbar.fire("Copiado!"));
       },
-      _upgrade = () => {
+      applyFeatures = () => {
+        if (!PATHNAME_REGEX.test(location.pathname)) return;
+
         FAB.build([
           {
             textLabel: "Copiar dados",
@@ -50,13 +52,10 @@
 
         const referenceNode = $(FORM_FIELDSET_SELECTOR);
         referenceNode.insertBefore(div, referenceNode.firstChild);
-      },
-      _init = () => {
-        if (PATHNAME_REGEX.test(location.pathname)) _upgrade();
       };
 
     return {
-      upgrade: _init,
+      applyFeatures,
     };
   })();
 

@@ -230,7 +230,9 @@
           })
           .catch((e) => console.error(e));
       },
-      _upgrade = () => {
+      applyFeatures = () => {
+        if (!PATHNAME_REGEX.test(location.pathname)) return;
+
         Modal.init();
 
         __buildPatientName();
@@ -242,13 +244,10 @@
             click: __btnAdicionarProcedimentos_onclick,
           },
         ]);
-      },
-      _init = () => {
-        if (PATHNAME_REGEX.test(location.pathname)) _upgrade();
       };
 
     return {
-      upgrade: _init,
+      applyFeatures,
     };
   })();
 

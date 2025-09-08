@@ -64,7 +64,9 @@
 
         fnProcess();
       },
-      _upgrade = () => {
+      applyFeatures = () => {
+        if (!PATHNAME_REGEX.test(location.pathname)) return;
+
         FAB.build([
           {
             textLabel: "Validar Atendimentos",
@@ -72,15 +74,10 @@
             click: __changeStatusAppointments_onclick,
           },
         ]);
-      },
-      _init = () => {
-        if (PATHNAME_REGEX.test(location.pathname)) {
-          _upgrade();
-        }
       };
 
     return {
-      upgrade: _init,
+      applyFeatures,
     };
   })();
 

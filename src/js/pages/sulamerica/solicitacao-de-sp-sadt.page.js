@@ -115,7 +115,9 @@
             };
           });
       },
-      _upgrade = () => {
+      applyFeatures = () => {
+        if (!PATHNAME_REGEX.test(location.pathname)) return;
+
         FAB.build([
           {
             textLabel: "Autorizar 5 sessões",
@@ -143,15 +145,10 @@
             click: () => __btnPreencherDadosPadrao_onclick(1),
           },
         ]);
-      },
-      _init = () => {
-        if (PATHNAME_REGEX.test(location.pathname)) {
-          _upgrade();
-        }
       };
 
     return {
-      upgrade: _init,
+      applyFeatures,
     };
   })();
 

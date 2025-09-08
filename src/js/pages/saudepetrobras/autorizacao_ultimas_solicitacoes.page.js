@@ -9,23 +9,22 @@
       PATHNAME_REGEX = /autorizacao\/ultimasSolicitacoes\/ultimasSolicitacoes/,
       FORM_FIELDSET_SELECTOR = "#formularioBase fieldset";
 
-    const _upgrade = () => {
-        const div = CommonsHelper.createSelectOptionsMonthYear({
-          dateBeginFieldId: "#txtDataEnvioDe",
-          dateEndFieldId: "#txtDataEnvioAte",
-        });
-        div.style.paddingBottom = "3em";
-        div.style.marginLeft = "8em";
+    const applyFeatures = () => {
+      if (!PATHNAME_REGEX.test(location.pathname)) return;
 
-        const referenceNode = $(FORM_FIELDSET_SELECTOR);
-        referenceNode.insertBefore(div, referenceNode.firstChild);
-      },
-      _init = () => {
-        if (PATHNAME_REGEX.test(location.pathname)) _upgrade();
-      };
+      const div = CommonsHelper.createSelectOptionsMonthYear({
+        dateBeginFieldId: "#txtDataEnvioDe",
+        dateEndFieldId: "#txtDataEnvioAte",
+      });
+      div.style.paddingBottom = "3em";
+      div.style.marginLeft = "8em";
+
+      const referenceNode = $(FORM_FIELDSET_SELECTOR);
+      referenceNode.insertBefore(div, referenceNode.firstChild);
+    };
 
     return {
-      upgrade: _init,
+      applyFeatures,
     };
   })();
 

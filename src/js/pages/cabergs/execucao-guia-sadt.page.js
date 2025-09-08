@@ -296,7 +296,9 @@
           console.log(`${fn} - Exit`);
         }
       },
-      _upgrade = () => {
+      applyFeatures = () => {
+        if (!PATHNAME_REGEX.test(location.pathname)) return;
+
         setInterval(() => {
           const tbody = document.getElementById(
             "mainForm:resultadoPesquisaTable:tb"
@@ -309,13 +311,10 @@
             }
           }
         }, 1000);
-      },
-      _init = () => {
-        if (PATHNAME_REGEX.test(location.pathname)) _upgrade();
       };
 
     return {
-      upgrade: _init,
+      applyFeatures,
     };
   })();
 

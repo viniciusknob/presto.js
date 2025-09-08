@@ -259,7 +259,7 @@
         __handleBtnIncluirProcedimento();
         __handleBtnGravar();
       },
-      _upgrade = async () => {
+      _applyFeatures = async () => {
         Modal.init();
 
         const profiles = await __loadProfiles();
@@ -277,20 +277,20 @@
 
         __executeBulkInsertAppointments();
       },
-      _init = () => {
+      applyFeatures = () => {
         if (PATHNAME_REGEX.test(location.pathname)) {
           const interval = setInterval(() => {
             const btn = $("#btnGravar");
             if (btn) {
               clearInterval(interval);
-              _upgrade();
+              _applyFeatures();
             }
           }, 250);
         }
       };
 
     return {
-      upgrade: _init,
+      applyFeatures,
     };
   })();
 

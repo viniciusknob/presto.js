@@ -12,24 +12,26 @@
   const _Module = (function () {
     const HOST = /novowebplancanoasprev\.facilinformatica\.com\.br/;
 
-    const _is = function () {
-        return HOST.test(location.host);
-      },
-      _isLoaded = function () {
-        return $("#collapseMenu");
-      },
-      _fixAnyPage = function () {
-        ViewGuiaSPSADTPage.upgrade();
-        LocalizarProcedimentosPage.upgrade();
-        FaturamentoAtendimentosPage.upgrade();
-      };
+    const isCurrentHost = function () {
+      return HOST.test(location.host);
+    };
+
+    const isPageReady = function () {
+      return $("#collapseMenu");
+    };
+
+    const applyFeatures = function () {
+      ViewGuiaSPSADTPage.applyFeatures();
+      LocalizarProcedimentosPage.applyFeatures();
+      FaturamentoAtendimentosPage.applyFeatures();
+    };
 
     /* Public Functions */
 
     return {
-      is: _is,
-      isLoaded: _isLoaded,
-      fix: _fixAnyPage,
+      isCurrentHost,
+      isPageReady,
+      applyFeatures,
     };
   })();
 

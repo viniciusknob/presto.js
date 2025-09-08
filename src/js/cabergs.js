@@ -8,22 +8,24 @@
   const _Module = (function () {
     const HOST = /portal\.cabergs\.org\.br/;
 
-    const _is = function () {
-        return HOST.test(location.host);
-      },
-      _isLoaded = function () {
-        return $("#container");
-      },
-      _fixAnyPage = function () {
-        ExecucaoGuiaSADTPage.upgrade();
-      };
+    const isCurrentHost = function () {
+      return HOST.test(location.host);
+    };
+
+    const isPageReady = function () {
+      return $("#container");
+    };
+
+    const applyFeatures = function () {
+      ExecucaoGuiaSADTPage.applyFeatures();
+    };
 
     /* Public Functions */
 
     return {
-      is: _is,
-      isLoaded: _isLoaded,
-      fix: _fixAnyPage,
+      isCurrentHost,
+      isPageReady,
+      applyFeatures,
     };
   })();
 

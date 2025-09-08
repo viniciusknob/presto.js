@@ -17,7 +17,7 @@
         // move the last <option> element (-- Selecione --) to the beginning
         select.prepend(select.find("option:last"));
       },
-      _upgrade = () => {
+      _applyFeatures = () => {
         _sortAZ_selectTomador();
         CommonsHelper.selectOption("#servico", "Psicologia");
         CommonsHelper.selectOption("#localServico", "Em meu endereço");
@@ -54,20 +54,20 @@
           }
         }, 250);
       },
-      _init = () => {
+      applyFeatures = () => {
         if (PATHNAME_REGEX.test(location.pathname)) {
           const interval = setInterval(() => {
             const btn = $("#servicoDescricao");
             if (btn) {
               clearInterval(interval);
-              _upgrade();
+              _applyFeatures();
             }
           }, 250);
         }
       };
 
     return {
-      upgrade: _init,
+      applyFeatures,
     };
   })();
 

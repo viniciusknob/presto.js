@@ -343,7 +343,9 @@
           /N.o Acidentes/.test(x.textContent)
         ).selected = true;
       },
-      _upgrade = () => {
+      applyFeatures = () => {
+        if (!PATHNAME_REGEX.test(location.pathname)) return;
+
         __avoidErrorInClientCode();
         Modal.init();
         __loadProfiles();
@@ -378,13 +380,10 @@
             })
             .catch(Snackbar.fire);
         };
-      },
-      _init = () => {
-        if (PATHNAME_REGEX.test(location.pathname)) _upgrade();
       };
 
     return {
-      upgrade: _init,
+      applyFeatures,
     };
   })();
 

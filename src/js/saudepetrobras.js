@@ -19,32 +19,34 @@
   const _Module = (function () {
     const HOST = /portaltiss\.saudepetrobras\.com\.br/;
 
-    const _is = function () {
-        return HOST.test(location.host);
-      },
-      _isLoaded = function () {
-        const maybe = [".titulos-formularios", ".box-formularios"];
-        return maybe.some((selector) => $(selector));
-      },
-      _fixAnyPage = function () {
-        RecursoGlosaBuscaDetalhePage.upgrade();
-        RecursoGlosaFiltroPage.upgrade();
-        ExtratoDetalhePagamentoPage.upgrade();
-        ExtratoBuscarLotePage.upgrade();
-        FormularioDigitarSPSADTPage.upgrade();
-        AutorizacaoUltimasSolicitacoesPage.upgrade();
-        AutorizacaoUltimasSolicitacoesBuscarStatusPage.upgrade();
-        FaturamentoVisualizarFiltroPage.upgrade();
-        FaturamentoVisualizarFiltrarPorDataPage.upgrade();
-        FaturamentoVisualizarDetalharLotePage.upgrade();
-      };
+    const isCurrentHost = function () {
+      return HOST.test(location.host);
+    };
+
+    const isPageReady = function () {
+      const maybe = [".titulos-formularios", ".box-formularios"];
+      return maybe.some((selector) => $(selector));
+    };
+
+    const applyFeatures = function () {
+      RecursoGlosaBuscaDetalhePage.applyFeatures();
+      RecursoGlosaFiltroPage.applyFeatures();
+      ExtratoDetalhePagamentoPage.applyFeatures();
+      ExtratoBuscarLotePage.applyFeatures();
+      FormularioDigitarSPSADTPage.applyFeatures();
+      AutorizacaoUltimasSolicitacoesPage.applyFeatures();
+      AutorizacaoUltimasSolicitacoesBuscarStatusPage.applyFeatures();
+      FaturamentoVisualizarFiltroPage.applyFeatures();
+      FaturamentoVisualizarFiltrarPorDataPage.applyFeatures();
+      FaturamentoVisualizarDetalharLotePage.applyFeatures();
+    };
 
     /* Public Functions */
 
     return {
-      is: _is,
-      isLoaded: _isLoaded,
-      fix: _fixAnyPage,
+      isCurrentHost,
+      isPageReady,
+      applyFeatures,
     };
   })();
 

@@ -9,7 +9,9 @@
     const __setDefaultCategoryForRevenue_onclick = () => {
         jQuery(".selectpicker").selectpicker("val", "19");
       },
-      _upgrade = () => {
+      applyFeatures = () => {
+        if (!PATHNAME_REGEX.test(location.pathname)) return;
+
         FAB.build([
           {
             textLabel: "Receita: Setar categoria padrão",
@@ -17,15 +19,10 @@
             click: __setDefaultCategoryForRevenue_onclick,
           },
         ]);
-      },
-      _init = () => {
-        if (PATHNAME_REGEX.test(location.pathname)) {
-          _upgrade();
-        }
       };
 
     return {
-      upgrade: _init,
+      applyFeatures,
     };
   })();
 
