@@ -1,4 +1,4 @@
-const { src, dest, series } = require("gulp");
+const { src, dest, series, watch } = require("gulp");
 const fs = require("fs");
 const replace = require("gulp-replace");
 const rename = require("gulp-rename");
@@ -112,5 +112,10 @@ const files = (env) => [
   _jsMinify,
 ];
 
+function watchFiles() {
+  watch("src/**/*", series(...files("dev")));
+}
+
+exports.watch = watchFiles;
 exports.default = series(...files("dev"));
 exports.release = series(...files("prd"));

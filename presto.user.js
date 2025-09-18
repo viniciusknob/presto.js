@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Presto.js
-// @version      1.4.3
+// @version      1.4.4
 // @description  Useful utilities for working with health insurance (userscript).
 // @author       Vinícius Knob <knob.vinicius@gmail.com>
 // @source       https://github.com/viniciusknob/presto.js
@@ -12,4 +12,6 @@
 // @match        https://portal.cabergs.org.br/*
 // @require      https://raw.githubusercontent.com/viniciusknob/presto.js/main/dist/presto.min.js
 // @grant        none
+// @run-at       document-idle
+// @noframes
 // ==/UserScript==

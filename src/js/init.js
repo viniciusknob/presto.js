@@ -1,8 +1,8 @@
-(function(window) {
-    let interval = setInterval(() => {
-        if (window.Presto) {
-            clearInterval(interval);
-            console.log(window.Presto.bless());
-        }
-    }, 250);
-})(window);
+(function (Presto, setInterval, clearInterval) {
+  const interval = setInterval(() => {
+    if (Presto) {
+      clearInterval(interval);
+      Presto.bless();
+    }
+  }, 250);
+})(window.Presto, window.setInterval, window.clearInterval);

@@ -193,9 +193,9 @@
             textLabel: "VALOR UNITÁRIO",
             input: {
               id: MODAL_INPUT_APPOINTMENTS_UNIT_VALUE_SELECTOR.substring(1),
-              value: "62,05",
+              value: "64,53",
             },
-            helpText: "Ex.: 62,05",
+            helpText: "Ex.: 64,53",
           })
         );
 

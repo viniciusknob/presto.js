@@ -904,9 +904,9 @@
             textLabel: "VALOR UNITÁRIO",
             input: {
               id: MODAL_INPUT_APPOINTMENTS_UNIT_VALUE_SELECTOR.substring(1),
-              value: "62,05",
+              value: "64,53",
             },
-            helpText: "Ex.: 62,05",
+            helpText: "Ex.: 64,53",
           })
         );
 
@@ -2996,19 +2996,25 @@
             const execProcText = "Executar procedimento";
 
             const interval = setInterval(() => {
-              const eCarteira = $(`${painelSelector} ${carteiraSelector}`);
-              if (eCarteira) {
-                clearInterval(interval);
-                patient.id = eCarteira.textContent.replace(/\D/g, "");
+              console.log(`${fn} - setInterval - Enter`);
+              try {
+                const eCarteira = $(`${painelSelector} ${carteiraSelector}`);
+                if (eCarteira) {
+                  clearInterval(interval);
+                  console.log(`${fn} - setInterval - clearInterval`);
+                  patient.id = eCarteira.textContent.replace(/\D/g, "");
 
-                const eExecProcItems = $$(
-                  `${painelSelector} ${execProcSelector}`
-                );
-                const execProc = Array.from(eExecProcItems).find(
-                  (e) => e.textContent === execProcText
-                );
-                execProc.click();
-                resolve();
+                  const eExecProcItems = $$(
+                    `${painelSelector} ${execProcSelector}`
+                  );
+                  const execProc = Array.from(eExecProcItems).find(
+                    (e) => e.textContent === execProcText
+                  );
+                  execProc.click();
+                  resolve();
+                }
+              } finally {
+                console.log(`${fn} - setInterval - Exit`);
               }
             }, 1000);
           });
@@ -3025,10 +3031,16 @@
             const selector =
               'input[id="formAddUpdate:profissionalexecucaoExame"]';
             const interval = setInterval(() => {
-              const eSpecialistInput = $(selector);
-              if (eSpecialistInput) {
-                clearInterval(interval);
-                resolve();
+              console.log(`${fn} - setInterval - Enter`);
+              try {
+                const eSpecialistInput = $(selector);
+                if (eSpecialistInput) {
+                  clearInterval(interval);
+                  console.log(`${fn} - setInterval - clearInterval`);
+                  resolve();
+                }
+              } finally {
+                console.log(`${fn} - setInterval - Exit`);
               }
             }, 500);
           });
@@ -3066,17 +3078,23 @@
 
           return new Promise((resolve) => {
             const interval = setInterval(() => {
-              if (divSuggestions.style.display !== "none") {
-                clearInterval(interval);
+              console.log(`${fn} - setInterval - Enter`);
+              try {
+                if (divSuggestions.style.display !== "none") {
+                  clearInterval(interval);
+                  console.log(`${fn} - setInterval - clearInterval`);
 
-                // ...selecionar o primeiro profissional
-                const selSpanSuggestion =
-                  'table.rich-sb-ext-decor-3 td[class*="rich-table-cell"] span';
-                $$(selSpanSuggestion, divSuggestions)
-                  .filter((x) => x.textContent == patient.professional)[0]
-                  .click();
+                  // ...selecionar o primeiro profissional
+                  const selSpanSuggestion =
+                    'table.rich-sb-ext-decor-3 td[class*="rich-table-cell"] span';
+                  $$(selSpanSuggestion, divSuggestions)
+                    .filter((x) => x.textContent == patient.professional)[0]
+                    .click();
 
-                resolve();
+                  resolve();
+                }
+              } finally {
+                console.log(`${fn} - setInterval - Exit`);
               }
             }, 1000);
           });
@@ -3094,24 +3112,36 @@
           return new Promise((resolve) => {
             // aguardar abrir o modal e inserir a senha
             const interval0 = setInterval(() => {
-              const modal = $("#autenticarModalPanelVirtualCDiv");
-              if (modal?.offsetParent) {
-                clearInterval(interval0);
+              console.log(`${fn} - setInterval[0] - Enter`);
+              try {
+                const modal = $("#autenticarModalPanelVirtualCDiv");
+                if (modal?.offsetParent) {
+                  clearInterval(interval0);
+                  console.log(`${fn} - setInterval[0] - clearInterval`);
 
-                // acessar opção 'Atendimento PRESENCIAL'
-                $$('input[type="radio"]', modal)[1].click();
+                  // acessar opção 'Atendimento PRESENCIAL'
+                  $$('input[type="radio"]', modal)[1].click();
 
-                // somente resolve quando o input de senha estiver criado/aparecendo
-                const interval1 = setInterval(() => {
-                  const inputPwd = $(
-                    'input[id*="senhaPacienteBiometria"]',
-                    modal
-                  );
-                  if (inputPwd?.offsetParent) {
-                    clearInterval(interval1);
-                    resolve();
-                  }
-                }, 250);
+                  // somente resolve quando o input de senha estiver criado/aparecendo
+                  const interval1 = setInterval(() => {
+                    console.log(`${fn} - setInterval[1] - Enter`);
+                    try {
+                      const inputPwd = $(
+                        'input[id*="senhaPacienteBiometria"]',
+                        modal
+                      );
+                      if (inputPwd?.offsetParent) {
+                        clearInterval(interval1);
+                        console.log(`${fn} - setInterval[1] - clearInterval`);
+                        resolve();
+                      }
+                    } finally {
+                      console.log(`${fn} - setInterval[1] - Enter`);
+                    }
+                  }, 250);
+                }
+              } finally {
+                console.log(`${fn} - setInterval[0] - Exit`);
               }
             }, 250);
           });
@@ -3151,12 +3181,18 @@
                 // espere a autenticação finalizar
                 return new Promise((resolve) => {
                   const interval = setInterval(() => {
-                    if (!modal.offsetParent) {
-                      clearInterval(interval);
-                      setTimeout(() => {
-                        $(selector.btnFinish).click();
-                        resolve();
-                      }, 1000);
+                    console.log(`${fn} - setInterval - Enter`);
+                    try {
+                      if (!modal.offsetParent) {
+                        clearInterval(interval);
+                        console.log(`${fn} - setInterval - clearInterval`);
+                        setTimeout(() => {
+                          $(selector.btnFinish).click();
+                          resolve();
+                        }, 1000);
+                      }
+                    } finally {
+                      console.log(`${fn} - setInterval - Exit`);
                     }
                   }, 1000);
                 });
@@ -3228,20 +3264,31 @@
         }
       },
       applyFeatures = () => {
-        if (!PATHNAME_REGEX.test(location.pathname)) return;
+        const fn = "applyFeatures";
+        console.log(`${fn} - Enter`);
+        try {
+          if (!PATHNAME_REGEX.test(location.pathname)) return;
 
-        setInterval(() => {
-          const tbody = document.getElementById(
-            "mainForm:resultadoPesquisaTable:tb"
-          );
-          if (tbody?.textContent) {
-            const ePrestoSetup = $("#prestoSetup");
-            if (!ePrestoSetup) {
-              _addSortAZButton();
-              _configureAddAutomaticAppointment();
+          setInterval(() => {
+            // console.log(`${fn} - setInterval - Enter`);
+            try {
+              const tbody = document.getElementById(
+                "mainForm:resultadoPesquisaTable:tb"
+              );
+              if (tbody?.textContent) {
+                const ePrestoSetup = $("#prestoSetup");
+                if (!ePrestoSetup) {
+                  _addSortAZButton();
+                  _configureAddAutomaticAppointment();
+                }
+              }
+            } finally {
+              // console.log(`${fn} - setInterval - Exit`);
             }
-          }
-        }, 1000);
+          }, 1000);
+        } finally {
+          console.log(`${fn} - Exit`);
+        }
       };
 
     return {
@@ -3250,7 +3297,7 @@
   })();
 
   Presto.pages.ExecucaoGuiaSADTPage = _Page;
-})(Presto, location);
+})(window.Presto, window.location);
 
 (function (Presto, location) {
   "use strict";
@@ -3434,36 +3481,44 @@
 
   const pages = [SulAmerica, SaudePetrobras, CanoasPrev, Cabergs, ContaAgil];
 
-  const _init = function () {
-    Style.inject();
-    pages.forEach((page) => {
-      if (page.isCurrentHost()) page.applyFeatures();
-    });
-  };
+  const _Module = (function () {
+    const _init = function () {
+      Style.inject();
+      pages.forEach((page) => {
+        if (page.isCurrentHost()) {
+          page.applyFeatures();
+        }
+      });
+    };
 
-  const _isPageReady = function () {
-    return pages.some((x) => x.isCurrentHost() && x.isPageReady());
-  };
+    const _isPageReady = function () {
+      return pages.some((x) => x.isCurrentHost() && x.isPageReady());
+    };
 
-  const initWithDelay = function () {
-    var interval = setInterval(function () {
-      if (_isPageReady()) {
-        clearInterval(interval);
-        _init();
-      }
-    }, 250);
-  };
+    const initWithDelay = function () {
+      const interval = setInterval(() => {
+        if (_isPageReady()) {
+          clearInterval(interval);
+          _init();
+        }
+      }, 250);
+    };
 
-  /* Public Functions */
+    /* Public Functions */
 
-  Presto.bless = initWithDelay;
+    return {
+      initWithDelay,
+    };
+  })();
+
+  Presto.bless = _Module.initWithDelay;
 })(window.Presto, window.setInterval, window.clearInterval);
 
-(function(window) {
-    let interval = setInterval(() => {
-        if (window.Presto) {
-            clearInterval(interval);
-            console.log(window.Presto.bless());
-        }
-    }, 250);
-})(window);
+(function (Presto, setInterval, clearInterval) {
+  const interval = setInterval(() => {
+    if (Presto) {
+      clearInterval(interval);
+      Presto.bless();
+    }
+  }, 250);
+})(window.Presto, window.setInterval, window.clearInterval);
