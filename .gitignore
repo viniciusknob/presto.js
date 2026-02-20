@@ -128,3 +128,6 @@ typings/
 
 # gulp: temporary files
 build
+
+# Git diff output for Agents
+diff.txt

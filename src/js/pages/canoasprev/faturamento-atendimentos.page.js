@@ -2,7 +2,7 @@
   "use strict";
 
   const { Snackbar, FAB, DomHelper } = Presto.modules;
-  const { $ } = DomHelper;
+  const { $, $$ } = DomHelper;
 
   const _Page = (function () {
     const PATHNAME_REGEX = /GuiasTISS\/FaturamentoAtendimentos/;

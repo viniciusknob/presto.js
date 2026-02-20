@@ -227,50 +227,119 @@
             inputPwd: 'input[id*="senhaPacienteBiometria"]',
             btnAuth: 'input[id*="autenticarPacienteModalPanelButton"]',
             btnFinish: 'a[title="Finalizar execução"]',
+            dlErrorMessage:
+              'dl[id*="panelMensagensAutenticarConfirmacaoUpVirtual"]',
           };
 
           const modal = $(selector.modal);
-          const authBtn = $(selector.btnAuth, modal);
-          const triggerUpsertItem = async (e) => {
+
+          const upsertItem = async () => {
+            const fn0 = "upsertItem";
+            console.log(`${fn}.${fn0} - Enter`);
             await PatientModel.getOrCreateDB().then((db) => {
               patient.password = $(selector.inputPwd, modal).value;
-              return PatientModel.addOrUpdateItem(db, patient);
+              return PatientModel.addOrUpdateItem(db, patient).then(() => {
+                console.log(`${fn}.${fn0} - Exit`);
+              });
             });
           };
-          authBtn.addEventListener("click", triggerUpsertItem);
 
-          await PatientModel.getOrCreateDB()
-            .then(PatientModel.getAll)
-            .then((patients) => patients.find((p) => p.id === patient.id))
-            .then((patientDB) => {
-              if (patientDB) {
-                $(selector.inputPwd, modal).value = patientDB.password;
-                $(selector.btnAuth, modal).click();
+          return new Promise(async (resolve) => {
+            const triggerBtnAuth = async (e) => {
+              const fn0 = "triggerBtnAuth";
+              console.log(`${fn}.${fn0} - Enter`);
+              try {
+                let errorMessage = $(selector.dlErrorMessage, modal);
+                if (errorMessage) errorMessage.remove(); // clear view
 
-                // espere a autenticação finalizar
-                return new Promise((resolve) => {
-                  const interval = setInterval(() => {
-                    console.log(`${fn} - setInterval - Enter`);
-                    try {
-                      if (!modal.offsetParent) {
+                await upsertItem(); // always save the password
+
+                // then, check the consequences
+                const interval = setInterval(() => {
+                  const fn1 = "interval";
+                  console.log(`${fn}.${fn0}.${fn1} - Enter`);
+                  try {
+                    if (!modal.offsetParent) {
+                      // auth works
+                      clearInterval(interval);
+                      console.log(
+                        `${fn}.${fn0}.${fn1} - success => clearInterval`
+                      );
+                      resolve();
+                    } else {
+                      const errorMessage = $(selector.dlErrorMessage, modal);
+                      if (errorMessage) {
+                        // auth failed
                         clearInterval(interval);
-                        console.log(`${fn} - setInterval - clearInterval`);
-                        setTimeout(() => {
-                          $(selector.btnFinish).click();
-                          resolve();
-                        }, 1000);
+                        console.log(
+                          `${fn}.${fn0}.${fn1} - errorMessage => clearInterval`
+                        );
+                        const authBtn = $(selector.btnAuth, modal); // auth btn is recreated by JSF framework
+                        authBtn.addEventListener("click", triggerBtnAuth); // config the trigger again
                       }
-                    } finally {
-                      console.log(`${fn} - setInterval - Exit`);
                     }
-                  }, 1000);
-                });
-              } else {
-                console.log(
-                  `${fn} - No patient found in DB ${JSON.stringify(patient)}`
-                );
+                  } finally {
+                    console.log(`${fn}.${fn0}.${fn1} - Exit`);
+                  }
+                }, 1000);
+              } finally {
+                console.log(`${fn}.${fn0} - Exit`);
               }
-            });
+            };
+
+            let errorMessage = $(selector.dlErrorMessage, modal);
+            if (errorMessage) errorMessage.remove(); // remove existent ghost object
+
+            const authBtn = $(selector.btnAuth, modal);
+            authBtn.addEventListener("click", triggerBtnAuth);
+
+            const patientDB = await PatientModel.getOrCreateDB()
+              .then(PatientModel.getAll)
+              .then((patients) => patients.find((p) => p.id === patient.id));
+
+            if (!patientDB) {
+              console.log(
+                `${fn} - No patient found in DB ${JSON.stringify(patient)}`
+              );
+            } else {
+              $(selector.inputPwd, modal).value = patientDB.password;
+              authBtn.dispatchEvent(new Event("click", { bubbles: true }));
+            }
+          });
+        } finally {
+          console.log(`${fn} - Exit`);
+        }
+      },
+      __finishProcess = () => {
+        const fn = "__finishProcess";
+        console.log(`${fn} - Enter`);
+        try {
+          const selector = {
+            modal: "#autenticarModalPanelVirtualCDiv",
+            btnFinish: 'a[title="Finalizar execução"]',
+          };
+
+          const modal = $(selector.modal);
+
+          // wait end of auth
+          return new Promise((resolve) => {
+            const interval = setInterval(() => {
+              const fn0 = "setInterval";
+              console.log(`${fn}.${fn0} - Enter`);
+              try {
+                if (!modal.offsetParent) {
+                  clearInterval(interval);
+                  console.log(`${fn}.${fn0} - clearInterval`);
+                  setTimeout(() => {
+                    $(selector.btnFinish).click();
+                    resolve();
+                  }, 1000);
+                }
+              } finally {
+                console.log(`${fn}.${fn0} - Exit`);
+              }
+            }, 1000);
+          });
         } finally {
           console.log(`${fn} - Exit`);
         }
@@ -287,6 +356,7 @@
             Taskier.toFunc(__fillProfessionalField(patient)),
             Taskier.toFunc(__awaitOpeningModalToAuthenticatePatient),
             Taskier.toFunc(__fillAuthentication(patient)),
+            Taskier.toFunc(__finishProcess),
           ]);
           await Taskier.exec(tasks, 1000);
         } finally {

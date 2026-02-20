@@ -62,12 +62,10 @@
             )
           ),
           Taskier.toFunc(() => {
-            // const d = new Date();
-            // const yyyy = d.getFullYear();
-            // const mm = d.getMonth();
-            // const date = CommonsHelper.getFirstWeekdayOfMonth(yyyy, mm);
             const sel = "#data-atendimento";
-            $(sel).value = formatBRDate(new Date());
+            const d = new Date();
+            d.setDate(d.getDate() - 4); // aceita data retroativa até 4 dias atrás
+            $(sel).value = formatBRDate(d);
           }),
           Taskier.toSelect("#recem-nato", "Não"),
           Taskier.toSelect(

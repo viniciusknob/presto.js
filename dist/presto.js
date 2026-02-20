@@ -1029,12 +1029,10 @@
             )
           ),
           Taskier.toFunc(() => {
-            // const d = new Date();
-            // const yyyy = d.getFullYear();
-            // const mm = d.getMonth();
-            // const date = CommonsHelper.getFirstWeekdayOfMonth(yyyy, mm);
             const sel = "#data-atendimento";
-            $(sel).value = formatBRDate(new Date());
+            const d = new Date();
+            d.setDate(d.getDate() - 4); // aceita data retroativa até 4 dias atrás
+            $(sel).value = formatBRDate(d);
           }),
           Taskier.toSelect("#recem-nato", "Não"),
           Taskier.toSelect(
@@ -1777,6 +1775,11 @@
         _monthYear = `/${_monthYear}`;
         const _daysLength = _days.length;
 
+        $("#procedimentosRealizados").parentElement.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+
         __removeInitialAppointment();
         _addAppointment(_days, _monthYear, _daysLength, _unitValue);
       },
@@ -1890,27 +1893,16 @@
         _handleBtnGravarAlteracoes(person);
       },
       _validateDueDate = () => {
-        return new Promise((resolve, reject) => {
-          let interval = setInterval(() => {
-            const eDueDatePwd = $("#txtDataValidadeSenha");
-            if (!!!eDueDatePwd.value) return;
-
-            clearInterval(interval);
-
-            // password validate: duo date
-            let snacks = eDueDatePwd.value
-              .split("/")
-              .map((num) => parseInt(num));
-            snacks[1] += -1;
-            let duoDatePwd = new Date(...snacks.reverse());
-            if (duoDatePwd < new Date()) {
-              eDueDatePwd.style.border = "red 2px solid";
-              eDueDatePwd.style.color = "red";
-              $("label", eDueDatePwd.parentElement).style.color = "red";
-              reject("Senha vencida!");
-            } else resolve();
-          }, 500);
-        });
+        const eDueDatePwd = $("#txtDataValidadeSenha");
+        let snacks = eDueDatePwd.value.split("/").map((num) => parseInt(num));
+        snacks[1] += -1;
+        let duoDatePwd = new Date(...snacks.reverse());
+        if (duoDatePwd < new Date()) {
+          eDueDatePwd.style.border = "red 2px solid";
+          eDueDatePwd.style.color = "red";
+          $("label", eDueDatePwd.parentElement).style.color = "red";
+          throw new Error("Senha vencida!");
+        }
       },
       __buildComponentForLoadedProfiles = (personArr) => {
         let label = document.createElement("label");
@@ -1963,7 +1955,7 @@
           mainAction: __fillForm_faturamentoDigitarSPSADT_onclick,
         });
       },
-      __btnPreencherDadosPadrao_onclick = () => {
+      _btnPreencherDadosPadrao = () => {
         Array.from($("#txtTipoDocumentoContratado").options).find(
           (x) => x.textContent === "CPF"
         ).selected = true;
@@ -2005,11 +1997,6 @@
 
         FAB.build([
           {
-            textLabel: "Preencher dados padrão",
-            iconClass: "las la-wrench",
-            click: __btnPreencherDadosPadrao_onclick,
-          },
-          {
             textLabel: "Adicionar Procedimentos",
             iconClass: "las la-calendar-plus",
             click: __btnAdicionarProcedimentos_onclick,
@@ -2023,16 +2010,25 @@
 
         const eSenha = $("#senha");
         let btnImport = $("a.bt-procurar", eSenha.parentElement);
-        let btnImport_onclick = btnImport.onclick;
-        btnImport.onclick = () => {
-          btnImport_onclick();
-          _validateDueDate()
-            .then(() => {
-              $("#txtNumeroGuiaPrestador").value = new Date().getTime();
-              _watchForm();
-            })
-            .catch(Snackbar.fire);
-        };
+
+        btnImport.addEventListener("click", () => {
+          let interval = setInterval(() => {
+            if ($("#txtDataValidadeSenha").value) {
+              clearInterval(interval);
+
+              setTimeout(() => {
+                try {
+                  $("#txtNumeroGuiaPrestador").value = new Date().getTime();
+                  _validateDueDate();
+                  _btnPreencherDadosPadrao();
+                  _watchForm();
+                } catch (e) {
+                  Snackbar.fire(e.message);
+                }
+              }, 1000);
+            }
+          }, 200);
+        });
       };
 
     return {
@@ -2465,7 +2461,7 @@
   "use strict";
 
   const { Snackbar, FAB, DomHelper } = Presto.modules;
-  const { $ } = DomHelper;
+  const { $, $$ } = DomHelper;
 
   const _Page = (function () {
     const PATHNAME_REGEX = /GuiasTISS\/FaturamentoAtendimentos/;
@@ -2843,41 +2839,60 @@
         });
       },
       __initialConfig = () => {
-        __handleInputDataSolicitacao();
+        const fn = "__initialConfig";
+        console.log(`${fn} - Enter`);
+        try {
+          __handleInputDataSolicitacao();
 
-        // preencher tipo atendimento como TERAPIA
-        $("#tipoAtendimento").value = "3";
+          // preencher tipo atendimento como TERAPIA
+          $("#tipoAtendimento").value = "3";
 
-        __handleBtnIncluirProcedimento();
-        __handleBtnGravar();
+          __handleBtnIncluirProcedimento();
+          __handleBtnGravar();
+        } finally {
+          console.log(`${fn} - Exit`);
+        }
       },
       _applyFeatures = async () => {
-        Modal.init();
+        const fn = "_applyFeatures";
+        console.log(`${fn} - Enter`);
+        try {
+          Modal.init();
 
-        const profiles = await __loadProfiles();
-        __buildComponentForLoadedProfiles(profiles);
+          const profiles = await __loadProfiles();
+          __buildComponentForLoadedProfiles(profiles);
 
-        __initialConfig();
+          __initialConfig();
 
-        FAB.build([
-          {
-            textLabel: "Adicionar Procedimentos em Lote",
-            iconClass: "las la-calendar-plus",
-            click: __btnAdicionarProcedimentosEmLote_onclick(profiles),
-          },
-        ]);
+          FAB.build([
+            {
+              textLabel: "Adicionar Procedimentos em Lote",
+              iconClass: "las la-calendar-plus",
+              click: __btnAdicionarProcedimentosEmLote_onclick(profiles),
+            },
+          ]);
 
-        __executeBulkInsertAppointments();
+          __executeBulkInsertAppointments();
+        } finally {
+          console.log(`${fn} - Exit`);
+        }
       },
       applyFeatures = () => {
-        if (PATHNAME_REGEX.test(location.pathname)) {
-          const interval = setInterval(() => {
-            const btn = $("#btnGravar");
-            if (btn) {
-              clearInterval(interval);
-              _applyFeatures();
-            }
-          }, 250);
+        const fn = "applyFeatures";
+        console.log(`${fn} - Enter`);
+        try {
+          if (PATHNAME_REGEX.test(location.pathname)) {
+            console.log(`${fn} - Matches with location ${location.pathname}`);
+            const interval = setInterval(() => {
+              const btn = $("#btnGravar");
+              if (btn) {
+                clearInterval(interval);
+                _applyFeatures();
+              }
+            }, 250);
+          }
+        } finally {
+          console.log(`${fn} - Exit`);
         }
       };
 
@@ -2908,7 +2923,7 @@
     };
 
     const isPageReady = function () {
-      return $("#collapseMenu");
+      return $(".form-control");
     };
 
     const applyFeatures = function () {
@@ -3158,50 +3173,119 @@
             inputPwd: 'input[id*="senhaPacienteBiometria"]',
             btnAuth: 'input[id*="autenticarPacienteModalPanelButton"]',
             btnFinish: 'a[title="Finalizar execução"]',
+            dlErrorMessage:
+              'dl[id*="panelMensagensAutenticarConfirmacaoUpVirtual"]',
           };
 
           const modal = $(selector.modal);
-          const authBtn = $(selector.btnAuth, modal);
-          const triggerUpsertItem = async (e) => {
+
+          const upsertItem = async () => {
+            const fn0 = "upsertItem";
+            console.log(`${fn}.${fn0} - Enter`);
             await PatientModel.getOrCreateDB().then((db) => {
               patient.password = $(selector.inputPwd, modal).value;
-              return PatientModel.addOrUpdateItem(db, patient);
+              return PatientModel.addOrUpdateItem(db, patient).then(() => {
+                console.log(`${fn}.${fn0} - Exit`);
+              });
             });
           };
-          authBtn.addEventListener("click", triggerUpsertItem);
 
-          await PatientModel.getOrCreateDB()
-            .then(PatientModel.getAll)
-            .then((patients) => patients.find((p) => p.id === patient.id))
-            .then((patientDB) => {
-              if (patientDB) {
-                $(selector.inputPwd, modal).value = patientDB.password;
-                $(selector.btnAuth, modal).click();
+          return new Promise(async (resolve) => {
+            const triggerBtnAuth = async (e) => {
+              const fn0 = "triggerBtnAuth";
+              console.log(`${fn}.${fn0} - Enter`);
+              try {
+                let errorMessage = $(selector.dlErrorMessage, modal);
+                if (errorMessage) errorMessage.remove(); // clear view
 
-                // espere a autenticação finalizar
-                return new Promise((resolve) => {
-                  const interval = setInterval(() => {
-                    console.log(`${fn} - setInterval - Enter`);
-                    try {
-                      if (!modal.offsetParent) {
+                await upsertItem(); // always save the password
+
+                // then, check the consequences
+                const interval = setInterval(() => {
+                  const fn1 = "interval";
+                  console.log(`${fn}.${fn0}.${fn1} - Enter`);
+                  try {
+                    if (!modal.offsetParent) {
+                      // auth works
+                      clearInterval(interval);
+                      console.log(
+                        `${fn}.${fn0}.${fn1} - success => clearInterval`
+                      );
+                      resolve();
+                    } else {
+                      const errorMessage = $(selector.dlErrorMessage, modal);
+                      if (errorMessage) {
+                        // auth failed
                         clearInterval(interval);
-                        console.log(`${fn} - setInterval - clearInterval`);
-                        setTimeout(() => {
-                          $(selector.btnFinish).click();
-                          resolve();
-                        }, 1000);
+                        console.log(
+                          `${fn}.${fn0}.${fn1} - errorMessage => clearInterval`
+                        );
+                        const authBtn = $(selector.btnAuth, modal); // auth btn is recreated by JSF framework
+                        authBtn.addEventListener("click", triggerBtnAuth); // config the trigger again
                       }
-                    } finally {
-                      console.log(`${fn} - setInterval - Exit`);
                     }
-                  }, 1000);
-                });
-              } else {
-                console.log(
-                  `${fn} - No patient found in DB ${JSON.stringify(patient)}`
-                );
+                  } finally {
+                    console.log(`${fn}.${fn0}.${fn1} - Exit`);
+                  }
+                }, 1000);
+              } finally {
+                console.log(`${fn}.${fn0} - Exit`);
               }
-            });
+            };
+
+            let errorMessage = $(selector.dlErrorMessage, modal);
+            if (errorMessage) errorMessage.remove(); // remove existent ghost object
+
+            const authBtn = $(selector.btnAuth, modal);
+            authBtn.addEventListener("click", triggerBtnAuth);
+
+            const patientDB = await PatientModel.getOrCreateDB()
+              .then(PatientModel.getAll)
+              .then((patients) => patients.find((p) => p.id === patient.id));
+
+            if (!patientDB) {
+              console.log(
+                `${fn} - No patient found in DB ${JSON.stringify(patient)}`
+              );
+            } else {
+              $(selector.inputPwd, modal).value = patientDB.password;
+              authBtn.dispatchEvent(new Event("click", { bubbles: true }));
+            }
+          });
+        } finally {
+          console.log(`${fn} - Exit`);
+        }
+      },
+      __finishProcess = () => {
+        const fn = "__finishProcess";
+        console.log(`${fn} - Enter`);
+        try {
+          const selector = {
+            modal: "#autenticarModalPanelVirtualCDiv",
+            btnFinish: 'a[title="Finalizar execução"]',
+          };
+
+          const modal = $(selector.modal);
+
+          // wait end of auth
+          return new Promise((resolve) => {
+            const interval = setInterval(() => {
+              const fn0 = "setInterval";
+              console.log(`${fn}.${fn0} - Enter`);
+              try {
+                if (!modal.offsetParent) {
+                  clearInterval(interval);
+                  console.log(`${fn}.${fn0} - clearInterval`);
+                  setTimeout(() => {
+                    $(selector.btnFinish).click();
+                    resolve();
+                  }, 1000);
+                }
+              } finally {
+                console.log(`${fn}.${fn0} - Exit`);
+              }
+            }, 1000);
+          });
         } finally {
           console.log(`${fn} - Exit`);
         }
@@ -3218,6 +3302,7 @@
             Taskier.toFunc(__fillProfessionalField(patient)),
             Taskier.toFunc(__awaitOpeningModalToAuthenticatePatient),
             Taskier.toFunc(__fillAuthentication(patient)),
+            Taskier.toFunc(__finishProcess),
           ]);
           await Taskier.exec(tasks, 1000);
         } finally {
@@ -3383,40 +3468,65 @@
         // move the last <option> element (-- Selecione --) to the beginning
         select.prepend(select.find("option:last"));
       },
-      _applyFeatures = () => {
-        _sortAZ_selectTomador();
-        CommonsHelper.selectOption("#servico", "Psicologia");
+      _setDesiredValues = () => {
+        CommonsHelper.selectOption(
+          "#codNbs",
+          "1.2301.98.00 - Serviços de psicologia",
+        );
         CommonsHelper.selectOption("#localServico", "Em meu endereço");
         CommonsHelper.selectOption(
           "#CST",
-          "1 - Tributada integralmente e sujeita ao regime do Simples Nacional"
+          "1 - Tributada integralmente e sujeita ao regime do Simples Nacional",
         );
         const textarea = $("#servicoDescricao");
         textarea.value = "Sessões de Terapia";
         textarea.rows = 1;
 
-        $("#numDeskChar").style.padding = 0;
-        $$("hr").forEach((hr) => (hr.style.margin = "10px 0"));
-        $$(".form-group").forEach((fg) => (fg.style.margin = "0 0 5px 0"));
+        const radioNaoInformar = $(
+          'input[name="tributos_opcao"][value="nao_informar"]',
+        );
+        radioNaoInformar.checked = true;
+        radioNaoInformar.dispatchEvent(new Event("change", { bubbles: true }));
+
+        [
+          "#imposto-retido-block > .block-header",
+          "#valor-calculo-block > .block-header",
+          "#valor-tributos-block > .block-header",
+        ].forEach((selector) => {
+          $(selector).classList.remove("is-open");
+        });
+      },
+      _applyFeatures = () => {
+        _sortAZ_selectTomador();
 
         const interval = setInterval(() => {
-          const target = $(".servico-show");
-          if (target?.style.display === "block") {
+          const target = $("#servico-block");
+          if (target?.style.display !== "none") {
             clearInterval(interval);
-            const tgSty = target.style;
+
+            CommonsHelper.selectOption("#servico", "Psicologia");
 
             const anchor = document.createElement("a");
-            anchor.textContent = "Outros detalhes (hide/show)";
-            anchor.href = "javascript:void(0)";
-            anchor.onclick = () => {
-              tgSty.display = tgSty.display === "none" ? "block" : "none";
+            anchor.href = "#";
+            anchor.textContent = "Aplicar Valores Padrão";
+            anchor.style.cssText = `
+              display: inline-block;
+              margin-bottom: 10px;
+              padding: 8px 12px;
+              background-color: #7e2993;
+              color: white;
+              text-decoration: none;
+              border-radius: 4px;
+              font-size: 14px;
+              font-weight: bold;
+            `;
+
+            anchor.onclick = (e) => {
+              e.preventDefault();
+              _setDesiredValues();
             };
+
             target.parentNode.insertBefore(anchor, target);
-
-            const rowBtnEnviar = $("#btnPostNf").parentElement.parentElement;
-            target.parentNode.insertBefore(rowBtnEnviar, target.nextSibling);
-
-            setTimeout(() => (tgSty.display = "none"), 250);
           }
         }, 250);
       },

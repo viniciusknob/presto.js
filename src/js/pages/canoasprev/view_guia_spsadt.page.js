@@ -251,41 +251,60 @@
         });
       },
       __initialConfig = () => {
-        __handleInputDataSolicitacao();
+        const fn = "__initialConfig";
+        console.log(`${fn} - Enter`);
+        try {
+          __handleInputDataSolicitacao();
 
-        // preencher tipo atendimento como TERAPIA
-        $("#tipoAtendimento").value = "3";
+          // preencher tipo atendimento como TERAPIA
+          $("#tipoAtendimento").value = "3";
 
-        __handleBtnIncluirProcedimento();
-        __handleBtnGravar();
+          __handleBtnIncluirProcedimento();
+          __handleBtnGravar();
+        } finally {
+          console.log(`${fn} - Exit`);
+        }
       },
       _applyFeatures = async () => {
-        Modal.init();
+        const fn = "_applyFeatures";
+        console.log(`${fn} - Enter`);
+        try {
+          Modal.init();
 
-        const profiles = await __loadProfiles();
-        __buildComponentForLoadedProfiles(profiles);
+          const profiles = await __loadProfiles();
+          __buildComponentForLoadedProfiles(profiles);
 
-        __initialConfig();
+          __initialConfig();
 
-        FAB.build([
-          {
-            textLabel: "Adicionar Procedimentos em Lote",
-            iconClass: "las la-calendar-plus",
-            click: __btnAdicionarProcedimentosEmLote_onclick(profiles),
-          },
-        ]);
+          FAB.build([
+            {
+              textLabel: "Adicionar Procedimentos em Lote",
+              iconClass: "las la-calendar-plus",
+              click: __btnAdicionarProcedimentosEmLote_onclick(profiles),
+            },
+          ]);
 
-        __executeBulkInsertAppointments();
+          __executeBulkInsertAppointments();
+        } finally {
+          console.log(`${fn} - Exit`);
+        }
       },
       applyFeatures = () => {
-        if (PATHNAME_REGEX.test(location.pathname)) {
-          const interval = setInterval(() => {
-            const btn = $("#btnGravar");
-            if (btn) {
-              clearInterval(interval);
-              _applyFeatures();
-            }
-          }, 250);
+        const fn = "applyFeatures";
+        console.log(`${fn} - Enter`);
+        try {
+          if (PATHNAME_REGEX.test(location.pathname)) {
+            console.log(`${fn} - Matches with location ${location.pathname}`);
+            const interval = setInterval(() => {
+              const btn = $("#btnGravar");
+              if (btn) {
+                clearInterval(interval);
+                _applyFeatures();
+              }
+            }, 250);
+          }
+        } finally {
+          console.log(`${fn} - Exit`);
         }
       };
 

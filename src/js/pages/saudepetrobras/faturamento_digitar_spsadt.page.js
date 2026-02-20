@@ -124,6 +124,11 @@
         _monthYear = `/${_monthYear}`;
         const _daysLength = _days.length;
 
+        $("#procedimentosRealizados").parentElement.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+
         __removeInitialAppointment();
         _addAppointment(_days, _monthYear, _daysLength, _unitValue);
       },
@@ -237,27 +242,16 @@
         _handleBtnGravarAlteracoes(person);
       },
       _validateDueDate = () => {
-        return new Promise((resolve, reject) => {
-          let interval = setInterval(() => {
-            const eDueDatePwd = $("#txtDataValidadeSenha");
-            if (!!!eDueDatePwd.value) return;
-
-            clearInterval(interval);
-
-            // password validate: duo date
-            let snacks = eDueDatePwd.value
-              .split("/")
-              .map((num) => parseInt(num));
-            snacks[1] += -1;
-            let duoDatePwd = new Date(...snacks.reverse());
-            if (duoDatePwd < new Date()) {
-              eDueDatePwd.style.border = "red 2px solid";
-              eDueDatePwd.style.color = "red";
-              $("label", eDueDatePwd.parentElement).style.color = "red";
-              reject("Senha vencida!");
-            } else resolve();
-          }, 500);
-        });
+        const eDueDatePwd = $("#txtDataValidadeSenha");
+        let snacks = eDueDatePwd.value.split("/").map((num) => parseInt(num));
+        snacks[1] += -1;
+        let duoDatePwd = new Date(...snacks.reverse());
+        if (duoDatePwd < new Date()) {
+          eDueDatePwd.style.border = "red 2px solid";
+          eDueDatePwd.style.color = "red";
+          $("label", eDueDatePwd.parentElement).style.color = "red";
+          throw new Error("Senha vencida!");
+        }
       },
       __buildComponentForLoadedProfiles = (personArr) => {
         let label = document.createElement("label");
@@ -310,7 +304,7 @@
           mainAction: __fillForm_faturamentoDigitarSPSADT_onclick,
         });
       },
-      __btnPreencherDadosPadrao_onclick = () => {
+      _btnPreencherDadosPadrao = () => {
         Array.from($("#txtTipoDocumentoContratado").options).find(
           (x) => x.textContent === "CPF"
         ).selected = true;
@@ -352,11 +346,6 @@
 
         FAB.build([
           {
-            textLabel: "Preencher dados padrão",
-            iconClass: "las la-wrench",
-            click: __btnPreencherDadosPadrao_onclick,
-          },
-          {
             textLabel: "Adicionar Procedimentos",
             iconClass: "las la-calendar-plus",
             click: __btnAdicionarProcedimentos_onclick,
@@ -370,16 +359,25 @@
 
         const eSenha = $("#senha");
         let btnImport = $("a.bt-procurar", eSenha.parentElement);
-        let btnImport_onclick = btnImport.onclick;
-        btnImport.onclick = () => {
-          btnImport_onclick();
-          _validateDueDate()
-            .then(() => {
-              $("#txtNumeroGuiaPrestador").value = new Date().getTime();
-              _watchForm();
-            })
-            .catch(Snackbar.fire);
-        };
+
+        btnImport.addEventListener("click", () => {
+          let interval = setInterval(() => {
+            if ($("#txtDataValidadeSenha").value) {
+              clearInterval(interval);
+
+              setTimeout(() => {
+                try {
+                  $("#txtNumeroGuiaPrestador").value = new Date().getTime();
+                  _validateDueDate();
+                  _btnPreencherDadosPadrao();
+                  _watchForm();
+                } catch (e) {
+                  Snackbar.fire(e.message);
+                }
+              }, 1000);
+            }
+          }, 200);
+        });
       };
 
     return {

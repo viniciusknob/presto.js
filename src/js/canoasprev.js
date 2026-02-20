@@ -17,7 +17,7 @@
     };
 
     const isPageReady = function () {
-      return $("#collapseMenu");
+      return $(".form-control");
     };
 
     const applyFeatures = function () {
