@@ -13,7 +13,7 @@
     };
 
     const isPageReady = function () {
-      return $("#accordion");
+      return $("#navbar");
     };
 
     const applyFeatures = function () {
