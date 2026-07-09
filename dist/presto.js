@@ -3,7 +3,7 @@
 
   const _Module = (function () {
     return {
-      env: "dev",
+      env: "prd",
       models: {},
       modules: {},
       pages: {},
@@ -709,6 +709,298 @@
   Presto.models.PersonModel = _Model;
 })(Presto, location);
 
+(function (Presto) {
+  "use strict";
+
+  const { PatientModel } = Presto.models;
+  const { CommonsHelper, DomHelper } = Presto.modules;
+  const { $ } = DomHelper;
+
+  const _Module = (function () {
+    const getPatients = (dbVersion = 2) =>
+      PatientModel.getOrCreateDB(dbVersion).then(PatientModel.getAll);
+
+    const buildInsuredComboBox = (insuredList = []) => {
+      if (insuredList.length === 0) return null;
+
+      const select = document.createElement("SELECT");
+      select.style.cssText = "vertical-align: middle;";
+
+      const defaultOption = document.createElement("OPTION");
+      defaultOption.value = "";
+      defaultOption.textContent = "ESCOLHA O BENEFICIÁRIO...";
+      select.appendChild(defaultOption);
+
+      select.onchange = () => {
+        const option = $(":checked", select);
+        if (!option?.value) return;
+
+        ["1", "2", "3", "4", "5"].forEach((suffix, index) => {
+          const size = [3, 5, 4, 4, 4][index];
+          const start = [0, 3, 8, 12, 16][index];
+          const input = $(`#codigo-beneficiario-${suffix}`);
+          if (input) {
+            input.value = option.value.substr(start, size);
+          }
+        });
+      };
+
+      insuredList.forEach((insured) => {
+        const option = document.createElement("OPTION");
+        option.value = insured.id;
+        option.textContent = insured.name;
+        select.appendChild(option);
+      });
+
+      return select;
+    };
+
+    const createMonthYearFilter = ({
+      dateBeginFieldSelector,
+      dateEndFieldSelector,
+      insertAt,
+      setLabelWidthInitial = false,
+      setDisplayBlock = false,
+      marginRight,
+    }) => {
+      const dateBeginField = $(dateBeginFieldSelector);
+      if (!dateBeginField) return null;
+
+      const div = CommonsHelper.createSelectOptionsMonthYear({
+        dateBeginFieldId: dateBeginFieldSelector,
+        dateEndFieldId: dateEndFieldSelector,
+      });
+
+      if (setLabelWidthInitial && div.firstElementChild) {
+        div.firstElementChild.style.width = "initial";
+      }
+
+      if (setDisplayBlock) {
+        div.style.display = "block";
+      }
+
+      if (marginRight) {
+        div.style.marginRight = marginRight;
+      }
+
+      const node = dateBeginField.parentElement.parentElement;
+      node.insertBefore(div, node.childNodes[insertAt]);
+      return div;
+    };
+
+    return {
+      getPatients,
+      buildInsuredComboBox,
+      createMonthYearFilter,
+    };
+  })();
+
+  Presto.modules.SulAmericaHelper = _Module;
+})(Presto);
+
+(function (Presto, location) {
+  "use strict";
+
+  const { SulAmericaHelper } = Presto.modules;
+
+  const _Page = (function () {
+    const PATHNAME_REGEX =
+      /demonstrativos-tiss-3(\/demonstrativo-de-pagamento)?/;
+
+    const applyFeatures = () => {
+      if (!PATHNAME_REGEX.test(location.pathname)) return;
+
+      SulAmericaHelper.createMonthYearFilter({
+        dateBeginFieldSelector: 'input[name="data-inicial"]',
+        dateEndFieldSelector: 'input[name="data-final"]',
+        insertAt: 1,
+        setLabelWidthInitial: true,
+        setDisplayBlock: true,
+      });
+    };
+
+    return {
+      applyFeatures,
+    };
+  })();
+
+  Presto.pages.DemonstrativoPagamentoPage = _Page;
+})(Presto, location);
+
+(function (Presto, location) {
+  "use strict";
+
+  const { PatientModel } = Presto.models;
+  const { DomHelper } = Presto.modules;
+  const { $, $$ } = DomHelper;
+  const dbVersion = 2;
+
+  const _Page = (function () {
+    const PATHNAME_REGEX =
+      /validacao-de-elegibilidade\/elegibilidade-resultado/;
+
+    const _buildPatientFromScreen = () => {
+      const patient = {
+        id: "",
+        name: "",
+      };
+
+      $$(".linha").forEach((line) => {
+        const strongList = $$("strong", line);
+        strongList.forEach((strong) => {
+          if (!strong) return;
+
+          const strongText = strong.textContent;
+          if (/Carteira/.test(strongText)) {
+            const idValue = $("span", strong.parentElement)?.textContent || "";
+            patient.id = idValue.replace(/\s/g, "");
+          }
+
+          if (/Nome/.test(strongText)) {
+            patient.name = $("span", strong.parentElement)?.textContent || "";
+          }
+        });
+      });
+
+      return patient;
+    };
+
+    const applyFeatures = async () => {
+      if (!PATHNAME_REGEX.test(location.pathname)) return;
+
+      const eligibleBox = $(".box-indicador-elegibilidade .linha");
+      if (!eligibleBox) return;
+
+      const eligible = $(".atencao", eligibleBox)?.textContent;
+      if (!eligible) return;
+
+      let patient = _buildPatientFromScreen();
+
+      if (patient.id) {
+        const storedPatient = await PatientModel.getOrCreateDB(dbVersion)
+          .then(PatientModel.getAll)
+          .then((patients) => patients.find((x) => x.id === patient.id));
+
+        patient = storedPatient || patient;
+      }
+
+      if (eligible !== "SIM") return;
+
+      const divStatus = document.createElement("DIV");
+      divStatus.id = "js-presto-status";
+      divStatus.style = "float:right;font-weight:bold;color:limegreen;";
+      divStatus.textContent = "Salvando...";
+      eligibleBox.appendChild(divStatus);
+
+      PatientModel.getOrCreateDB(dbVersion)
+        .then((db) => PatientModel.addOrUpdateItem(db, patient))
+        .then(() => {
+          const status = $("#js-presto-status", eligibleBox);
+          if (status) {
+            status.textContent = "Salvo!";
+          }
+        })
+        .catch((err) => {
+          console.log(
+            `ElegibilidadeResultadoPage.applyFeatures: [eligible=${eligible}] ${JSON.stringify(err)}`,
+          );
+        });
+    };
+
+    return {
+      applyFeatures,
+    };
+  })();
+
+  Presto.pages.ElegibilidadeResultadoPage = _Page;
+})(Presto, location);
+
+(function (Presto, location) {
+  "use strict";
+
+  const { DomHelper, SulAmericaHelper } = Presto.modules;
+  const { $ } = DomHelper;
+  const dbVersion = 2;
+
+  const _Page = (function () {
+    const PATHNAME_REGEX = /validacao-de-elegibilidade\/?$/;
+
+    const applyFeatures = () => {
+      if (!PATHNAME_REGEX.test(location.pathname)) return;
+
+      SulAmericaHelper.getPatients(dbVersion)
+        .then(SulAmericaHelper.buildInsuredComboBox)
+        .then((comboBox) => {
+          if (!comboBox) return;
+
+          const node = $("#box-validacao-beneficiario div");
+          if (!node) return;
+
+          node.insertBefore(comboBox, node.childNodes[2]);
+
+          const boxPadrao = $(".box-padrao");
+          if (boxPadrao) {
+            boxPadrao.style.width = "850px";
+          }
+        })
+        .catch((err) => {
+          console.log(
+            `ElegibilidadePage.applyFeatures: ${JSON.stringify(err)}`,
+          );
+        });
+    };
+
+    return {
+      applyFeatures,
+    };
+  })();
+
+  Presto.pages.ElegibilidadePage = _Page;
+})(Presto, location);
+
+(function (Presto, location) {
+  "use strict";
+
+  const { DomHelper, SulAmericaHelper } = Presto.modules;
+  const { $ } = DomHelper;
+  const dbVersion = 2;
+
+  const _Page = (function () {
+    const PATHNAME_REGEX = /fechamento-de-lote/;
+
+    const applyFeatures = () => {
+      if (!PATHNAME_REGEX.test(location.pathname)) return;
+
+      SulAmericaHelper.getPatients(dbVersion)
+        .then(SulAmericaHelper.buildInsuredComboBox)
+        .then((comboBox) => {
+          if (!comboBox) return;
+
+          const node = $("#box-validacao-beneficiario div");
+          if (!node) return;
+
+          node.insertBefore(comboBox, node.childNodes[2]);
+          SulAmericaHelper.createMonthYearFilter({
+            dateBeginFieldSelector: 'input[name="data-inicial"]',
+            dateEndFieldSelector: 'input[name="data-final"]',
+            insertAt: 1,
+          });
+        })
+        .catch((err) => {
+          console.log(
+            `FechamentoDeLotePage.applyFeatures: ${JSON.stringify(err)}`,
+          );
+        });
+    };
+
+    return {
+      applyFeatures,
+    };
+  })();
+
+  Presto.pages.FechamentoDeLotePage = _Page;
+})(Presto, location);
+
 (function (Presto, location, jQuery) {
   "use strict";
 
@@ -1021,6 +1313,138 @@
 (function (Presto, location) {
   "use strict";
 
+  const { DomHelper, SulAmericaHelper } = Presto.modules;
+  const { $ } = DomHelper;
+  const dbVersion = 2;
+
+  const _Page = (function () {
+    const PATHNAME_REGEX = /validar-procedimento-autorizado/;
+
+    const applyFeatures = () => {
+      if (!PATHNAME_REGEX.test(location.pathname)) return;
+
+      SulAmericaHelper.getPatients(dbVersion)
+        .then(SulAmericaHelper.buildInsuredComboBox)
+        .then((comboBox) => {
+          if (!comboBox) return;
+
+          const node = $("#box-validacao-beneficiario");
+          if (!node) return;
+
+          node.insertBefore(comboBox, node.childNodes[0]);
+
+          const boxPadrao = $(".box-padrao");
+          if (boxPadrao) {
+            boxPadrao.style.width = "780px";
+          }
+
+          SulAmericaHelper.createMonthYearFilter({
+            dateBeginFieldSelector: 'input[name="data-inicio"]',
+            dateEndFieldSelector: 'input[name="data-termino"]',
+            insertAt: 2,
+            setLabelWidthInitial: true,
+            marginRight: "1rem",
+          });
+        })
+        .catch((err) => {
+          console.log(
+            `ProcedimentoAutorizadoPage.applyFeatures: ${JSON.stringify(err)}`,
+          );
+        });
+    };
+
+    return {
+      applyFeatures,
+    };
+  })();
+
+  Presto.pages.ProcedimentoAutorizadoPage = _Page;
+})(Presto, location);
+
+(function (Presto, location) {
+  "use strict";
+
+  const { DomHelper, SulAmericaHelper } = Presto.modules;
+  const { $ } = DomHelper;
+  const dbVersion = 2;
+
+  const _Page = (function () {
+    const PATHNAME_REGEX = /validacao-de-procedimentos\/consulta/;
+
+    const applyFeatures = () => {
+      if (!PATHNAME_REGEX.test(location.pathname)) return;
+
+      SulAmericaHelper.getPatients(dbVersion)
+        .then(SulAmericaHelper.buildInsuredComboBox)
+        .then((comboBox) => {
+          if (!comboBox) return;
+
+          const node = $("#box-validacao-beneficiario");
+          if (!node) return;
+
+          node.insertBefore(comboBox, node.childNodes[2]);
+        })
+        .catch((err) => {
+          console.log(
+            `ProcedimentoConsultaPage.applyFeatures: ${JSON.stringify(err)}`,
+          );
+        });
+    };
+
+    return {
+      applyFeatures,
+    };
+  })();
+
+  Presto.pages.ProcedimentoConsultaPage = _Page;
+})(Presto, location);
+
+(function (Presto, location) {
+  "use strict";
+
+  const { DomHelper, SulAmericaHelper } = Presto.modules;
+  const { $ } = DomHelper;
+  const dbVersion = 2;
+
+  const _Page = (function () {
+    const PATHNAME_REGEX = /validacao-de-procedimentos\/?(solicitacao)?\/?$/;
+
+    const applyFeatures = () => {
+      if (!PATHNAME_REGEX.test(location.pathname)) return;
+
+      SulAmericaHelper.getPatients(dbVersion)
+        .then(SulAmericaHelper.buildInsuredComboBox)
+        .then((comboBox) => {
+          if (!comboBox) return;
+
+          const node = $("#box-validacao-beneficiario div");
+          if (!node) return;
+
+          node.insertBefore(comboBox, node.childNodes[2]);
+
+          const boxPadrao = $(".box-padrao");
+          if (boxPadrao) {
+            boxPadrao.style.width = "850px";
+          }
+        })
+        .catch((err) => {
+          console.log(
+            `ProcedimentoSolicitacaoPage.applyFeatures: ${JSON.stringify(err)}`,
+          );
+        });
+    };
+
+    return {
+      applyFeatures,
+    };
+  })();
+
+  Presto.pages.ProcedimentoSolicitacaoPage = _Page;
+})(Presto, location);
+
+(function (Presto, location) {
+  "use strict";
+
   const { PatientModel } = Presto.models;
   const dbVersion = 2; // IndexedDB
   const { Snackbar, FAB, CommonsHelper, DomHelper } = Presto.modules;
@@ -1176,31 +1600,22 @@
 (function (Presto, location) {
   "use strict";
 
-  const { PatientModel } = Presto.models;
-  const { SolicitacaoDeSPSADTPage, GuiaDeSPSADTIncluirPage } = Presto.pages;
-  const { CommonsHelper, DomHelper } = Presto.modules;
-  const { $, $$ } = DomHelper;
-  const dbVersion = 2; // IndexedDB
+  const {
+    SolicitacaoDeSPSADTPage,
+    GuiaDeSPSADTIncluirPage,
+    DemonstrativoPagamentoPage,
+    ElegibilidadePage,
+    ElegibilidadeResultadoPage,
+    ProcedimentoSolicitacaoPage,
+    ProcedimentoConsultaPage,
+    FechamentoDeLotePage,
+    ProcedimentoAutorizadoPage,
+  } = Presto.pages;
+  const { DomHelper } = Presto.modules;
+  const { $ } = DomHelper;
 
   const _Module = (function () {
-    const HOST = /saude.sulamericaseguros.com.br/,
-      // Prestador > Segurado > Validação de Elegibilidade
-      ELEGIBILIDADE = /validacao-de-elegibilidade/,
-      // Prestador > Segurado > Validação de Elegibilidade
-      ELEGIBILIDADE_RESULTADO =
-        /validacao-de-elegibilidade\/elegibilidade-resultado/,
-      // Prestador > Segurado > Validação de Procedimentos > Solicitação
-      PROCEDIMENTO_SOLICITACAO =
-        /validacao-de-procedimentos\/?(solicitacao)?\/?$/,
-      // Prestador > Segurado > Validação de Procedimentos > Consulta > Consulta de Solicitações
-      PROCEDIMENTO_CONSULTA = /validacao-de-procedimentos\/consulta/,
-      // Prestador > Serviços Médicos > Contas Médicas > Faturamento > Fechamento de Lote > Fechamento de Lote
-      FECHAMENTO_DE_LOTE = /fechamento-de-lote/,
-      // Prestador > Serviços Médicos > Contas Médicas > Faturamento > Validar procedimento autorizado
-      PROCEDIMENTO_AUTORIZADO = /validar-procedimento-autorizado/,
-      // Prestador > Serviços Médicos > Demonstrativos TISS 3 > Demonstrativo de Pagamento > Demonstrativo de Pagamento
-      DEMONSTRATIVO_PAGAMENTO =
-        /demonstrativos-tiss-3(\/demonstrativo-de-pagamento)?/;
+    const HOST = /saude.sulamericaseguros.com.br/;
 
     const isCurrentHost = function () {
       return HOST.test(location.host);
@@ -1216,166 +1631,16 @@
         .some((x) => x);
     };
 
-    const _buildComboBox = async function (insuredList = []) {
-      if (insuredList.length === 0) return null;
-
-      let select = document.createElement("SELECT");
-      select.style.cssText = "vertical-align: middle;";
-
-      let option = document.createElement("OPTION");
-      option.value = "";
-      option.textContent = "ESCOLHA O BENEFICIÁRIO...";
-      select.appendChild(option);
-
-      select.onchange = () => {
-        let option = $(":checked", select);
-
-        $("#codigo-beneficiario-1").value = option.value.substr(0, 3);
-        $("#codigo-beneficiario-2").value = option.value.substr(3, 5);
-        $("#codigo-beneficiario-3").value = option.value.substr(8, 4);
-        $("#codigo-beneficiario-4").value = option.value.substr(12, 4);
-        $("#codigo-beneficiario-5").value = option.value.substr(16, 4);
-      };
-
-      insuredList.forEach((insured) => {
-        let option = document.createElement("OPTION");
-        option.value = insured.id;
-        option.textContent = insured.name;
-        select.appendChild(option);
-      });
-
-      return select;
-    };
-
-    const applyFeatures = async function () {
+    const applyFeatures = function () {
       GuiaDeSPSADTIncluirPage.applyFeatures();
       SolicitacaoDeSPSADTPage.applyFeatures();
-
-      if (DEMONSTRATIVO_PAGAMENTO.test(location.pathname)) {
-        // BEGIN create field for month/year
-        const dateBeginFieldSelector = 'input[name="data-inicial"]';
-        const div = CommonsHelper.createSelectOptionsMonthYear({
-          dateBeginFieldId: dateBeginFieldSelector,
-          dateEndFieldId: 'input[name="data-final"]',
-        });
-        div.firstElementChild.style.width = "initial"; // label
-        div.style.display = "block";
-        const node = $(dateBeginFieldSelector).parentElement.parentElement;
-        node.insertBefore(div, node.childNodes[1]);
-        // END create field for month/year
-      } else if (ELEGIBILIDADE_RESULTADO.test(location.pathname)) {
-        let eligibleBox = $(".box-indicador-elegibilidade .linha");
-        let eligible = $(".atencao", eligibleBox).textContent;
-
-        let patient = {
-          id: "",
-          name: "",
-        };
-
-        $$(".linha").forEach((line) => {
-          let strongList = $$("strong", line);
-          strongList.forEach((strong) => {
-            if (strong) {
-              let strongText = strong.textContent;
-              if (/Carteira/.test(strongText)) {
-                patient.id = $(
-                  "span",
-                  strong.parentElement
-                ).textContent.replace(/\s/g, "");
-              }
-              if (/Nome/.test(strongText)) {
-                patient.name = $("span", strong.parentElement).textContent;
-              }
-            }
-          });
-        });
-
-        if (patient.id) {
-          const _patient = await PatientModel.getOrCreateDB(dbVersion)
-            .then(PatientModel.getAll)
-            .then((patients) => patients.find((x) => x.id === patient.id));
-
-          patient = _patient || patient;
-        }
-
-        if (eligible === "SIM") {
-          let divStatus = document.createElement("DIV");
-          divStatus.id = "js-presto-status";
-          divStatus.style = "float:right;font-weight:bold;color:limegreen;";
-          divStatus.textContent = "Salvando...";
-          eligibleBox.appendChild(divStatus);
-
-          PatientModel.getOrCreateDB(dbVersion)
-            .then((db) => PatientModel.addOrUpdateItem(db, patient))
-            .then(
-              () => ($("#js-presto-status", eligibleBox).textContent = "Salvo!")
-            )
-            .catch((err) => {
-              console.log(
-                `_fixAnyPage: [eligible=${eligible}] ${JSON.stringify(err)}`
-              );
-            });
-        }
-      } else {
-        PatientModel.getOrCreateDB(dbVersion)
-          .then(PatientModel.getAll)
-          .then(_buildComboBox)
-          .then((comboBox) => {
-            if (!comboBox) return;
-
-            if (ELEGIBILIDADE.test(location.pathname)) {
-              let node = $("#box-validacao-beneficiario div");
-              node.insertBefore(comboBox, node.childNodes[2]);
-              $(".box-padrao").style.width = "850px";
-            }
-            if (PROCEDIMENTO_SOLICITACAO.test(location.pathname)) {
-              if (PROCEDIMENTO_CONSULTA.test(location.pathname)) {
-                let node = $("#box-validacao-beneficiario");
-                node.insertBefore(comboBox, node.childNodes[2]);
-              } else {
-                let node = $("#box-validacao-beneficiario div");
-                node.insertBefore(comboBox, node.childNodes[2]);
-                $(".box-padrao").style.width = "850px";
-              }
-            }
-            if (FECHAMENTO_DE_LOTE.test(location.pathname)) {
-              let node = $("#box-validacao-beneficiario div");
-              node.insertBefore(comboBox, node.childNodes[2]);
-
-              // BEGIN create field for month/year
-              const dateBeginFieldSelector = 'input[name="data-inicial"]';
-              const div = CommonsHelper.createSelectOptionsMonthYear({
-                dateBeginFieldId: dateBeginFieldSelector,
-                dateEndFieldId: 'input[name="data-final"]',
-              });
-              node = $(dateBeginFieldSelector).parentElement.parentElement;
-              node.insertBefore(div, node.childNodes[1]);
-              // END create field for month/year
-            }
-            if (PROCEDIMENTO_AUTORIZADO.test(location.pathname)) {
-              let node = $("#box-validacao-beneficiario");
-              node.insertBefore(comboBox, node.childNodes[0]);
-              $(".box-padrao").style.width = "780px";
-
-              // BEGIN create field for month/year
-              const dateBeginFieldSelector = 'input[name="data-inicio"]';
-              const div = CommonsHelper.createSelectOptionsMonthYear({
-                dateBeginFieldId: dateBeginFieldSelector,
-                dateEndFieldId: 'input[name="data-termino"]',
-              });
-              div.firstElementChild.style.width = "initial"; // label
-              div.style.marginRight = "1rem";
-              node = $(dateBeginFieldSelector).parentElement.parentElement;
-              node.insertBefore(div, node.childNodes[2]);
-              // END create field for month/year
-            }
-          })
-          .catch((err) => {
-            console.log(
-              `_fixAnyPage: [eligible=${eligible}] ${JSON.stringify(err)}`
-            );
-          });
-      }
+      DemonstrativoPagamentoPage.applyFeatures();
+      ElegibilidadePage.applyFeatures();
+      ElegibilidadeResultadoPage.applyFeatures();
+      ProcedimentoSolicitacaoPage.applyFeatures();
+      ProcedimentoConsultaPage.applyFeatures();
+      FechamentoDeLotePage.applyFeatures();
+      ProcedimentoAutorizadoPage.applyFeatures();
     };
 
     /* Public Functions */
