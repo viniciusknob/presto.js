@@ -1,8 +1,22 @@
 (function (Presto, setInterval, clearInterval) {
-  const { Style, SulAmerica, SaudePetrobras, CanoasPrev, Cabergs, ContaAgil } =
-    Presto.modules;
+  const {
+    Style,
+    SulAmerica,
+    SaudePetrobras,
+    CanoasPrev,
+    Cabergs,
+    ContaAgil,
+    NFSeCanoas,
+  } = Presto.modules;
 
-  const pages = [SulAmerica, SaudePetrobras, CanoasPrev, Cabergs, ContaAgil];
+  const pages = [
+    SulAmerica,
+    SaudePetrobras,
+    CanoasPrev,
+    Cabergs,
+    ContaAgil,
+    NFSeCanoas,
+  ];
 
   const _Module = (function () {
     const _init = function () {

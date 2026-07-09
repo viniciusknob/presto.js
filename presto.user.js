@@ -10,6 +10,7 @@
 // @match        https://novowebplancanoasprev.facilinformatica.com.br/*
 // @match        https://app.contaagil.com.br/*
 // @match        https://portal.cabergs.org.br/*
+// @match        https://nfse.canoas.rs.gov.br/*
 // @require      https://raw.githubusercontent.com/viniciusknob/presto.js/main/dist/presto.min.js
 // @grant        none
 // @run-at       document-idle

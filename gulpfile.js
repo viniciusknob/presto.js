@@ -17,12 +17,12 @@ function _htmlMinify() {
       htmlMinify({
         collapseWhitespace: true,
         removeComments: true,
-      })
+      }),
     )
     .pipe(
       rename({
         suffix: ".min",
-      })
+      }),
     )
     .pipe(dest(`${BUILD_PATH}/html`));
 }
@@ -39,7 +39,7 @@ function _cssMinify() {
     .pipe(
       rename({
         suffix: ".min",
-      })
+      }),
     )
     .pipe(dest(`${BUILD_PATH}/css`));
 }
@@ -51,14 +51,14 @@ function _minToJS(env) {
       .pipe(
         replace(
           "__modal__",
-          fs.readFileSync(`${BUILD_PATH}/html/modal.min.html`, "utf8")
-        )
+          fs.readFileSync(`${BUILD_PATH}/html/modal.min.html`, "utf8"),
+        ),
       )
       .pipe(
         replace(
           "__css__",
-          fs.readFileSync(`${BUILD_PATH}/css/presto.min.css`, "utf8")
-        )
+          fs.readFileSync(`${BUILD_PATH}/css/presto.min.css`, "utf8"),
+        ),
       )
       .pipe(dest(DIST_PATH));
 }
@@ -85,6 +85,8 @@ function _jsConcat() {
     "src/js/cabergs.js",
     "src/js/pages/contaagil/*.js",
     "src/js/contaagil.js",
+    "src/js/pages/nfsecanoas/*.js",
+    "src/js/nfsecanoas.js",
     "src/js/main.js",
     "src/js/init.js",
   ])
@@ -98,7 +100,7 @@ function _jsMinify() {
     .pipe(
       rename({
         suffix: ".min",
-      })
+      }),
     )
     .pipe(dest(DIST_PATH));
 }
