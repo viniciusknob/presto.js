@@ -29,7 +29,7 @@
               if (/Carteira/.test(strongText)) {
                 carteira = $("span", strong.parentElement).textContent.replace(
                   /\s/g,
-                  ""
+                  "",
                 );
               }
             }
@@ -56,16 +56,16 @@
           }),
           Taskier.toText(
             "#nome-profissional-solicitante",
-            patient?.specialist?.name || ""
+            patient?.specialist?.name || "",
           ),
           Taskier.toSelect("#conselho-profissional", "CRP"),
           Taskier.toSelect("#uf-conselho-profissional", "RS"),
           Taskier.toText(
             "#numero-registro-conselho",
-            patient?.specialist?.ncrp || ""
+            patient?.specialist?.ncrp || "",
           ),
           Taskier.toFunc(() =>
-            CommonsHelper.selectFirstJQueryAutocomplete("#cbo", "251510")
+            CommonsHelper.selectFirstJQueryAutocomplete("#cbo", "251510"),
           ),
           Taskier.toSelect("#carater-atendimento", "Eletivo"),
           Taskier.toText("#data-solicitacao", formatBRDate(new Date())),
@@ -86,48 +86,46 @@
         const selector = ".bt-excluir-procedimento-realizado";
         $$(selector).forEach((e) => e.click());
       },
-      _addAppointment = (days, monthYear, unitValue) => {
-        const day = days.shift();
+      _addAppointment = async (days, monthYear, unitValue) => {
+        if (!days || days.length === 0) {
+          return;
+        }
 
-        $("[name='per.data']").value = `${day}/${monthYear}`;
-        $("[name='per.codigo-procedimento']").value = "50000470";
-        $("[class='sasbt1 btn-busca-procedimento']").click();
+        for (const day of days) {
+          $("[name='per.data']").value = `${day}/${monthYear}`;
+          $("[name='per.codigo-procedimento']").value = "50000470";
+          $("[class='sasbt1 btn-busca-procedimento']").click();
 
-        setTimeout(() => {
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+
           $("[name='per.quantidade']").value = "1";
           $("[name='per.valor-unitario']").value = unitValue;
 
           $("#incluirPer").click();
 
-          setTimeout(() => {
-            if (days.length) {
-              _addAppointment(days, monthYear, unitValue);
-            } else {
-              Snackbar.fire(`Pronto!`);
-            }
-          }, 1000);
-        }, 1000);
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+        }
       },
       __fillFormModal_onclick = async () => {
         /**
          * Modal Validations
          */
-        let _days = $(MODAL_INPUT_APPOINTMENTS_DAYS_SELECTOR).value;
-        if (!!!_days) {
-          Snackbar.fire("Informe os dias dos procedimentos!");
-          return;
-        }
+        let _daysMonthBefore = $(
+          MODAL_INPUT_APPOINTMENTS_DAYS_SELECTOR,
+        ).value?.trim();
+        let _daysCurrentMonth = $(
+          MODAL_INPUT_APPOINTMENTS_MONTH_YEAR_SELECTOR,
+        ).value?.trim();
 
-        let _monthYear = $(MODAL_INPUT_APPOINTMENTS_MONTH_YEAR_SELECTOR).value;
-        if (!!!_monthYear) {
-          Snackbar.fire("Informe o mês/ano dos procedimentos!");
+        if (!_daysMonthBefore && !_daysCurrentMonth) {
+          Snackbar.fire("Informe os dias de pelo menos um dos meses!");
           return;
         }
 
         let _unitValue = $(MODAL_INPUT_APPOINTMENTS_UNIT_VALUE_SELECTOR).value;
         if (!!!_unitValue) {
           Snackbar.fire(
-            "Informe o valor unitário dos procedimentos no formato 12,34!"
+            "Informe o valor unitário dos procedimentos no formato 12,34!",
           );
           return;
         }
@@ -135,22 +133,56 @@
          * end Modal Validations
          */
 
+        // format last month/year to "MM/YYYY"
+        const previousDate = new Date();
+        previousDate.setMonth(previousDate.getMonth() - 1);
+        const previousMonthYear = new Intl.DateTimeFormat("pt-BR", {
+          month: "2-digit",
+          year: "numeric",
+        }).format(previousDate);
+
+        // format current month/year to "MM/YYYY"
+        const currentMonthYear = __buildMonthDate();
+
         const { Taskier } = CommonsHelper;
 
         const tasks = [
           ...(await __buildTasksForDefaultData()),
           ...Taskier.mapToFunc([
             Taskier.toFunc(__removeInitialAppointment),
-            Taskier.toFunc(() => {
+            Taskier.toFunc(async () => {
               $("#formPer").scrollIntoView({
                 behavior: "smooth",
                 block: "start",
               });
 
-              _days = _days.split(",").map((day) => day.padStart(2, "0"));
-              _monthYear = `/${_monthYear}`;
+              // process days of previous month (if informed)
+              if (_daysMonthBefore) {
+                const daysBefore = _daysMonthBefore
+                  .split(",")
+                  .map((day) => day.trim().padStart(2, "0"));
 
-              _addAppointment(_days, _monthYear, _unitValue);
+                await _addAppointment(
+                  daysBefore,
+                  previousMonthYear,
+                  _unitValue,
+                );
+              }
+
+              // process days of current month (if informed)
+              if (_daysCurrentMonth) {
+                const daysCurrent = _daysCurrentMonth
+                  .split(",")
+                  .map((day) => day.trim().padStart(2, "0"));
+
+                await _addAppointment(
+                  daysCurrent,
+                  currentMonthYear,
+                  _unitValue,
+                );
+              }
+
+              Snackbar.fire(`Pronto!`);
             }),
           ]),
         ];
@@ -167,25 +199,46 @@
       __buildModalContent = () => {
         let content = document.createElement("div");
 
+        // last month in format "MMM/YYYY" and in upper case, ex.: JUL/2024
+        const previousDate = new Date();
+        previousDate.setMonth(previousDate.getMonth() - 1);
+        const previousMonthLabel = new Intl.DateTimeFormat("pt-BR", {
+          month: "short",
+          year: "numeric",
+        })
+          .format(previousDate)
+          .replace(".", "")
+          .toUpperCase();
+
         content.appendChild(
           Modal.helpers.buildFormGroup({
-            textLabel: "DIAS",
+            textLabel: `DIAS DO MÊS ANTERIOR (${previousMonthLabel})`,
             input: {
               id: MODAL_INPUT_APPOINTMENTS_DAYS_SELECTOR.substring(1),
             },
             helpText: "Ex.: 7,14,21,28",
-          })
+          }),
         );
 
+        // current month in format "MMM/YYYY" and in upper case, ex.: AGO/2024
+        const currentDate = new Date();
+        const currentMonthLabel = new Intl.DateTimeFormat("pt-BR", {
+          month: "short",
+          year: "numeric",
+        })
+          .format(currentDate)
+          .replace(".", "")
+          .toUpperCase();
+
+        // deve referenciar o mês atual
         content.appendChild(
           Modal.helpers.buildFormGroup({
-            textLabel: "MÊS/ANO",
+            textLabel: `DIAS DO MÊS ATUAL (${currentMonthLabel})`,
             input: {
               id: MODAL_INPUT_APPOINTMENTS_MONTH_YEAR_SELECTOR.substring(1),
-              value: __buildMonthDate(),
             },
-            helpText: "Ex.: 07/2024",
-          })
+            helpText: "Ex.: 7,14,21,28",
+          }),
         );
 
         content.appendChild(
@@ -196,7 +249,7 @@
               value: "64,53",
             },
             helpText: "Ex.: 64,53",
-          })
+          }),
         );
 
         return content;
