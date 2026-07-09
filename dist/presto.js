@@ -715,10 +715,37 @@
   const { PatientModel } = Presto.models;
   const { CommonsHelper, DomHelper } = Presto.modules;
   const { $ } = DomHelper;
+  const CONTEXT_PATIENT_ID_KEY = "presto.sulamerica.context.patient.id";
 
   const _Module = (function () {
     const getPatients = (dbVersion = 2) =>
       PatientModel.getOrCreateDB(dbVersion).then(PatientModel.getAll);
+
+    const getContextPatientId = () => {
+      try {
+        return localStorage.getItem(CONTEXT_PATIENT_ID_KEY) || "";
+      } catch (e) {
+        return "";
+      }
+    };
+
+    const setContextPatientId = (patientId) => {
+      if (!patientId) return;
+
+      try {
+        localStorage.setItem(CONTEXT_PATIENT_ID_KEY, patientId);
+      } catch (e) {
+        // ignore storage errors to avoid breaking page flow
+      }
+    };
+
+    const clearContextPatientId = () => {
+      try {
+        localStorage.removeItem(CONTEXT_PATIENT_ID_KEY);
+      } catch (e) {
+        // ignore storage errors to avoid breaking page flow
+      }
+    };
 
     const buildInsuredComboBox = (insuredList = []) => {
       if (insuredList.length === 0) return null;
@@ -734,6 +761,8 @@
       select.onchange = () => {
         const option = $(":checked", select);
         if (!option?.value) return;
+
+        setContextPatientId(option.value);
 
         ["1", "2", "3", "4", "5"].forEach((suffix, index) => {
           const size = [3, 5, 4, 4, 4][index];
@@ -753,6 +782,25 @@
       });
 
       return select;
+    };
+
+    const applyContextPatientToComboBox = (comboBox) => {
+      if (!comboBox) return;
+
+      const contextPatientId = getContextPatientId();
+      if (!contextPatientId) return;
+
+      const hasPatientInOptions = Array.from(comboBox.options).some(
+        (option) => option.value === contextPatientId,
+      );
+
+      if (!hasPatientInOptions) {
+        clearContextPatientId();
+        return;
+      }
+
+      comboBox.value = contextPatientId;
+      comboBox.dispatchEvent(new Event("change", { bubbles: true }));
     };
 
     const createMonthYearFilter = ({
@@ -791,6 +839,10 @@
     return {
       getPatients,
       buildInsuredComboBox,
+      getContextPatientId,
+      setContextPatientId,
+      clearContextPatientId,
+      applyContextPatientToComboBox,
       createMonthYearFilter,
     };
   })();
@@ -937,6 +989,7 @@
           if (!node) return;
 
           node.insertBefore(comboBox, node.childNodes[2]);
+          SulAmericaHelper.applyContextPatientToComboBox(comboBox);
 
           const boxPadrao = $(".box-padrao");
           if (boxPadrao) {
@@ -980,6 +1033,7 @@
           if (!node) return;
 
           node.insertBefore(comboBox, node.childNodes[2]);
+          SulAmericaHelper.applyContextPatientToComboBox(comboBox);
           SulAmericaHelper.createMonthYearFilter({
             dateBeginFieldSelector: 'input[name="data-inicial"]',
             dateEndFieldSelector: 'input[name="data-final"]',
@@ -1332,6 +1386,7 @@
           if (!node) return;
 
           node.insertBefore(comboBox, node.childNodes[0]);
+          SulAmericaHelper.applyContextPatientToComboBox(comboBox);
 
           const boxPadrao = $(".box-padrao");
           if (boxPadrao) {
@@ -1383,6 +1438,7 @@
           if (!node) return;
 
           node.insertBefore(comboBox, node.childNodes[2]);
+          SulAmericaHelper.applyContextPatientToComboBox(comboBox);
         })
         .catch((err) => {
           console.log(
@@ -1421,6 +1477,7 @@
           if (!node) return;
 
           node.insertBefore(comboBox, node.childNodes[2]);
+          SulAmericaHelper.applyContextPatientToComboBox(comboBox);
 
           const boxPadrao = $(".box-padrao");
           if (boxPadrao) {

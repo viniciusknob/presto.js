@@ -20,6 +20,7 @@
           if (!node) return;
 
           node.insertBefore(comboBox, node.childNodes[2]);
+          SulAmericaHelper.applyContextPatientToComboBox(comboBox);
 
           const boxPadrao = $(".box-padrao");
           if (boxPadrao) {

@@ -20,6 +20,7 @@
           if (!node) return;
 
           node.insertBefore(comboBox, node.childNodes[2]);
+          SulAmericaHelper.applyContextPatientToComboBox(comboBox);
           SulAmericaHelper.createMonthYearFilter({
             dateBeginFieldSelector: 'input[name="data-inicial"]',
             dateEndFieldSelector: 'input[name="data-final"]',

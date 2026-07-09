@@ -20,6 +20,7 @@
           if (!node) return;
 
           node.insertBefore(comboBox, node.childNodes[2]);
+          SulAmericaHelper.applyContextPatientToComboBox(comboBox);
         })
         .catch((err) => {
           console.log(
