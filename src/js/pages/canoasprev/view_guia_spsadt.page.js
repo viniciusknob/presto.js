@@ -113,21 +113,36 @@
                 id: p.id,
                 value: p.id,
               },
-            })
-          )
+            }),
+          ),
         );
 
         return content;
       },
       __getAccount = () => {
-        const data = $("footer p")
-          .textContent.split("\n")
+        const text = $("footer p").textContent;
+        // Padrão: "CNPJ | NOME CLÍNICA [badges]"
+        // Exemplo: "28139755000190 | BEM ESTAR CLINICA LTDA - ME Hospital Prestador"
+        const lines = text
+          .split("\n")
           .map((x) => x.trim())
           .filter((x) => x);
+        const firstLine = lines[0] || "";
+
+        // Split pela barra vertical |
+        const [cnpjPart, namePart] = firstLine.split("|").map((x) => x.trim());
+
+        // Remove números do CNPJ para ficar só com o ID
+        const id = cnpjPart.replace(/\D/g, "");
+
+        // Remove os badges (Hospital, Prestador, etc) do final do nome
+        const name = namePart
+          .replace(/\s*(Hospital|Prestador|Badge)\s*/gi, "")
+          .trim();
 
         return {
-          id: data[0].replace(/\D/g, ""),
-          name: data[1],
+          id,
+          name,
         };
       },
       __loadProfiles = () => {
@@ -171,7 +186,7 @@
               const interval = setInterval(() => {
                 const bArr = $$("b");
                 const b = bArr?.find((b) =>
-                  b.textContent.includes("Nº Guia Operadora")
+                  b.textContent.includes("Nº Guia Operadora"),
                 );
                 const uiDialog = b?.closest(".ui-dialog");
                 const btnFechar = $("#fechar", uiDialog);
@@ -225,7 +240,7 @@
           if (profiles.length) {
             localStorage.setItem(
               PROFILES_BULK_INSERT_APPOINTMENTS_ID,
-              profiles.join(`,`)
+              profiles.join(`,`),
             );
           } else {
             localStorage.removeItem(PROFILES_BULK_INSERT_APPOINTMENTS_ID);
@@ -238,7 +253,7 @@
           PROFILES_BULK_INSERT_APPOINTMENTS_ID,
           $$(`input[type="checkbox"]:checked`, modal)
             .map((x) => x.value)
-            .join(`,`)
+            .join(`,`),
         );
 
         __executeBulkInsertAppointments();
@@ -248,6 +263,188 @@
           title: "Adicionar Procedimentos em Lote",
           content: __buildModalForBulkInsert(profiles),
           mainAction: __fillForm_AdicionarProcedimentosEmLote_onclick,
+        });
+      },
+      __getAllUniqueProfessionals = () => {
+        return PatientModel.getOrCreateDB()
+          .then(PatientModel.getAll)
+          .then((patients) => {
+            if (!patients || !patients.length) return [];
+            const professionalsMap = new Map();
+            patients.forEach((patient) => {
+              if (
+                patient.spc &&
+                patient.spc.id &&
+                !professionalsMap.has(patient.spc.id)
+              ) {
+                professionalsMap.set(patient.spc.id, patient.spc);
+              }
+            });
+            return Array.from(professionalsMap.values()).sort((a, b) =>
+              a.name.localeCompare(b.name),
+            );
+          })
+          .catch((err) => {
+            console.error("__getAllUniqueProfessionals", err);
+            return [];
+          });
+      },
+      __buildModalForEditProfessional = (patientsList, professionalsList) => {
+        let content = document.createElement("div");
+
+        // Select para pacientes
+        const patientSelectLabel = document.createElement("label");
+        patientSelectLabel.textContent = "Selecionar Paciente:";
+        patientSelectLabel.style.display = "block";
+        patientSelectLabel.style.marginBottom = "8px";
+        patientSelectLabel.style.fontWeight = "bold";
+
+        const patientSelect = document.createElement("select");
+        patientSelect.id = "presto-edit-patient-select";
+        patientSelect.style.width = "100%";
+        patientSelect.style.marginBottom = "20px";
+        patientSelect.style.padding = "8px";
+
+        const patientOption = document.createElement("option");
+        patientOption.value = "";
+        patientOption.textContent = "Selecione um paciente...";
+        patientSelect.appendChild(patientOption);
+
+        patientsList.forEach((patient) => {
+          const opt = document.createElement("option");
+          opt.value = patient.id;
+          opt.textContent = `${patient.name} (${patient.id})`;
+          patientSelect.appendChild(opt);
+        });
+
+        // Select para profissionais
+        const professionalSelectLabel = document.createElement("label");
+        professionalSelectLabel.textContent = "Selecionar Profissional:";
+        professionalSelectLabel.style.display = "block";
+        professionalSelectLabel.style.marginBottom = "8px";
+        professionalSelectLabel.style.fontWeight = "bold";
+
+        const professionalSelect = document.createElement("select");
+        professionalSelect.id = "presto-edit-professional-select";
+        professionalSelect.style.width = "100%";
+        professionalSelect.style.padding = "8px";
+        professionalSelect.disabled = true;
+
+        const professionalOption = document.createElement("option");
+        professionalOption.value = "";
+        professionalOption.textContent = "Selecione um profissional...";
+        professionalSelect.appendChild(professionalOption);
+
+        professionalsList.forEach((professional) => {
+          const opt = document.createElement("option");
+          opt.value = professional.id;
+          opt.textContent = professional.name;
+          opt.dataset.ncrp = professional.ncrp || "";
+          professionalSelect.appendChild(opt);
+        });
+
+        // Event listener para quando o paciente é selecionado
+        patientSelect.onchange = __handlePatientSelect_onChange(
+          patientsList,
+          professionalSelect,
+        );
+
+        content.appendChild(patientSelectLabel);
+        content.appendChild(patientSelect);
+        content.appendChild(professionalSelectLabel);
+        content.appendChild(professionalSelect);
+
+        return content;
+      },
+      __handlePatientSelect_onChange =
+        (patientsList, professionalSelect) => (event) => {
+          const patientId = event.target.value;
+          const selectedPatient = patientsList.find((p) => p.id === patientId);
+
+          if (
+            selectedPatient &&
+            selectedPatient.spc &&
+            selectedPatient.spc.id
+          ) {
+            professionalSelect.disabled = false;
+            professionalSelect.value = selectedPatient.spc.id;
+          } else {
+            professionalSelect.disabled = true;
+            professionalSelect.value = "";
+          }
+        },
+      __handleEditProfessionalSave = () => () => {
+        const patientSelect = $("#presto-edit-patient-select");
+        const professionalSelect = $("#presto-edit-professional-select");
+
+        const patientId = patientSelect.value;
+        const professionalId = professionalSelect.value;
+
+        if (!patientId) {
+          console.warn(
+            "__handleEditProfessionalSave: Paciente não selecionado",
+          );
+          return;
+        }
+
+        if (!professionalId) {
+          console.warn(
+            "__handleEditProfessionalSave: Profissional não selecionado",
+          );
+          return;
+        }
+
+        // Recarregar pacientes do banco para garantir dados atualizados
+        __loadProfiles()
+          .then((freshPatients) => {
+            const selectedPatient = freshPatients.find(
+              (p) => p.id === patientId,
+            );
+            if (!selectedPatient) {
+              console.error(
+                "__handleEditProfessionalSave: Paciente não encontrado",
+              );
+              return;
+            }
+
+            const optionElement =
+              professionalSelect.options[professionalSelect.selectedIndex];
+            const selectedProfessional = selectedPatient.spc || {};
+            const ncrpValue =
+              optionElement?.dataset?.ncrp || selectedProfessional.ncrp || "";
+
+            const updatedPatient = {
+              ...selectedPatient,
+              spc: {
+                id: professionalId,
+                name: optionElement.textContent,
+                ncrp: ncrpValue,
+              },
+            };
+
+            return PatientModel.getOrCreateDB().then((db) =>
+              PatientModel.addOrUpdateItem(db, updatedPatient).then(() => {
+                console.log(
+                  `__handleEditProfessionalSave: Profissional atualizado para ${updatedPatient.name}`,
+                );
+                // Reset dos selects
+                patientSelect.value = "";
+                professionalSelect.value = "";
+                professionalSelect.disabled = true;
+              }),
+            );
+          })
+          .catch((err) => {
+            console.error("__handleEditProfessionalSave", err);
+          });
+      },
+      __btnEditarPacientes_onclick = (profiles) => () => {
+        __getAllUniqueProfessionals().then((professionals) => {
+          Modal.open({
+            title: "Editar Pacientes",
+            content: __buildModalForEditProfessional(profiles, professionals),
+            mainAction: __handleEditProfessionalSave(),
+          });
         });
       },
       __initialConfig = () => {
@@ -281,6 +478,11 @@
               textLabel: "Adicionar Procedimentos em Lote",
               iconClass: "las la-calendar-plus",
               click: __btnAdicionarProcedimentosEmLote_onclick(profiles),
+            },
+            {
+              textLabel: "Editar Pacientes",
+              iconClass: "las la-user-edit",
+              click: __btnEditarPacientes_onclick(profiles),
             },
           ]);
 
